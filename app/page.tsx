@@ -6,18 +6,25 @@ import ThirdSection from "@/components/landing/ThirdSection";
 
 export default function Home() {
   return (
-    <main className="relative flex min-h-screen w-full flex-col bg-background">
+    <main className="relative flex min-h-screen w-full flex-col bg-background-base">
       <Navbar />
-      <section className="relative w-full h-screen">
+
+      {/* Hero */}
+      <section className="relative w-full min-h-screen flex items-center">
         <FirstSection />
       </section>
-      <section className="relative w-full h-screen">
+
+      {/* Section 2 */}
+      <section className="relative w-full py-20">
         <SecondSection />
       </section>
-      <section className="relative w-full h-screen py-20 px-8">
+
+      {/* Section 3 */}
+      <section className="relative w-full py-20 px-4 sm:px-6 md:px-8">
         <ThirdSection />
       </section>
-      <Footer/>
+
+      <Footer />
     </main>
   );
 }
