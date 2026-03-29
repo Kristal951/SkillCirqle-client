@@ -13,7 +13,7 @@ const FirstSection = () => {
             Learn what <span className="text-secondary">you don't.</span>
           </h1>
 
-          <p className="text-lg md:text-2xl text-on-surface-variant max-w-2xl mx-auto font-light leading-relaxed">
+          <p className="text-lg md:text-2xl text-text-surface max-w-2xl mx-auto font-light leading-relaxed">
             Join the <span className="font-medium text-on-surface">Cirqle</span>
             . A premium workspace for high-tech knowledge sharing where human
             connection fuels collective growth.
@@ -21,11 +21,11 @@ const FirstSection = () => {
         </div>
 
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4 md:gap-6">
-          <button className="w-full sm:w-auto bg-linear-to-br from-primary to-primary-container text-on-primary px-12 py-5 rounded-2xl font-bold text-xl active:scale-95 transition-all duration-300 shadow-lg shadow-primary/10 hover:shadow-primary/20">
+          <button className="w-full sm:w-auto bg-primary text-on-primary px-12 py-5 rounded-2xl font-bold text-xl active:scale-95 transition-all duration-300 shadow-lg shadow-primary/10 hover:shadow-primary/20">
             Get Started
           </button>
 
-          <button className="w-full sm:w-auto px-12 py-5 rounded-2xl font-bold text-xl border border-outline-variant/30 text-on-surface hover:bg-on-surface/5 transition-all duration-300">
+          <button className="w-full sm:w-auto px-12 py-5 rounded-2xl font-bold text-xl border border-outline-variant/30 text-on-surface hover:bg-white/10 transition-all duration-300">
             How it Works
           </button>
         </div>

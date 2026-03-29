@@ -30,7 +30,7 @@ const SecondSection = () => {
       <div className="max-w-7xl mx-auto flex flex-col gap-16 md:gap-20">
         
         <div className="flex flex-col gap-4 text-center md:text-left">
-          <h1 className="text-text-primary tracking-tight font-bold text-3xl sm:text-4xl md:text-5xl">
+          <h1 className="text-text-white tracking-tight font-bold text-3xl sm:text-4xl md:text-5xl">
             How the Cirqle Works
           </h1>
           <p className="text-text-secondary max-w-xl mx-auto md:mx-0 text-sm sm:text-base md:text-lg">
@@ -55,7 +55,7 @@ const SecondSection = () => {
                 </span>
               </div>
 
-              <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-text-primary mb-3">
+              <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-text-white mb-3">
                 {card.title}
               </h3>
 

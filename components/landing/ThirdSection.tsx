@@ -16,7 +16,7 @@ const ThirdSection = () => {
           <span className="bg-primary/20 text-text-primary px-3 py-1 rounded-full text-xs font-bold tracking-widest uppercase mb-4 inline-block">
             Featured Domain
           </span>
-          <h4 className="text-4xl text-text-primary font-headline font-extrabold mb-4">
+          <h4 className="text-4xl text-text-white font-headline font-extrabold mb-4">
             Cybersecurity Architecture
           </h4>
           <p className="text-text-surface max-w-md">

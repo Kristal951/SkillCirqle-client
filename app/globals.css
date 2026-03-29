@@ -52,8 +52,9 @@
   --color-text-secondary: #eadef799;
   --color-text-accent: #eadef7;
   --color-text-surface: #ccc3d5;
+  --color-text-white: #ffffff;
 
-  --color-primary: #6f42c1;
+  --color-primary: #7741c3;
   --color-primary-light: #a463f2;
   --color-accent: #d3bbff;
 
@@ -83,6 +84,7 @@
   --color-text-secondary: var(--color-text-secondary);
   --color-text-accent: var(--color-text-accent);
   --color-text-surface: var(--color-text-surface);
+  --color-text-white: var(--color-text-white);
 
   --color-primary: var(--color-primary);
   --color-primary-light: var(--color-primary-light);
@@ -132,4 +134,8 @@ html {
       rgba(211, 187, 255, 0.05),
       transparent
     );
+}
+
+button{
+  cursor: pointer;
 }
