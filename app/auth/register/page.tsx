@@ -1,9 +1,20 @@
 "use client";
+import Spinner from "@/components/ui/Spinner";
+import { signUpWithEmail } from "@/lib/auth";
+import { toast } from "@/lib/toast";
 import { Lock, Mail, User, Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
 import React, { useState } from "react";
 
-const InputField = ({ icon: Icon, type, placeholder, id, isPassword }: any) => {
+const InputField = ({
+  icon: Icon,
+  type,
+  placeholder,
+  id,
+  isPassword,
+  value,
+  onChange,
+}: any) => {
   const [show, setShow] = useState(false);
 
   return (
@@ -16,6 +27,8 @@ const InputField = ({ icon: Icon, type, placeholder, id, isPassword }: any) => {
         id={id}
         type={isPassword ? (show ? "text" : "password") : type}
         placeholder={placeholder}
+        value={value}
+        onChange={onChange}
         className="w-full bg-background focus:border-primary focus:ring-2 focus:ring-primary/80 outline-none py-3 pl-10 pr-10 rounded-md transition text-sm sm:text-base"
       />
 
@@ -33,6 +46,36 @@ const InputField = ({ icon: Icon, type, placeholder, id, isPassword }: any) => {
 };
 
 const SignUp = () => {
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setLoading(true);
+
+    if (!name || !email || !password) {
+      toast.error("Please fill in all fields");
+      setLoading(false);
+      return;
+    }
+    try {
+   await signUpWithEmail(name, email, password);
+   
+    } catch (error: any) {
+      console.error(error);
+      if (error.code === "auth/email-already-in-use") {
+        toast.error(
+          "Invalid Email",
+          "This email is already in use. Try logging in instead.",
+        );
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleGoogleSignUp = () => {
     console.log("Google signup clicked");
   };
@@ -60,12 +103,14 @@ const SignUp = () => {
               </p>
             </div>
 
-            <form className="space-y-4 sm:space-y-6">
+            <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
               <InputField
                 id="name"
                 icon={User}
                 type="text"
                 placeholder="Full Name"
+                value={name}
+                onChange={(e: any) => setName(e.target.value)}
               />
 
               <InputField
@@ -73,6 +118,8 @@ const SignUp = () => {
                 icon={Mail}
                 type="email"
                 placeholder="Email Address"
+                value={email}
+                onChange={(e: any) => setEmail(e.target.value)}
               />
 
               <InputField
@@ -81,13 +128,16 @@ const SignUp = () => {
                 type="password"
                 placeholder="Password"
                 isPassword
+                value={password}
+                onChange={(e: any) => setPassword(e.target.value)}
               />
 
               <button
+                disabled={loading}
                 type="submit"
-                className="w-full bg-primary text-white p-3 rounded-md font-medium hover:opacity-90 active:scale-[0.98] transition text-sm sm:text-base"
+                className="w-full disabled:opacity-50 bg-primary text-white p-3 rounded-md font-medium hover:opacity-90 active:scale-[0.98] transition text-sm sm:text-base"
               >
-                Create Account
+                {loading ? <Spinner /> : "Create Account"}
               </button>
             </form>
 
@@ -113,7 +163,10 @@ const SignUp = () => {
 
             <p className="text-xs sm:text-sm text-text-surface text-center">
               Already have an account?{" "}
-              <Link href="/auth/signin" className="text-white font-medium cursor-pointer hover:underline">
+              <Link
+                href="/auth/signin"
+                className="text-white font-medium cursor-pointer hover:underline"
+              >
                 Login
               </Link>
             </p>

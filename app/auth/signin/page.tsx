@@ -1,9 +1,21 @@
 "use client";
+import Spinner from "@/components/ui/Spinner";
+import { loginWithEmail } from "@/lib/auth";
+import { toast } from "@/lib/toast";
 import { Mail, Lock, Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import React, { useState } from "react";
 
-const InputField = ({ icon: Icon, type, placeholder, id, isPassword }: any) => {
+const InputField = ({
+  icon: Icon,
+  type,
+  placeholder,
+  id,
+  isPassword,
+  value,
+  onChange,
+}: any) => {
   const [show, setShow] = useState(false);
 
   return (
@@ -16,6 +28,8 @@ const InputField = ({ icon: Icon, type, placeholder, id, isPassword }: any) => {
         id={id}
         type={isPassword ? (show ? "text" : "password") : type}
         placeholder={placeholder}
+        value={value}
+        onChange={onChange}
         className="w-full bg-background focus:border-primary focus:ring-2 focus:ring-primary/80 outline-none py-3 pl-10 pr-10 rounded-md transition text-sm sm:text-base"
       />
 
@@ -33,6 +47,51 @@ const InputField = ({ icon: Icon, type, placeholder, id, isPassword }: any) => {
 };
 
 const SignIn = () => {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const router = useRouter();
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setLoading(true);
+
+    if (!email || !password) {
+      toast.error("Please fill in all fields");
+      setLoading(false);
+      return;
+    }
+    try {
+      const res = await loginWithEmail(email, password);
+
+      toast.success(`Welcome back, ${res.displayName}!`, "Continue Cirqling");
+
+      router.push("/dashboard");
+    } catch (error: any) {
+      console.error(error);
+
+      if (error.code === "auth/user-not-found") {
+        toast.error("User not found", "Please sign up first.");
+      } else if (error.code === "auth/wrong-password") {
+        toast.error(
+          "Incorrect password",
+          "Please try again with correct password.",
+        );
+      } else if (error.code === "auth/invalid-email") {
+        toast.error("Invalid email format");
+      } else if (error.code === "auth/network-request-failed") {
+        toast.error(
+          "Login failed",
+          "Please check your internet connection and try again.",
+        );
+      } else {
+        toast.error("Login failed", error.message);
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleGoogleSignIn = () => {
     console.log("Google signin clicked");
   };
@@ -60,12 +119,16 @@ const SignIn = () => {
               </p>
             </div>
 
-            <form className="space-y-4 sm:space-y-5">
+            <form className="space-y-4 sm:space-y-5" onSubmit={handleSubmit}>
               <InputField
                 id="email"
                 icon={Mail}
                 type="email"
                 placeholder="Email address"
+                value={email}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  setEmail(e.target.value)
+                }
               />
 
               <InputField
@@ -74,6 +137,10 @@ const SignIn = () => {
                 type="password"
                 placeholder="Password"
                 isPassword
+                value={password}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  setPassword(e.target.value)
+                }
               />
 
               <div className="flex justify-end">
@@ -83,10 +150,11 @@ const SignIn = () => {
               </div>
 
               <button
+                disabled={loading}
                 type="submit"
-                className="w-full bg-primary text-white p-3 rounded-md font-medium hover:opacity-90 active:scale-[0.98] transition text-sm sm:text-base"
+                className="w-full disabled:bg-primary/50 bg-primary disabled:cursor-not-allowed text-white p-3 rounded-md font-medium hover:opacity-90 active:scale-[0.98] transition text-sm sm:text-base"
               >
-                Sign In
+                {loading ? <Spinner /> : "Sign In"}
               </button>
             </form>
 

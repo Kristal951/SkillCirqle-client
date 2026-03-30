@@ -9,17 +9,14 @@ export default function Home() {
     <main className="relative flex min-h-screen w-full flex-col bg-background-base">
       <Navbar />
 
-      {/* Hero */}
       <section className="relative w-full min-h-screen flex items-center">
         <FirstSection />
       </section>
 
-      {/* Section 2 */}
       <section className="relative w-full py-20">
         <SecondSection />
       </section>
 
-      {/* Section 3 */}
       <section className="relative w-full py-20 px-4 sm:px-6 md:px-8">
         <ThirdSection />
       </section>

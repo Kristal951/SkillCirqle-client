@@ -136,6 +136,23 @@ html {
     );
 }
 
-button{
+button {
   cursor: pointer;
+}
+
+.glow-success {
+  box-shadow: 0 0 20px rgba(74, 222, 128, 0.15);
+  border: 1px solid rgba(74, 222, 128, 0.2);
+}
+.glow-error {
+  box-shadow: 0 0 20px rgba(248, 113, 113, 0.15);
+  border: 1px solid rgba(248, 113, 113, 0.2);
+}
+.glow-info {
+  box-shadow: 0 0 20px rgba(211, 187, 255, 0.15);
+  border: 1px solid rgba(211, 187, 255, 0.2);
+}
+.glow-warning {
+  box-shadow: 0 0 20px rgba(251, 191, 36, 0.15);
+  border: 1px solid rgba(251, 191, 36, 0.2);
 }
