@@ -6,6 +6,7 @@ import { useSessionSync } from "@/hooks/useSessionSync";
 import { useAuthHydrate } from "@/hooks/useAuthHydrate";
 import ToastContainer from "./ui/ToastContainer";
 import { Analytics } from "@vercel/analytics/next"
+import ThemeToggle from "./ToggleThemeButton";
 
 export default function Providers({ children }: { children: React.ReactNode }) {
   useAuthHydrate();
@@ -16,6 +17,9 @@ export default function Providers({ children }: { children: React.ReactNode }) {
     <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
       <ToastContainer />
       <Analytics/>
+      <div className="fixed bottom-4 right-4 z-50">
+          <ThemeToggle />
+        </div>
       {children}
     </ThemeProvider>
   );

@@ -36,9 +36,7 @@ const Toast = ({
   };
 
   const IconMap = {
-    success: (
-      <MaterialIcon name="check_circle" className="text-green-400" fill />
-    ),
+    success: <MaterialIcon name="check_circle" className="text-green-400" fill />,
     error: <MaterialIcon name="error" className="text-red-400" fill />,
     info: <MaterialIcon name="info" className="text-blue-400" fill />,
     warning: <MaterialIcon name="info" className="text-amber-400" fill />,
@@ -57,19 +55,25 @@ const Toast = ({
   return (
     <div
       role="alert"
-      className={`bg-background p-4 rounded-md  flex items-center justify-between gap-3 ${styles[type]}`}
+      aria-live="assertive"
+      className={`bg-background p-3 rounded-md flex flex-col justify-between gap-3 ${styles[type]}`}
     >
-      <div className="flex items-center gap-3">
+      <div className="flex items-start sm:items-center gap-3 w-full">
         <div
-          className={`p-2 rounded-full flex items-center justify-center ${iconContainerStyles[type]}`}
+          className={`p-2 rounded-full flex items-center justify-center shrink-0 ${iconContainerStyles[type]}`}
         >
-          {IconMap[type]}
+          {Icon}
         </div>
 
-        <div className="flex flex-col gap-1">
-          <p className="text-base font-semibold text-white">{message}</p>
+        <div className="flex flex-col gap-1 min-w-0">
+          <p className="text-sm sm:text-base font-semibold text-white break-words">
+            {message}
+          </p>
+
           {description && (
-            <p className="text-xs text-text-surface mb-1">{description}</p>
+            <p className="text-xs sm:text-sm text-text-surface break-words">
+              {description}
+            </p>
           )}
         </div>
       </div>
@@ -77,7 +81,7 @@ const Toast = ({
       <button
         onClick={() => onClose(id)}
         aria-label="Close notification"
-        className="text-gray-400 hover:text-gray-200 transition"
+        className="self-end sm:self-auto text-gray-400 hover:text-gray-200 transition"
       >
         <X size={16} />
       </button>

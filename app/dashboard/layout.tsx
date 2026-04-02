@@ -1,5 +1,6 @@
 "use client";
 
+import Navbar from "@/components/dashboard/Navbar";
 import Spinner from "@/components/ui/Spinner";
 import { useAuthStore } from "@/store/useAuthStore";
 import { useRouter } from "next/navigation";
@@ -29,5 +30,10 @@ export default function DashboardLayout({
 
   if (!user) return null;
 
-  return <div className="flex h-screen">{children}</div>;
+  return (
+    <div className="flex flex-col h-screen">
+      <Navbar />
+      {children}
+    </div>
+  );
 }
