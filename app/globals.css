@@ -5,17 +5,17 @@
 ========================= */
 :root {
   /* Base */
-  --color-background-base: #ffffff;
-  --color-surface-1: #f5f5f5;
-  --color-surface-2: #eaeaea;
-  --color-surface-container: #1f182a;
-  --color-overlay: rgba(0, 0, 0, 0.05);
+  --color-background-base: #ffffff; /* Main app background */
+  --color-surface-1: #f1f5f9; /* Cards / sections (soft gray) */
+  --color-surface-2: #e2e8f0; /* Elevated elements / hover */
+  --color-surface-container: #ffffff; /* Containers (forms, modals) */
+  --color-overlay: rgba(15, 23, 42, 0.05); /* Subtle dark overlay */
 
-  /* Text */
-  --color-text-primary: #171717;
-  --color-text-secondary: rgba(23, 23, 23, 0.7);
-  --color-text-accent: #f4a862;
-  --color-text-surface: #ccc3d5;
+  --color-text-primary: #0f172a; /* Strong, readable (slate-900 vibe) */
+  --color-text-secondary: #475569; /* Muted but still readable */
+  --color-text-accent: #f4a862; /* Warm accent (amber) */
+  --color-text-surface: #94a3b8; /* For subtle UI text on surfaces */
+  --color-text-white: #ffffff;
 
   /* Brand */
   --color-primary: #6f42c1;

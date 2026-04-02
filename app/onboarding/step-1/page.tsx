@@ -15,6 +15,7 @@ import Spinner from "@/components/ui/Spinner";
 import Cropper from "react-easy-crop";
 import { getCroppedImg } from "@/lib/image";
 import { useAuthStore } from "@/store/useAuthStore";
+import { useRouter } from "next/navigation";
 
 const UploadProfilePicture = () => {
   const [image, setImage] = useState<string | null>(null);
@@ -39,6 +40,7 @@ const UploadProfilePicture = () => {
     isUploadingProfilePic,
     uploadProgress,
   } = useAuthStore();
+  const router = useRouter();
 
   useEffect(() => {
     return () => {
@@ -348,7 +350,10 @@ const UploadProfilePicture = () => {
         </div>
 
         <div className=" p-4 lg:hidden flex items-center justify-between w-full">
-          <button className="flex gap-1 items-center text-text-secondary hover:text-text-primary transition-colors font-medium">
+          <button
+            onClick={() => router.back()}
+            className="flex gap-1 items-center text-text-secondary hover:text-text-primary transition-colors font-medium"
+          >
             <ArrowLeft className="w-4 h-4" />
             Go Back
           </button>
