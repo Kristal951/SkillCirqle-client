@@ -1,6 +1,7 @@
 "use client";
 
 import Header from "@/components/onboarding/Header";
+import MobileStepper from "@/components/onboarding/MobileStepper";
 import Spinner from "@/components/ui/Spinner";
 import { useAuthStore } from "@/store/useAuthStore";
 import { useOnboardingStore } from "@/store/useOnboardingStore";
@@ -68,7 +69,11 @@ export default function OnboardingLayout({
     <div className="h-screen w-full flex items-center justify-center">
       <div className="flex h-full w-full flex-col">
         <Header />
-        {children}
+        <div className="pt-[90px] w-full">
+          <MobileStepper />
+        </div>
+
+        <div className="py-4">{children}</div>
       </div>
     </div>
   );

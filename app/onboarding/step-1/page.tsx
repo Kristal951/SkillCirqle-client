@@ -9,10 +9,8 @@ import {
   File as FileIcon,
   ArrowLeft,
   ArrowRight,
-  CheckCheckIcon,
 } from "lucide-react";
 import { useOnboardingStore } from "@/store/useOnboardingStore";
-import { useRouter } from "next/navigation";
 import Spinner from "@/components/ui/Spinner";
 import Cropper from "react-easy-crop";
 import { getCroppedImg } from "@/lib/image";
@@ -41,7 +39,7 @@ const UploadProfilePicture = () => {
     isUploadingProfilePic,
     uploadProgress,
   } = useAuthStore();
-  
+
   useEffect(() => {
     return () => {
       if (image) URL.revokeObjectURL(image);
@@ -181,11 +179,11 @@ const UploadProfilePicture = () => {
   const isBusy = isUploading || isUpdating;
 
   return (
-    <div className="min-h-[90vh] w-full flex items-center justify-center bg-background px-6 py-12">
-      <div className="w-full max-w-6xl grid lg:grid-cols-2 gap-16 items-center">
+    <div className="h-full w-full flex items-center justify-center bg-background md:px-6 px-4 mt-6 md:py-12">
+      <div className="w-full max-w-6xl grid h-full lg:grid-cols-2 gap-16 items-center">
         <div className="max-w-xl space-y-8">
           <div className="space-y-4">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-bold uppercase tracking-wider">
+            <div className="hidden lg:inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-bold uppercase tracking-wider">
               Step 1: Identity
             </div>
             <h1 className="text-5xl md:text-5xl font-bold tracking-tight text-balance">
@@ -226,7 +224,7 @@ const UploadProfilePicture = () => {
             ))}
           </ul>
 
-          <div className="p-4 flex items-center justify-between w-full">
+          <div className=" hidden lg:flex p-4 items-center justify-between w-full">
             <button className="flex gap-1 items-center text-text-secondary hover:text-text-primary transition-colors font-medium">
               <ArrowLeft className="w-4 h-4" />
               Go Back
@@ -236,7 +234,7 @@ const UploadProfilePicture = () => {
               onClick={handleUpload}
               disabled={!file || isBusy}
               className={`
-    relative overflow-hidden py-4 px-6 rounded-4xl font-bold flex  items-center justify-center gap-3 transition-all
+    relative overflow-hidden md:py-4 py-2 md:px-6 px-4 rounded-4xl font-bold flex  items-center justify-center gap-3 transition-all
     ${
       file
         ? "bg-text-secondary/10 text-primary-foreground"
@@ -279,7 +277,7 @@ const UploadProfilePicture = () => {
         </div>
 
         <div className="relative group">
-          <div className="relative bg-surface-2 rounded-xl p-8 flex flex-col gap-10">
+          <div className="relative bg-surface-2 rounded-xl md:p-8 p-4 flex flex-col gap-10">
             <input
               type="file"
               accept="image/*"
@@ -320,10 +318,10 @@ const UploadProfilePicture = () => {
                     alt="Preview"
                     className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                   />
-                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center">
+                  <div className="absolute inset-0 bg-black/40 md:opacity-0 md:group-hover:opacity-100 transition-all flex items-center justify-center">
                     <button
                       onClick={clearSelection}
-                      className="bg-destructive text-destructive-foreground px-4 py-2 rounded-full flex items-center gap-2 text-sm font-bold shadow-lg hover:bg-destructive/90 transition"
+                      className="bg-text-secondary/80 text-destructive-foreground px-4 py-2 rounded-full flex items-center gap-2 text-sm font-bold shadow-lg hover:bg-text-secondary/90 transition"
                     >
                       <X className="w-4 h-4" /> Change Photo
                     </button>
@@ -334,7 +332,7 @@ const UploadProfilePicture = () => {
             <div className="grid grid-cols-2 gap-4">
               <button
                 onClick={openUpload}
-                className="flex items-center justify-center gap-2 px-4 py-3 rounded-md text-background bg-text-primary transition-colors font-medium shadow-sm"
+                className="flex items-center justify-center gap-2 md:px-4 px-2 md:py-3 py-2 rounded-md text-background bg-text-primary transition-colors font-medium shadow-sm"
               >
                 <FileIcon className="w-4 h-4" /> Choose File
               </button>
@@ -347,6 +345,57 @@ const UploadProfilePicture = () => {
               </button>
             </div>
           </div>
+        </div>
+
+        <div className=" p-4 lg:hidden flex items-center justify-between w-full">
+          <button className="flex gap-1 items-center text-text-secondary hover:text-text-primary transition-colors font-medium">
+            <ArrowLeft className="w-4 h-4" />
+            Go Back
+          </button>
+
+          <button
+            onClick={handleUpload}
+            disabled={!file || isBusy}
+            className={`
+    relative overflow-hidden py-4 px-6 rounded-4xl font-bold flex  items-center justify-center gap-3 transition-all
+    ${
+      file
+        ? "bg-text-secondary/10 text-primary-foreground"
+        : " text-text-secondary hover:bg-text-secondary/10 cursor-not-allowed"
+    }
+  `}
+          >
+            {isUploading && (
+              <div
+                className="absolute left-0 top-0 h-full bg-primary transition-all"
+                style={{
+                  width: `${uploadProgress}%`,
+                  transition: "width 0.2s ease-in-out",
+                }}
+              />
+            )}
+
+            <div className="relative z-10 flex items-center gap-2">
+              {isUploading ? (
+                <>
+                  <Spinner />
+                  <span>Uploading {Math.round(uploadProgress)}%</span>
+                </>
+              ) : isUpdating ? (
+                <>
+                  <Spinner />
+                  <span>Updating profile...</span>
+                </>
+              ) : (
+                <>
+                  Next Step
+                  <ArrowRight
+                    className={`w-5 h-5 ${file ? "group-hover:translate-x-1" : ""}`}
+                  />
+                </>
+              )}
+            </div>
+          </button>
         </div>
       </div>
 

@@ -1,21 +1,20 @@
-// lib/fetchWithAuth.ts
+import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
 import { apiFetch } from "./apiFetch";
 
 export const fetchWithAuth = async (
   url: string,
-  router: any,
-  options?: RequestInit
+  router: AppRouterInstance,
+  options?: RequestInit,
 ) => {
-  try {
-    const res = await apiFetch(url, options);
-    return res;
-  } catch (err: any) {
-    if (
-      err.message.includes("401") ||
-      err.message.toLowerCase().includes("unauthorized")
-    ) {
+  const res = await apiFetch(url, options);
+
+  if (!res.ok) {
+    if (res.status === 401) {
       router.replace("/auth/signin");
+      throw new Error("Unauthorized");
     }
-    throw err;
+
+    throw new Error(`Request failed with status ${res.status}`);
   }
+  return res;
 };

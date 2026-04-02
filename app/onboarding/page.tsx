@@ -1,32 +1,28 @@
 "use client";
 
 import { useAuthStore } from "@/store/useAuthStore";
-import React from "react";
 import {
-  Sparkles,
   ArrowRight,
   ShieldCheck,
-  Zap,
   Globe,
   User,
   Coins,
 } from "lucide-react";
-import Link from "next/link";
 import { useOnboardingNavigation } from "@/lib/onboarding";
 import Spinner from "@/components/ui/Spinner";
 import Header from "@/components/onboarding/Header";
 
 const Onboarding = () => {
   const { user } = useAuthStore();
+  console.log(user)
   const firstName = user?.name?.split(" ")[0] || "User";
   const { handleMoveToNextOnboardingStep, loading, error } =
     useOnboardingNavigation();
 
   return (
-    <div className="relative w-full h-screen flex items-center flex-col bg-background px-6 overflow-hidden">
-
-      <div className="relative w-full h-full justify-center items-center max-w-4xl grid grid-cols-1 md:grid-cols-12 gap-4 transition-all duration-700 ease-out">
-        <div className="md:col-span-8 bg-background backdrop-blur-xl border border-white/10 rounded-[40px] p-8 md:p-14 flex flex-col justify-between overflow-hidden relative">
+    <div className="relative w-full h-screen flex py-4 md:py-0 items-center flex-col bg-background md:px-6 px-4 overflow-y-scroll md:overflow-hidden">
+      <div className="relative w-full md:h-full justify-center items-center md:max-w-5xl grid grid-cols-1 md:grid-cols-12 gap-4 transition-all duration-700 ease-out">
+        <div className=" md:col-span-8 bg-background backdrop-blur-xl border border-white/10 rounded-[40px] p-8 md:p-14 md:flex flex-col justify-between overflow-hidden relative">
           <div className="relative z-10">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 mb-6">
               <User className="w-3 h-3 text-blue-400 fill-blue-400" />
@@ -35,9 +31,9 @@ const Onboarding = () => {
               </span>
             </div>
 
-            <h1 className="text-5xl md:text-7xl font-black text-white tracking-tighter leading-[0.9] mb-6">
+            <h1 className="text-5xl md:text-6xl font-semibold  text-white tracking-tighter leading-[0.9] mb-6">
               WELCOME TO <br />
-              <span className="text-transparent bg-clip-text bg-linear-to-r from-blue-400 via-indigo-400 to-white">
+              <span className=" mt-2 text-text-primary">
                 THE CIRCLE.
               </span>
             </h1>
@@ -98,7 +94,7 @@ const Onboarding = () => {
           </div>
         </div>
       </div>
-      <div className="w-full h-max flex justify-end items-center py-4 mb-6">
+      <div className="w-full h-max flex justify-end items-center py-4 mb-2 md:mb-6 mt-6 md:mt-0">
         <button
           disabled={loading}
           className="flex text-base gap-1 disabled:bg-opacity-50 cursor-not-allowed font-semibold rounded-md items-center justify-center p-3 bg-primary"

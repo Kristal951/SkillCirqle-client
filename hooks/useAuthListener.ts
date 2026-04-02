@@ -20,6 +20,7 @@ export const useAuthListener = () => {
           setUser(null);
           return;
         }
+        console.log(firebaseUser, 'firebase')
 
         const baseUser = mapFirebaseUserToAppUser(firebaseUser);
 
@@ -32,6 +33,7 @@ export const useAuthListener = () => {
         };
 
         setUser(fullUser);
+        console.log(fullUser, 'full')
       } catch (err) {
         console.error("Auth listener error:", err);
         setUser(null);

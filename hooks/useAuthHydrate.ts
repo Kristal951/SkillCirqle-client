@@ -10,7 +10,6 @@ export const useAuthHydrate = () => {
   const setLoading = useAuthStore((s) => s.setLoading);
   const pathname = usePathname();
   const hydrated = useRef(false);
-  const router = useRouter();
   const { authFetch } = useAuthFetch();
 
   useEffect(() => {
@@ -27,6 +26,7 @@ export const useAuthHydrate = () => {
       try {
         const res = await authFetch("/api/auth/profile");
         const data = await res.json();
+        console.log(data, 'hydrate')
         setUser(data.user);
       } catch (err: any) {
         setUser(null);

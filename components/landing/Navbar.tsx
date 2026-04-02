@@ -72,14 +72,14 @@ const Navbar = () => {
           <div className="flex flex-col gap-3 pt-4 border-t border-divider">
             <Link
               href="/auth/signin"
-              className="w-full text-text-primary font-medium py-2 rounded-lg hover:bg-surface-1"
+              className="w-full text-text-primary font-medium py-2 flex items-center justify-center rounded-lg hover:bg-surface-1"
             >
               Login
             </Link>
 
             <Link
               href="/auth/register"
-              className="w-full bg-primary text-white py-2.5 rounded-xl font-semibold"
+              className="w-full bg-primary text-white py-2.5 flex items-center justify-center rounded-xl font-semibold"
             >
               Join Now
             </Link>
