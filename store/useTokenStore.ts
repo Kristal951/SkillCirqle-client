@@ -25,10 +25,6 @@ export const useTokenStore = create<TokenState>((set) => ({
         set({ totalTokensEarned: data.total });
       }
 
-      if (data?.message === "Already rewarded") {
-        console.log("⚠️ Already rewarded");
-      }
-
       return data;
     } catch (error) {
       console.error("❌ Failed to award onboarding tokens:", error);

@@ -10,7 +10,6 @@ export default function Dashboard() {
   const [loggingOut, setLoggingOut] = useState(false);
   const router = useRouter();
   const {user} = useAuthStore()
-  console.log(user)
 
   const handleLogout = async () => {
     setLoggingOut(true);

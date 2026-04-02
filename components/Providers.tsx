@@ -5,6 +5,7 @@ import { useAuthListener } from "@/hooks/useAuthListener";
 import { useSessionSync } from "@/hooks/useSessionSync";
 import { useAuthHydrate } from "@/hooks/useAuthHydrate";
 import ToastContainer from "./ui/ToastContainer";
+import { Analytics } from "@vercel/analytics/next"
 
 export default function Providers({ children }: { children: React.ReactNode }) {
   useAuthHydrate();
@@ -14,6 +15,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
   return (
     <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
       <ToastContainer />
+      <Analytics/>
       {children}
     </ThemeProvider>
   );
