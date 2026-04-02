@@ -10,6 +10,7 @@ export default function Dashboard() {
   const [loggingOut, setLoggingOut] = useState(false);
   const router = useRouter();
   const {user} = useAuthStore()
+  console.log(user)
 
   const handleLogout = async () => {
     setLoggingOut(true);
@@ -27,13 +28,17 @@ export default function Dashboard() {
       <h1>Dashboard</h1>
       <button onClick={handleLogout}>Logout</button>
 
-      {user && <p>Welcome, {user.displayName}!</p>}
+      {user && <p>Welcome, {user.name}!</p>}
 
       {loggingOut && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center">
           <Spinner size={40} />
         </div>
       )}
+
+      <button>
+        <a href="/onboarding">Go to Onboarding</a>
+      </button>
     </div>
   );
 }

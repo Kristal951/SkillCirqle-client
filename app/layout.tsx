@@ -32,14 +32,15 @@ export default function RootLayout({
           href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
           rel="stylesheet"
         />
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,200,0,0&icon_names=check_circle" />
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <Providers>{children}</Providers>
-        <div className="fixed bottom-4 right-4 z-50">
+        {/* Todo: <div className="fixed bottom-4 right-4 z-50">
           <ThemeToggle />
-        </div>
+        </div> */}
       </body>
     </html>
   );

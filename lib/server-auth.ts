@@ -22,7 +22,6 @@ export const getSessionUser = async (req: NextRequest) => {
 
   try {
     const decoded = await adminAuth.verifySessionCookie(session, true);
-
     const userRef = adminDB.collection("users").doc(decoded.uid);
     const userSnap = await userRef.get();
 

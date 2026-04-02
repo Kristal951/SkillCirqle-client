@@ -3,7 +3,7 @@ import { create } from "zustand";
 type Toast = {
   id: string;
   message: string;
-  type: "success" | "error" | "info";
+  type: "success" | "error" | "info"| "warning";
   description?: string;
 };
 
