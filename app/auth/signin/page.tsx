@@ -79,6 +79,11 @@ const SignIn = () => {
         );
       } else if (error.code === "auth/invalid-email") {
         toast.error("Invalid email format");
+      } else if (error.code === "auth/invalid-credential") {
+        toast.error(
+          "Invalid credentials",
+          "Please check your email and password.",
+        );
       } else if (error.code === "auth/network-request-failed") {
         toast.error(
           "Login failed",

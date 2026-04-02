@@ -1,13 +1,13 @@
 "use client";
 
 import React, { useEffect } from "react";
-import MaterialIcon from "./MaterialIcon"
+import MaterialIcon from "./MaterialIcon";
 import { X } from "lucide-react";
 
 type ToastProps = {
   id: string;
   message: string;
-  type: "success" | "error" | "info";
+  type: "success" | "error" | "info" | "warning";
   onClose: (id: string) => void;
   description?: string;
   duration?: number;
@@ -25,19 +25,24 @@ const Toast = ({
     success: "glow-success border text-green-600 shadow-md",
     error: "glow-error border text-red-600 shadow-md",
     info: "glow-info border text-blue-600 shadow-md",
+    warning: "glow-warning border text-amber-600 shadow-md",
   };
 
   const iconContainerStyles = {
     success: "bg-green-500/10 text-green-600",
     error: "bg-red-500/20 text-red-600",
     info: "bg-blue-500/10 text-blue-600",
+    warning: "bg-amber-500/10 text-amber-600",
   };
 
- const IconMap = {
-  success: <MaterialIcon name="check_circle" className="text-green-400" fill/>,
-  error: <MaterialIcon name="error" className="text-red-400" fill/>,
-  info: <MaterialIcon name="info" className="text-blue-400" fill/>,
-};
+  const IconMap = {
+    success: (
+      <MaterialIcon name="check_circle" className="text-green-400" fill />
+    ),
+    error: <MaterialIcon name="error" className="text-red-400" fill />,
+    info: <MaterialIcon name="info" className="text-blue-400" fill />,
+    warning: <MaterialIcon name="info" className="text-amber-400" fill />,
+  };
 
   const Icon = IconMap[type];
 
@@ -58,7 +63,7 @@ const Toast = ({
         <div
           className={`p-2 rounded-full flex items-center justify-center ${iconContainerStyles[type]}`}
         >
-           {IconMap[type]}
+          {IconMap[type]}
         </div>
 
         <div className="flex flex-col gap-1">

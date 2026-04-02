@@ -11,4 +11,7 @@ export const toast = {
 
   info: (message: string, description?: string) =>
     useToastStore.getState().addToast({ message, description, type: "info" }),
+
+  warning: (message: string, description?: string) =>
+    useToastStore.getState().addToast({ message, description, type: "warning" }),
 };

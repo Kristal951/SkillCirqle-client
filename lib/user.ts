@@ -11,7 +11,13 @@ export const saveUserToDB = async (user: any) => {
       email: user.email,
       name: user.displayName || "",
       createdAt: new Date(),
-      hasOnboarded: false
+      hasOnboarded: false,
+      onboardingStep: 0,
+      wallet: {
+        skillTokens: 0,
+        totalEarned: 0,
+        lastDailyReward: null,
+      },
     });
   }
 };

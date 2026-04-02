@@ -1,15 +1,17 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { usePathname } from "next/navigation"; // Add this
+import { usePathname, useRouter } from "next/navigation";
 import { useAuthStore } from "@/store/useAuthStore";
-import { apiFetch } from "@/lib/api";
+import { useAuthFetch } from "./useAuthFetch";
 
 export const useAuthHydrate = () => {
   const setUser = useAuthStore((s) => s.setUser);
   const setLoading = useAuthStore((s) => s.setLoading);
-  const pathname = usePathname(); // Get current route
+  const pathname = usePathname();
   const hydrated = useRef(false);
+  const router = useRouter();
+  const { authFetch } = useAuthFetch();
 
   useEffect(() => {
     const isAuthPage = pathname.startsWith("/auth");
@@ -23,7 +25,7 @@ export const useAuthHydrate = () => {
 
     const hydrate = async () => {
       try {
-        const res = await apiFetch("/api/auth/profile");
+        const res = await authFetch("/api/auth/profile");
         const data = await res.json();
         setUser(data.user);
       } catch (err: any) {

@@ -2,7 +2,7 @@ import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { saveUserToDB } from "@/lib/user";
 import { signInWithEmailAndPassword } from "firebase/auth";
-import { apiFetch } from "./api";
+import { apiFetch } from "./apiFetch";
 
 export const signUpWithEmail = async (
   name: string,

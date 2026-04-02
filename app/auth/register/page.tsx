@@ -4,6 +4,7 @@ import { signUpWithEmail } from "@/lib/auth";
 import { toast } from "@/lib/toast";
 import { Lock, Mail, User, Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import React, { useState } from "react";
 
 const InputField = ({
@@ -50,6 +51,7 @@ const SignUp = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -61,8 +63,10 @@ const SignUp = () => {
       return;
     }
     try {
-   await signUpWithEmail(name, email, password);
-   
+      const res = await signUpWithEmail(name, email, password);
+      toast.success(`Hi ${res.displayName}!`, "Welcome to the Cirqle.");
+
+      router.replace("/onboarding");
     } catch (error: any) {
       console.error(error);
       if (error.code === "auth/email-already-in-use") {
