@@ -3,14 +3,12 @@ import React, { useState, useEffect } from "react";
 import { ArrowRight, BadgeCheck, Coins, User } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/store/useAuthStore";
-import { useTokenStore } from "@/store/useTokenStore";
 import Confetti from "react-confetti";
 import Link from "next/link";
 
 const OnboardingCompleted = () => {
   const router = useRouter();
   const { user } = useAuthStore();
-  const { tokens } = useTokenStore();
 
   const [displayTokens, setDisplayTokens] = useState(0);
   const [showConfetti, setShowConfetti] = useState(true);

@@ -11,7 +11,6 @@ export const useAuthHydrate = () => {
   const setLoading = useAuthStore((s) => s.setLoading);
   const pathname = usePathname();
   const hydrated = useRef(false);
-  const router = useRouter();
   const { authFetch } = useAuthFetch();
   const { setTokens } = useTokenStore();
 
@@ -29,6 +28,7 @@ export const useAuthHydrate = () => {
       try {
         const res = await authFetch("/api/auth/profile");
         const data = await res.json();
+        console.log(data, 'hydrate')
         setUser(data.user);
         setTokens(data.user.wallet.skillTokens);
       } catch (err: any) {

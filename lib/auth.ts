@@ -11,7 +11,7 @@ export const signUpWithEmail = async (
 ) => {
   const res = await createUserWithEmailAndPassword(auth, email, password);
 
-  await updateProfile(res.user, { displayName: name });
+  const updateres = await updateProfile(res.user, { displayName: name });
 
   await saveUserToDB(res.user);
 

@@ -48,11 +48,11 @@ const About = () => {
   const isFormValid = bio.trim().length >= 10 && location.trim() && role.trim();
 
   return (
-    <div className="min-h-[90vh] w-full flex items-center justify-center bg-background px-6 py-12 selection:bg-primary/30">
-      <div className="w-full max-w-6xl grid lg:grid-cols-5 gap-16 items-start">
-        <div className="space-y-8 text-center col-span-2 lg:text-left lg:sticky lg:top-12">
+    <div className="min-h-[90vh] md:h-full w-full flex items-center md:overflow-hidden justify-center bg-background md:px-6 px-4 py-12 selection:bg-primary/30">
+      <div className="w-full max-w-6xl grid lg:grid-cols-5 gap-16 md:items-start place-items-center">
+        <div className="space-y-8 text-center col-span-3 md:col-span-2 lg:text-left lg:sticky lg:top-12">
           <div className="space-y-4">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-bold uppercase tracking-widest border border-primary/20">
+            <div className="hidden lg:inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-bold uppercase tracking-widest border border-primary/20">
               Step 02 • Identity
             </div>
 
@@ -86,7 +86,7 @@ const About = () => {
 
         <form
           onSubmit={handleSubmit}
-          className="bg-surface-2 rounded-xl col-span-3 p-8 md:p-10 shadow-2xl space-y-8"
+          className="bg-surface-2 rounded-xl col-span-3 p-4 md:p-10 shadow-2xl space-y-8"
         >
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
@@ -148,11 +148,11 @@ const About = () => {
               type="submit"
               disabled={!isFormValid || isUpdatingUser}
               className={`
-              flex-1 py-3 rounded-md text-xl group flex disabled:opacity-50 disabled:cursor-not-allowed items-center justify-center gap-3 transition-all duration-300
+              flex-1 md:py-3 py-2 rounded-md text-lg group flex disabled:opacity-50 disabled:cursor-not-allowed items-center justify-center md:gap-3 gap-2 transition-all duration-300
               ${
                 isFormValid
                   ? "bg-primary text-white hover:scale-[1.01]"
-                  : "bg-white/5 text-white/20 cursor-not-allowed border border-white/5"
+                  : "bg-white/5 text-white/80 cursor-not-allowed border border-white/5"
               }
             `}
             >

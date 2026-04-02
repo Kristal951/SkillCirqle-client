@@ -14,7 +14,7 @@ const Header = () => {
       <h1 className="text-2xl font-semibold text-white">SkillCirqle</h1>
 
       {safeStep > 0 ? (
-        <div className="flex items-center gap-4">
+        <div className="md:flex hidden items-center gap-4">
           <span className="text-sm text-gray-400">
             Step <span className="font-bold text-white">{step}</span> of{" "}
             {totalSteps}
