@@ -5,27 +5,29 @@
 ========================= */
 :root {
   /* Base */
-  --color-background-base: #ffffff; /* Main app background */
-  --color-surface-1: #f1f5f9; /* Cards / sections (soft gray) */
-  --color-surface-2: #e2e8f0; /* Elevated elements / hover */
-  --color-surface-container: #ffffff; /* Containers (forms, modals) */
-  --color-overlay: rgba(15, 23, 42, 0.05); /* Subtle dark overlay */
+  --color-background-base: #ffffff;
+  --color-surface-1: #f5f5f5;
+  --color-surface-2: #eaeaea;
+  --color-surface-container: #1f182a;
+  --color-overlay: rgba(0, 0, 0, 0.05);
 
-  --color-text-primary: #0f172a; /* Strong, readable (slate-900 vibe) */
-  --color-text-secondary: #475569; /* Muted but still readable */
-  --color-text-accent: #f4a862; /* Warm accent (amber) */
-  --color-text-surface: #94a3b8; /* For subtle UI text on surfaces */
-  --color-text-white: #ffffff;
+  /* Text */
+  --color-text-primary: #171717;
+  --color-text-secondary: #8A90A0;
+  --color-text-accent: #f4a862;
+  --color-text-surface: #ccc3d5;
 
   /* Brand */
-  --color-primary: #6f42c1;
+  --color-primary: rgb(119, 65, 195);
   --color-primary-light: #b19cd9;
   --color-accent: #f4a862;
+  --color-primary-foreground: #ffffff;
+  --color-surface: #F3F0FB;
 
   /* Feedback */
   --color-success: #16a34a;
   --color-warning: #f59e0b;
-  --color-error: #dc2626;
+  --color-error: #dc2626; 
 
   /* UI */
   --color-divider: rgba(0, 0, 0, 0.1);
@@ -39,7 +41,7 @@
    DARK THEME
 ========================= */
 .dark {
-  --color-background-base: #161021;
+  --color-background-base: rgb(14, 11, 25);
   --color-surface-1: #1c142b;
   --color-surface-2: #241a36;
   --color-surface-container: #1f182a;
@@ -57,6 +59,9 @@
   --color-primary: #7741c3;
   --color-primary-light: #a463f2;
   --color-accent: #f4a862;
+  --color-primary-foreground: #ffffff;
+  --color-surface: #2A1F4A;
+  /* --color-card: #1d0fe3; */
 
   --color-success: #2ecc71;
   --color-warning: #f1c40f;
@@ -89,6 +94,8 @@
   --color-primary: var(--color-primary);
   --color-primary-light: var(--color-primary-light);
   --color-accent: var(--color-accent);
+  --color-primary-foreground: var( --color-primary-foreground);
+  --color-surface: var(--color-surface);
 
   --color-success: var(--color-success);
   --color-warning: var(--color-warning);
@@ -102,7 +109,7 @@
 ========================= */
 body {
   background: var(--color-background-base);
-  color: var(--color-text-text-primary);
+  color: var(--color-text-primary);
   font-family: Arial, Helvetica, sans-serif;
   margin: 0;
 }

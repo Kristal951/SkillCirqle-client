@@ -37,9 +37,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <Providers>{children}</Providers>
-        {/* Todo: <div className="fixed bottom-4 right-4 z-50">
-          <ThemeToggle />
-        </div> */}
+        
       </body>
     </html>
   );

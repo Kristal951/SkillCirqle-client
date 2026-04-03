@@ -30,7 +30,7 @@ const InputField = ({
         placeholder={placeholder}
         value={value}
         onChange={onChange}
-        className="w-full bg-background focus:border-primary focus:ring-2 focus:ring-primary/80 outline-none py-3 pl-10 pr-10 rounded-md transition text-sm sm:text-base"
+        className="w-full bg-surface md:bg-background focus:border-primary focus:ring-2 focus:ring-primary/80 outline-none py-3 pl-10 pr-10 rounded-md transition text-sm sm:text-base"
       />
 
       {isPassword && (
@@ -103,7 +103,7 @@ const SignIn = () => {
 
   return (
     <div className="min-h-screen w-full flex items-center justify-center bg-background px-4 sm:px-6 lg:px-8 py-6">
-      <div className="w-full max-w-6xl grid bg-surface-1 rounded-xl shadow-lg grid-cols-1 md:grid-cols-2 overflow-hidden">
+      <div className="w-full max-w-6xl grid md:bg-surface rounded-xl md:shadow-lg grid-cols-1 md:grid-cols-2 overflow-hidden">
         <div className="hidden md:block relative">
           <img
             src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f"
@@ -119,8 +119,8 @@ const SignIn = () => {
               <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight">
                 Welcome Back 👋
               </h1>
-              <p className="text-sm sm:text-base text-text-surface">
-                Sign in to continue cirqling.
+              <p className="text-sm sm:text-base text-text-secondary">
+                Sign in to your account.
               </p>
             </div>
 
@@ -165,7 +165,7 @@ const SignIn = () => {
 
             <div className="flex items-center gap-3">
               <div className="flex-1 h-px bg-text-secondary" />
-              <span className="text-xs sm:text-sm text-gray-400">
+              <span className="text-xs sm:text-sm text-text-secondary">
                 or continue with
               </span>
               <div className="flex-1 h-px bg-text-secondary" />
@@ -173,7 +173,7 @@ const SignIn = () => {
 
             <button
               onClick={handleGoogleSignIn}
-              className="w-full flex items-center justify-center gap-3 p-3 rounded-md bg-background cursor-pointer hover:bg-white/10 transition text-sm sm:text-base"
+              className="w-full flex items-center justify-center gap-3 p-3 rounded-md bg-surface md:bg-background cursor-pointer hover:bg-white/10 transition text-sm sm:text-base"
             >
               <img
                 src="https://www.svgrepo.com/show/475656/google-color.svg"

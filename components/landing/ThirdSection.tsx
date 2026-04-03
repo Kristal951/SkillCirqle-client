@@ -13,19 +13,19 @@ const ThirdSection = () => {
           />
         </div>
         <div className="relative z-10">
-          <span className="bg-primary/20 text-text-primary px-3 py-1 rounded-full text-xs font-bold tracking-widest uppercase mb-4 inline-block">
+          <span className="bg-primary/50 text-primary-foreground px-3 py-1 rounded-full text-xs font-bold tracking-widest uppercase mb-4 inline-block">
             Featured Domain
           </span>
-          <h4 className="text-4xl text-text-white font-headline font-extrabold mb-4">
+          <h4 className="text-4xl text-surface font-headline font-extrabold mb-4">
             Cybersecurity Architecture
           </h4>
-          <p className="text-text-surface max-w-md">
+          <p className="text-text-secondary max-w-md">
             Master the art of digital defense through direct mentorship from
             senior security engineers.
           </p>
         </div>
       </div>
-      <div className="md:col-span-2 bg-surface-container-high p-8 rounded-2xl flex items-center justify-between group">
+      <div className="md:col-span-2 bg-surface p-8 rounded-2xl flex items-center justify-between group">
         <div>
           <h4 className="text-2xl font-headline font-bold mb-2">
             Skill Gauges
@@ -37,7 +37,7 @@ const ThirdSection = () => {
         <div className="relative w-24 h-24">
           <svg className="w-full h-full transform -rotate-90">
             <circle
-              className="text-surface-container-highest"
+              className="text-text-secondary"
               cx="48"
               cy="48"
               fill="transparent"
@@ -63,7 +63,7 @@ const ThirdSection = () => {
         </div>
       </div>
 
-      <div className="md:col-span-1 p-8 bg-surface-container rounded-2xl">
+      <div className="md:col-span-1 p-8 bg-surface rounded-2xl">
         <span
           className="material-symbols-outlined text-secondary text-4xl mb-4"
           data-icon="groups"
@@ -75,7 +75,7 @@ const ThirdSection = () => {
           24/7 active hubs for rapid problem solving.
         </p>
       </div>
-      <div className="md:col-span-1 bg-surface-container p-8 rounded-2xl flex flex-col justify-between">
+      <div className="md:col-span-1 bg-surface p-8 rounded-2xl flex flex-col justify-between">
         <span
           className="material-symbols-outlined text-secondary text-4xl"
           data-icon="verified"

@@ -26,7 +26,7 @@ const SecondSection = () => {
   ];
 
   return (
-    <section className="w-full py-20 px-4 sm:px-6 md:px-10 bg-surface-1">
+    <section className="w-full py-20 h-full px-4 sm:px-6 md:px-10">
       <div className="max-w-7xl mx-auto flex flex-col gap-16 md:gap-20">
         
         <div className="flex flex-col gap-4 text-center md:text-left">
@@ -43,9 +43,9 @@ const SecondSection = () => {
           {cardDetails.map((card, i) => (
             <div
               key={i}
-              className="group relative overflow-hidden bg-surface-2 p-6 sm:p-8 md:p-10 rounded-2xl transition-all duration-300 hover:shadow-lg"
+              className="group relative overflow-hidden bg-surface p-6 sm:p-8 md:p-10 rounded-2xl transition-all duration-300 hover:shadow-lg shadow-primary/20"
             >
-              <span className="absolute top-4 right-6 text-5xl sm:text-6xl font-black text-text-primary/10 group-hover:text-text-primary/20 transition">
+              <span className="absolute top-4 right-6 text-5xl sm:text-6xl font-black text-primary/30 group-hover:text-primary transition">
                 {card.number}
               </span>
 

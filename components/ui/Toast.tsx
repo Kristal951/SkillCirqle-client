@@ -36,9 +36,7 @@ const Toast = ({
   };
 
   const IconMap = {
-    success: (
-      <MaterialIcon name="check_circle" className="text-green-400" fill />
-    ),
+    success: <MaterialIcon name="check_circle" className="text-green-400" fill />,
     error: <MaterialIcon name="error" className="text-red-400" fill />,
     info: <MaterialIcon name="info" className="text-blue-400" fill />,
     warning: <MaterialIcon name="info" className="text-amber-400" fill />,
@@ -57,13 +55,14 @@ const Toast = ({
   return (
     <div
       role="alert"
-      className={`bg-background p-3 rounded-md flex flex-col w-screen justify-between gap-3 ${styles[type]}`}
+      aria-live="assertive"
+      className={`bg-background p-3 rounded-md flex flex-col justify-between gap-3 ${styles[type]}`}
     >
       <div className="flex items-start sm:items-center gap-3 w-full">
         <div
           className={`p-2 rounded-full flex items-center justify-center shrink-0 ${iconContainerStyles[type]}`}
         >
-          {IconMap[type]}
+          {Icon}
         </div>
 
         <div className="flex flex-col gap-1 min-w-0">

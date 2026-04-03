@@ -10,7 +10,7 @@ const Header = () => {
   const progress = safeTotal ? (safeStep / safeTotal) * 100 : 0;
 
   return (
-    <div className="w-full bg-background md:flex z-100 fixed justify-between items-center shadow-[0_2px_8px_rgba(0,0,0,0.08)] border-b border-gray-800 px-6 py-4">
+    <div className="w-full bg-background flex justify-between items-center px-6 py-4">
       <h1 className="text-2xl font-semibold text-white">SkillCirqle</h1>
 
       {safeStep > 0 ? (
