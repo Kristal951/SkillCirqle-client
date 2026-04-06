@@ -15,7 +15,7 @@ interface AuthState {
   isUploadingProfilePic: boolean;
   isHydrated: boolean;
 
-  setHydrated: () => void;
+  setHydrated: (isHydated: boolean) => void;
   setUser: (user: User | null) => void;
   setLoading: (loading: boolean) => void;
   setIsUpdatingUser: (isUpdatingUser: boolean) => void;
@@ -38,7 +38,7 @@ export const useAuthStore = create<AuthState>()(
       isUploadingProfilePic: false,
       isHydrated: false,
 
-      setHydrated: () => set({ isHydrated: true }),
+      setHydrated: (isHydated) => set({ isHydrated: true }),
 
       setUser: (user) => set({ user }),
       setLoading: (loading) => set({ loading }),
@@ -126,7 +126,7 @@ export const useAuthStore = create<AuthState>()(
     {
       name: "auth-storage",
       onRehydrateStorage: () => (state) => {
-        state?.setHydrated();
+        state?.setHydrated(true);
       },
     },
   ),

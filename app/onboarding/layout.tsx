@@ -69,7 +69,7 @@ export default function OnboardingLayout({
     <div className="h-screen w-full flex items-center justify-center">
       <div className="flex h-full w-full flex-col">
         <Header />
-        <div className="pt-[90px] w-full">
+        <div className="pt-22.5 w-full">
           <MobileStepper />
         </div>
 

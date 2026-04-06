@@ -17,9 +17,6 @@ export default function Providers({ children }: { children: React.ReactNode }) {
     <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
       <ToastContainer />
       <Analytics/>
-      <div className="fixed bottom-4 right-4 z-50">
-          <ThemeToggle />
-        </div>
       {children}
     </ThemeProvider>
   );

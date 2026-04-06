@@ -13,7 +13,7 @@ export default function Home() {
         <FirstSection />
       </section>
 
-      <section className="relative w-full py-20">
+      <section id="how-it-works" className="relative w-full md:pb-20">
         <SecondSection />
       </section>
 

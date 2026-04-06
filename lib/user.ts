@@ -13,6 +13,8 @@ export const saveUserToDB = async (user: any) => {
       createdAt: new Date(),
       hasOnboarded: false,
       onboardingStep: 0,
+      exchanges: 0,
+      rating: 0,
       wallet: {
         skillTokens: 0,
         totalEarned: 0,

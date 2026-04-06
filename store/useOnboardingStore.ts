@@ -4,7 +4,7 @@ import { create } from "zustand";
 
 export const useOnboardingStore = create<OnboardingState>((set) => ({
   step: null,
-  totalSteps: 4,
+  totalSteps: 3,
   hasOnboarded: false,
   isLoadingStep: false,
 

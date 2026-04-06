@@ -4,8 +4,10 @@ import { db } from "@/lib/firebase";
 import { getSessionUser } from "@/lib/server-auth";
 
 export async function GET(req: NextRequest) {
+  console.log('/auth/profile hit')
   try {
     const user = await getSessionUser(req);
+    console.log(user, 'user')
 
     if (!user) {
       return NextResponse.json(
@@ -15,6 +17,7 @@ export async function GET(req: NextRequest) {
     }
     const ref = doc(db, "users", user.uid);
     const snap = await getDoc(ref);
+    console.log(snap, 'snap')
 
     let userData = null;
 
