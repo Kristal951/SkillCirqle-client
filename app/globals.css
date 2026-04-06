@@ -5,26 +5,18 @@
 ========================= */
 :root {
   /* Base */
-  --color-background-base: #ffffff;
-  --color-surface-1: #f5f5f5;
-  --color-surface-2: #eaeaea;
-  --color-surface-container: #1f182a;
-  --color-overlay: rgba(0, 0, 0, 0.05);
-  --color-border: rgb(238, 231, 249);
+  --color-background-base: #F5F0FF;
+  --color-border: rgba(108, 63, 197, 0.25);
 
   /* Text */
-  --color-text-primary: #171717;
-  --color-text-secondary: #8a90a0;
-  --color-text-accent: #f4a862;
-  --color-text-surface: #ccc3d5;
+  --color-text-primary: #1A1A2E;
+  --color-text-secondary: #9CA3AF;
+  --color-text-accent: #F4A261;
 
   /* Brand */
-  --color-primary: rgb(119, 65, 195);
-  --color-primary-light: #b19cd9;
-  --color-accent: #f4a862;
-  --color-primary-foreground: #ffffff;
-  --color-foreground: #18182f;
-  --color-surface: #f3f0fb;
+  --color-primary: #6C3FC5;
+  --color-accent: #F4A261;
+  --color-surface: #ffffff;
 
   /* Feedback */
   --color-success: #16a34a;
@@ -43,28 +35,16 @@
    DARK THEME
 ========================= */
 .dark {
-  --color-background-base: rgb(14, 11, 25);
-  --color-surface-1: #1c142b;
-  --color-surface-2: #241a36;
-  --color-surface-container: #1f182a;
-  --color-surface-container-2: #231c2e;
-  --color-surface-container-lowest: #110b1c;
-  --color-surface-container-high: #2d2739;
-  --color-overlay: #161021b3;
-  --color-border: #7741c340;
+  --color-background-base: #0d0b1a;
+ --color-border: rgba(108, 63, 197, 0.25);
 
-  --color-text-primary: #d3bbff;
-  --color-text-secondary: #eadef799;
-  --color-text-accent: #f4a862;
-  --color-text-surface: #ccc3d5;
-  --color-text-white: #ffffff;
+  --color-text-primary: #ffffff;
+  --color-text-secondary: #6B7280;
+  --color-text-accent: #F4A261;
 
-  --color-primary: #7741c3;
-  --color-primary-light: #a463f2;
-  --color-accent: #f4a862;
-  --color-primary-foreground: #ffffff;
+  --color-primary: #6c3fc5;
+  --color-accent: #F4A261;
   --color-surface: #2a1f4a;
-  --color-foreground: #ffffff;
   /* --color-card: #1d0fe3; */
 
   --color-success: #2ecc71;
@@ -82,24 +62,14 @@
 ========================= */
 @theme {
   --color-background: var(--color-background-base);
-  --color-surface-1: var(--color-surface-1);
-  --color-surface-2: var(--color-surface-2);
-  --color-surface-container: var(--color-surface-container);
-  --color-surface-container-2: var(--color-surface-container-2);
-  --color-surface-container-lowest: var(--color-surface-container-lowest);
-  --color-surface-container-high: var(--color-surface-container-high);
   --color-border: var(--color-border);
 
   --color-text-primary: var(--color-text-primary);
   --color-text-secondary: var(--color-text-secondary);
   --color-text-accent: var(--color-text-accent);
-  --color-text-surface: var(--color-text-surface);
-  --color-text-white: var(--color-text-white);
 
   --color-primary: var(--color-primary);
-  --color-primary-light: var(--color-primary-light);
   --color-accent: var(--color-accent);
-  --color-primary-foreground: var(--color-primary-foreground);
   --color-foreground: var(--color-foreground);
   --color-surface: var(--color-surface);
 
