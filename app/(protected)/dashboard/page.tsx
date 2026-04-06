@@ -13,6 +13,7 @@ import {
   Gift,
   ArrowRight,
 } from "lucide-react";
+import { useTheme } from "next-themes";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -124,7 +125,7 @@ export default function Dashboard() {
       <section className="relative w-full p-4 md:p-10 bg-primary rounded-md overflow-hidden">
         <div className="relative z-10 flex flex-col gap-8 text-primary-foreground">
           <div>
-            <h1 className="text-3xl md:text-4xl font-bold">
+            <h1 className="text-3xl md:text-4xl text-white font-bold">
               What will you master today?
             </h1>
             <p className="text-white/70 max-w-lg">
@@ -155,7 +156,7 @@ export default function Dashboard() {
 
         <div className="flex gap-6 overflow-x-auto pb-4 scrollbar-hide">
           {dummySkillData.map((info, i) => (
-            <div key={i} className="min-w-75 hover:shadow-xl transition">
+            <div key={i} className="min-w-75 transition">
               <SkillCard info={info} />
             </div>
           ))}
@@ -211,16 +212,17 @@ export default function Dashboard() {
 }
 
 function ActivityRow({ title, sub, icon, hideChevron = false }: any) {
+    const {theme} = useTheme()
   return (
-    <div className="p-4 rounded-xl bg-surface flex justify-between items-center hover:border hover:border-primary transition">
+    <div className={`p-4 rounded-xl bg-surface ${theme === 'light' ? 'border border-border' : ''} flex justify-between items-center hover:border hover:border-border transition`}>
       <div className="flex gap-3 items-center">
         <div className="w-10 h-10 bg-secondary flex items-center justify-center rounded-lg">
           <span className="material-symbols-outlined">{icon}</span>
         </div>
 
         <div>
-          <h3 className="text-sm font-medium">{title}</h3>
-          <p className="text-xs text-muted-foreground">{sub}</p>
+          <h3 className="text-sm text-text-primary font-medium">{title}</h3>
+          <p className="text-xs text-text-secondary">{sub}</p>
         </div>
       </div>
 
