@@ -56,7 +56,7 @@ const Toast = ({
     <div
       role="alert"
       aria-live="assertive"
-      className={`bg-background p-3 rounded-md flex flex-col justify-between gap-3 ${styles[type]}`}
+      className={`bg-background p-3 rounded-md flex justify-between gap-3 ${styles[type]}`}
     >
       <div className="flex items-start sm:items-center gap-3 w-full">
         <div

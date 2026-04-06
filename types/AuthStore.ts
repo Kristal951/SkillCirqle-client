@@ -11,6 +11,8 @@ export interface User {
   role: string;
   skillsToTeach: string[];
   skillsToLearn: string[];
+  exchanges: number;
+  rating: number;
   wallet: {
     skillTokens: number;
     totalEarned: number;

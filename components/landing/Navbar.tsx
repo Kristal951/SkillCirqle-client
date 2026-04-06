@@ -8,7 +8,7 @@ const Navbar = () => {
   const [open, setOpen] = useState(false);
 
   return (
-    <nav className="fixed top-0 left-0 w-full h-20 z-50 bg-background-base/80 backdrop-blur-md border-b border-divider">
+    <nav className="fixed top-0 left-0 w-full h-16 z-50 bg-background-base/80 backdrop-blur-md border-b border-divider">
       <div className="w-full mx-auto h-full px-4 sm:px-6 flex items-center justify-between">
         <div className="flex items-center gap-2 cursor-pointer">
           <div className="w-8 h-8 bg-primary rounded-lg rotate-12 transition-transform duration-300" />

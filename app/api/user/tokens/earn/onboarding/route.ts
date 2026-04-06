@@ -19,7 +19,7 @@ export async function POST(req: NextRequest) {
 
     const result = await awardTokens({
       userId: user.uid,
-      amount: 10,
+      amount: 3,
       reason: "onboarding_reward",
     });
 

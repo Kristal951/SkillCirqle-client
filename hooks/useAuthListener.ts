@@ -20,20 +20,37 @@ export const useAuthListener = () => {
           setUser(null);
           return;
         }
-        console.log(firebaseUser, 'firebase')
 
         const baseUser = mapFirebaseUserToAppUser(firebaseUser);
 
         const res = await fetch(`/api/auth/profile`);
-        const dbUser = await res.json();
+        const user = await res.json();
+        const dbUser = user.user;
 
         const fullUser: User = {
-          ...baseUser,
-          ...dbUser,
+          uid: baseUser.uid || "",
+          email: baseUser.email || "",
+          name: baseUser.name || "",
+          hasOnboarded: dbUser?.hasOnboarded || false,
+          onboardingStep: dbUser?.onboardingStep,
+          createdAt: dbUser?.createdAt,
+          avatarUrl: dbUser?.avatarUrl,
+          bio: dbUser?.bio,
+          location: dbUser?.location,
+          role: dbUser?.role,
+          skillsToTeach: dbUser?.skillsToTeach,
+          skillsToLearn: dbUser?.skillsToLearn,
+          wallet: {
+            skillTokens: dbUser?.wallet?.skillTokens,
+            totalEarned: dbUser?.wallet?.totalEarned,
+            lastDailyReward: null,
+          },
+          exchanges: 0,
+          rating: 0
         };
 
         setUser(fullUser);
-        console.log(fullUser, 'full')
+        console.log(fullUser, "full");
       } catch (err) {
         console.error("Auth listener error:", err);
         setUser(null);
