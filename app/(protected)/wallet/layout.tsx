@@ -1,5 +1,5 @@
 
-export default function ProfileLayout({
+export default function WalletLayout({
   children,
 }: {
   children: React.ReactNode;

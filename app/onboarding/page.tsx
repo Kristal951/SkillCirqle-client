@@ -10,19 +10,17 @@ import {
 } from "lucide-react";
 import { useOnboardingNavigation } from "@/lib/onboarding";
 import Spinner from "@/components/ui/Spinner";
-import Header from "@/components/onboarding/Header";
 
 const Onboarding = () => {
   const { user } = useAuthStore();
-  console.log(user)
-  const firstName = user?.name?.split(" ")[0] || "User";
+  const firstName = user?.user_metadata?.username?.split(" ")[0] || "User";
   const { handleMoveToNextOnboardingStep, loading, error } =
     useOnboardingNavigation();
 
   return (
-    <div className="relative w-full h-screen flex py-4 md:py-0 items-center flex-col bg-background md:px-6 px-4 overflow-y-scroll md:overflow-hidden">
+    <div className="relative w-full h-full flex py-4 md:py-0 items-center flex-col bg-background md:px-6 px-4 overflow-y-scroll md:overflow-hidden">
       <div className="relative w-full md:h-full justify-center items-center md:max-w-5xl grid grid-cols-1 md:grid-cols-12 gap-4 transition-all duration-700 ease-out">
-        <div className=" md:col-span-8 bg-background backdrop-blur-xl border border-white/10 rounded-[40px] p-8 md:p-14 md:flex flex-col justify-between overflow-hidden relative">
+        <div className=" md:col-span-8 bg-background backdrop-blur-xl border border-white/10 rounded-[40px] p-8 md:p-24 md:flex flex-col justify-between overflow-hidden relative">
           <div className="relative z-10">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 mb-6">
               <User className="w-3 h-3 text-blue-400 fill-blue-400" />
@@ -55,10 +53,10 @@ const Onboarding = () => {
               <Coins className="w-8 h-8 text-text-accent" />
             </div>
             <h3 className="text-white text-2xl font-bold mb-1">
-              +10 Skill Tokens
+              +3 Skill Tokens
             </h3>
             <p className="text-blue-100 text-xs opacity-80">
-              Get 10 skill tokens as a welcome gift after completing profile to
+              Get 3 skill tokens as a welcome gift after completing profile to
               kickstart your learning journey!
             </p>
           </div>

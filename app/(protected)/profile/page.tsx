@@ -71,31 +71,31 @@ const ProfilePage = () => {
   };
 
   return (
-    <section className="relative mb-12 w-full px-4 h-full py-6">
+    <section className="relative mb-12 w-full md:px-4  h-full flex flex-col py-6">
       <div className="flex flex-col md:flex-row items-center md:items-end gap-8">
         <div className="w-full flex flex-col">
           <div className="lg:flex flex flex-col lg:flex-row h-max md:items-end md:justify-between">
             <div className="flex flex-col lg:flex-row lg:flex items-center w-full justify-center md:justify-start gap-5">
               <div className="w-40 h-40 group rounded-full border-primary border-2 bg-primary/20 overflow-hidden flex items-center justify-center text-primary font-semibold">
-                {user?.avatarUrl ? (
+                {user?.avatar_url ? (
                   <img
-                    src={user?.avatarUrl}
+                    src={user?.avatar_url}
                     alt="Profile Image"
                     className="w-full group-hover:scale-110 transition-all h-full object-cover"
                   />
                 ) : (
                   <div>
-                    {user?.avatarUrl || user?.name?.[0]?.toUpperCase() || "U"}
+                    {user?.avatar_url || user?.name?.[0]?.toUpperCase() || "U"}
                   </div>
                 )}
               </div>
-              <div className="h-full flex flex-col items-center md:items-start md:w-max justify-between gap-2">
+              <div className="h-full flex flex-col items-center md:items-center lg:items-start md:w-max justify-between gap-2">
                 <h2
-                  className={`text-5xl font-bold ${theme === "light" ? "text-primary" : "text-white"}`}
+                  className={`text-5xl font-bold  lg:text-left  ${theme === "light" ? "text-primary" : "text-white"}`}
                 >
                   {user?.name}
                 </h2>
-                <p className="max-w-lg text-lg text-center md:text-left leading-relaxed text-text-secondary">
+                <p className="max-w-lg text-lg text-center md:text-center lg:text-left leading-relaxed text-text-secondary">
                   {user?.bio}
                 </p>
               </div>
@@ -162,46 +162,48 @@ const ProfilePage = () => {
         </div>
       </div>
 
-      <div className=" p-4 md:hidden grid grid-cols-3 rounded-md bg-surface items-center">
-        {statCardData.map((info, i) => (
-          <div className="colo-span-1 border-r border-border" key={i}>
-            <div className="flex w-full flex-col items-center justify-center">
-              <h2 className="text-[10px] uppercase tracking-wider font-semibold">
-                {info.title}
-              </h2>
+      <div className="w-full px-4 md:hidden">
+        <div className=" p-4 grid grid-cols-3 rounded-md bg-surface mt-6 mb-6 place-content-center">
+          {statCardData.map((info, i) => (
+            <div className="colo-span-1 border-r border-border" key={i}>
+              <div className="flex w-full flex-col items-center justify-center">
+                <h2 className="text-[10px] uppercase tracking-wider font-semibold">
+                  {info.title}
+                </h2>
+                <p className="text-xl font-bold">
+                  {" "}
+                  {info.title === "Rating"
+                    ? (info?.value ?? 0).toFixed(2)
+                    : (info.value ?? 0)}
+                </p>
+              </div>
+            </div>
+          ))}
+          <div className="col-span-1">
+            <div className="w-full flex items-center flex-col justify-center">
+              <h3 className="text-[10px] uppercase tracking-wider font-semibold">
+                Tokens
+              </h3>
               <p className="text-xl font-bold">
                 {" "}
-                {info.title === "Rating"
-                  ? (info?.value ?? 0).toFixed(2)
-                  : (info.value ?? 0)}
+                {user?.wallet?.skillTokens || 0}
               </p>
             </div>
-          </div>
-        ))}
-        <div className="col-span-1">
-          <div className="w-full flex items-center flex-col justify-center">
-            <h3 className="text-[10px] uppercase tracking-wider font-semibold">
-              Tokens
-            </h3>
-            <p className="text-xl font-bold">
-              {" "}
-              {user?.wallet?.skillTokens || 0}
-            </p>
           </div>
         </div>
       </div>
 
-      <div className=" grid lg:grid-cols-3 gap-8 ">
+      <div className=" w-full grid lg:grid-cols-3 gap-8">
         <div className="col-span-2 grid gap-8">
           <SkillsCard
             title="Skills i can teach"
-            skills={user?.skillsToTeach || []}
+            skills={user?.skills_to_teach || []}
             icon="psychology"
             color="primary"
           />
           <SkillsCard
             title="Skills i want to learn"
-            skills={user?.skillsToLearn || []}
+            skills={user?.skills_to_learn || []}
             icon="school"
             color="accent"
           />

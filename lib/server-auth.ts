@@ -1,38 +1,21 @@
-import { NextRequest } from "next/server";
-import { adminAuth, adminDB } from "./firebaseAdmin";
+import { createSupabaseServer } from "./supabaseServer";
 
-export const getServerUser = async (req: NextRequest) => {
-  const session = req.cookies.get("session")?.value;
-
-  if (!session) {
-    return null; 
-  }
-
+export async function getServerUser() {
   try {
-    const decoded = await adminAuth.verifySessionCookie(session, true);
-    return decoded;
-  } catch {
+    const supabase = await createSupabaseServer();
+
+    const {
+      data: { user },
+      error,
+    } = await supabase.auth.getUser();
+
+    if (error || !user) {
+      return null;
+    }
+
+    return user;
+  } catch (error) {
+    console.error("getServerUser error:", error);
     return null;
   }
-};
-
-export const getSessionUser = async (req: NextRequest) => {
-  const session = req.cookies.get("session")?.value;
-  if (!session) return null;
-
-  try {
-    const decoded = await adminAuth.verifySessionCookie(session, true);
-    const userRef = adminDB.collection("users").doc(decoded.uid);
-    const userSnap = await userRef.get();
-
-    if (!userSnap.exists) return null;
-
-    return {
-      uid: decoded.uid,
-      email: decoded.email,
-      profile: userSnap.data(),
-    };
-  } catch {
-    return null;
-  }
-};
+}

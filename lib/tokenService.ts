@@ -1,5 +1,10 @@
-import { TokenTransaction } from "@/types/AuthStore";
-import { adminDB, FieldValue } from "./firebaseAdmin";
+import { createClient } from "@supabase/supabase-js";
+
+// Use service_role to ensure token rewards can't be tampered with by users
+const supabaseAdmin = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+);
 
 export async function awardTokens({
   userId,
@@ -10,65 +15,39 @@ export async function awardTokens({
   amount: number;
   reason: string;
 }) {
-  const userRef = adminDB.collection("users").doc(userId);
-  const txRef = userRef.collection("transactions");
-
   if (reason === "onboarding_reward") {
-    const existing = await txRef.where("reason", "==", reason).limit(1).get();
+    const { data: existing } = await supabaseAdmin
+      .from("token_transactions")
+      .select("id")
+      .eq("user_id", userId)
+      .eq("reason", reason)
+      .maybeSingle();
 
-    if (!existing.empty) {
-      throw new Error("ALREADY_REWARDED");
-    }
+    if (existing) throw new Error("ALREADY_REWARDED");
   }
 
-  let updatedTokens = 0;
-  let updatedTotalEarned = 0;
-
-  await adminDB.runTransaction(async (transaction) => {
-    const userDoc = await transaction.get(userRef);
-
-    if (!userDoc.exists) {
-      throw new Error("USER_NOT_FOUND");
-    }
-
-    const data = userDoc.data();
-
-    const wallet = data?.wallet || {
-      skillTokens: 0,
-      totalEarned: 0,
-    };
-
-    const currentTokens = wallet.skillTokens || 0;
-    const totalEarned = wallet.totalEarned || 0;
-
-    updatedTokens = currentTokens + amount;
-    updatedTotalEarned = totalEarned + amount;
-
-    transaction.update(userRef, {
-      "wallet.skillTokens": updatedTokens,
-      "wallet.totalEarned": updatedTotalEarned,
-    });
-
-    const newTxRef = txRef.doc();
-
-    const txData: TokenTransaction = {
-      userId,
-      amount,
-      type: "earn",
-      reason,
-      createdAt: new Date(),
-    };
-
-    transaction.set(newTxRef, txData);
+  const { error } = await supabaseAdmin.from("token_transactions").insert({
+    user_id: userId,
+    amount,
+    reason,
+    type: "earn",
   });
 
+  if (error) throw error;
+
+  const { data: profile } = await supabaseAdmin
+    .from("profiles")
+    .select("wallet")
+    .eq("id", userId)
+    .single();
+
   return {
-    tokens: updatedTokens,
-    totalEarned: updatedTotalEarned,
+    tokens: profile?.wallet?.skillTokens ?? 0,
+    totalEarned: profile?.wallet?.totalEarned ?? 0,
   };
 }
 
-export const spendTokens = async ({
+export async function spendTokens({
   userId,
   amount,
   reason,
@@ -76,32 +55,31 @@ export const spendTokens = async ({
   userId: string;
   amount: number;
   reason: string;
-}) => {
-  const userRef = adminDB.collection("users").doc(userId);
+}) {
+  // 1. Check balance first
+  const { data: profile } = await supabaseAdmin
+    .from("profiles")
+    .select("wallet")
+    .eq("id", userId)
+    .single();
 
-  await adminDB.runTransaction(async (transaction) => {
-    const userDoc = await transaction.get(userRef);
+  // Ensure wallet exists and check against the current balance
+  const currentBalance = profile?.wallet?.skillTokens ?? 0;
 
-    if (!userDoc.exists) throw new Error("User not found");
+  if (currentBalance < amount) {
+    throw new Error("INSUFFICIENT_TOKENS");
+  }
 
-    const wallet = userDoc.data()?.wallet;
-
-    if (wallet.skillTokens < amount) {
-      throw new Error("Insufficient tokens");
-    }
-
-    transaction.update(userRef, {
-      "wallet.skillTokens": wallet.skillTokens - amount,
-    });
-
-    const txRef = adminDB.collection("tokenTransactions").doc();
-
-    transaction.set(txRef, {
-      userId,
-      amount: -amount,
-      type: "spend",
-      reason,
-      createdAt: FieldValue.serverTimestamp(),
-    });
+  // 2. Log spend (Trigger handles the subtraction automatically)
+  // We use -Math.abs to guarantee the number is negative in the DB
+  const { error } = await supabaseAdmin.from("token_transactions").insert({
+    user_id: userId,
+    amount: -Math.abs(amount),
+    reason,
+    type: "spend",
   });
-};
+
+  if (error) throw error;
+
+  return { success: true, remaining: currentBalance - amount };
+}

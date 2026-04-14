@@ -5,7 +5,7 @@ const Spinner = ({ size = 24 }: { size?: number }) => {
     <div className="flex items-center justify-center ">
       <div
         style={{ width: size, height: size }}
-        className="border-3 border-text-secondary/20 border-t-primary rounded-full animate-spin"
+        className="border-3 border-text-secondary border-t-text-primary rounded-full animate-spin"
       />
     </div>
   );

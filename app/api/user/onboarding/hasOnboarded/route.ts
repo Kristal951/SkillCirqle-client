@@ -1,27 +1,33 @@
-import { adminDB } from "@/lib/firebaseAdmin";
 import { getServerUser } from "@/lib/server-auth";
+import { createSupabaseServer } from "@/lib/supabaseServer";
 import { NextRequest, NextResponse } from "next/server";
 
-export async function GET(req: NextRequest) {
+export async function GET() {
   try {
-    const user = await getServerUser(req);
+    const user = await getServerUser();
 
     if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const doc = await adminDB.collection("users").doc(user.uid).get();
+    const supabase = await createSupabaseServer();
 
-    if (!doc.exists) {
-      return NextResponse.json({ step: 1 });
+    const { data, error } = await supabase
+      .from("profiles")
+      .select("has_onboarded, onboarding_step")
+      .eq("id", user.id)
+      .single();
+
+    if (error || !data) {
+      return NextResponse.json({ hasOnboarded: false, step: 0 });
     }
 
-    const data = doc.data();
-
     return NextResponse.json({
-      hasOnboarded: data?.hasOnboarded || false,
+      hasOnboarded: data.has_onboarded,
+      step: data.onboarding_step,
     });
-  } catch {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  } catch (error) {
+    console.error("Onboarding GET Error:", error);
+    return NextResponse.json({ error: "Server error" }, { status: 500 });
   }
 }

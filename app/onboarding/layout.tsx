@@ -14,50 +14,48 @@ export default function OnboardingLayout({
   children: React.ReactNode;
 }) {
   const { user, isHydrated } = useAuthStore();
+  const { 
+    setTotalSteps, 
+    step, 
+    getUserCurrentStepFromDB, 
+    isLoadingStep 
+  } = useOnboardingStore();
+  
   const router = useRouter();
   const pathname = usePathname();
 
-  const { setTotalSteps, step, getUserCurrentStepFromDB, isLoadingStep } =
-    useOnboardingStore();
-
-  useEffect(() => {
-    if (!user || user.hasOnboarded) return;
-
-    setTotalSteps(3);
-    getUserCurrentStepFromDB();
-  }, [user?.uid]);
-
+  // 1. Handle Authentication and Initial Fetching
   useEffect(() => {
     if (!isHydrated) return;
 
-    if (!user) {
+    if (!user?.id) {
       router.replace("/auth/signin");
       return;
     }
 
-    if (
-      user.hasOnboarded &&
-      pathname.startsWith("/onboarding") &&
-      pathname !== "/onboarding/onboardingCompleted"
-    ) {
-      router.replace("/dashboard");
-      return;
-    }
-  }, [user, isHydrated, pathname, router]);
+    // Initialize onboarding state
+    setTotalSteps(3);
+    getUserCurrentStepFromDB();
+  }, [isHydrated, user?.id]);
 
+  // 2. Handle Route Guarding / Redirects
   useEffect(() => {
-    if (!isHydrated || isLoadingStep) return;
-    if (!user || user.hasOnboarded) return;
+    if (!isHydrated || isLoadingStep || !user?.id || user?.has_onboarded) return;
     if (typeof step !== "number") return;
 
-    const targetPath = step === 0 ? "/onboarding" : `/onboarding/step-${step}`;
+    const target = step === 0 ? "/onboarding" : `/onboarding/step-${step}`;
 
-    if (pathname !== targetPath && !user.hasOnboarded) {
-      router.replace(targetPath);
+    // Only redirect if we aren't already there
+    if (pathname !== target) {
+      const t = setTimeout(() => {
+        router.replace(target);
+      }, 50);
+      return () => clearTimeout(t);
     }
-  }, [step, pathname, isHydrated, isLoadingStep, user, router]);
+  }, [step, pathname, isHydrated, isLoadingStep, user?.id, user?.has_onboarded]);
 
-  if (!isHydrated || !user || isLoadingStep) {
+  // 3. Loading State
+  if (!isHydrated || isLoadingStep) {
     return (
       <div className="h-screen flex items-center justify-center">
         <Spinner size={40} />
@@ -65,16 +63,16 @@ export default function OnboardingLayout({
     );
   }
 
-  return (
-    <div className="h-screen w-full flex items-center justify-center">
-      <div className="flex h-full w-full flex-col">
-        <Header />
-        <div className="pt-22.5 w-full">
-          <MobileStepper />
-        </div>
+  // Safety check to prevent layout flash before redirect
+  if (!user?.id) return null;
 
-        <div className="py-4">{children}</div>
+  return (
+    <div className="h-screen w-full flex flex-col">
+      <Header />
+      <div className="pt-22.5 md:pt-0 w-full">
+        <MobileStepper />
       </div>
+      <main className="flex-1 py-4 overflow-y-auto">{children}</main>
     </div>
   );
 }

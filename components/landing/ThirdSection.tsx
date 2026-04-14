@@ -3,7 +3,7 @@ import React from "react";
 const ThirdSection = () => {
   return (
     <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 grid-rows-2 gap-6 min-h-150">
-      <div className="md:col-span-2 md:row-span-2 bg-surface-container p-12 rounded-2xl flex flex-col justify-end relative overflow-hidden group">
+      <div className="md:col-span-2 md:row-span-2 bg-black/80 p-12 rounded-2xl flex flex-col justify-end relative overflow-hidden group">
         <div className="absolute inset-0 z-0">
           <img
             alt="Cybersecurity expert"
@@ -13,10 +13,10 @@ const ThirdSection = () => {
           />
         </div>
         <div className="relative z-10">
-          <span className="bg-primary/50 text-primary-foreground px-3 py-1 rounded-full text-xs font-bold tracking-widest uppercase mb-4 inline-block">
+          <span className="bg-primary/50 text-white px-3 py-1 rounded-full text-xs font-bold tracking-widest uppercase mb-4 inline-block">
             Featured Domain
           </span>
-          <h4 className="text-4xl text-text-secondary font-headline font-extrabold mb-4">
+          <h4 className="text-4xl text-white font-headline font-extrabold mb-4">
             Cybersecurity Architecture
           </h4>
           <p className="text-text-secondary max-w-md">

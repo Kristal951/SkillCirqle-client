@@ -1,44 +1,11 @@
-import { NextRequest, NextResponse } from "next/server";
-import { doc, getDoc } from "firebase/firestore";
-import { db } from "@/lib/firebase";
-import { getSessionUser } from "@/lib/server-auth";
+import { getUser } from "@/lib/getUser";
+import { getProfile } from "@/lib/getProfile";
+import { createSupabaseServer } from "@/lib/supabaseServer";
 
-export async function GET(req: NextRequest) {
-  console.log('/auth/profile hit')
-  try {
-    const user = await getSessionUser(req);
-    console.log(user, 'user')
+export async function GET() {
+  const supabase = await createSupabaseServer()
+  const user = await getUser();
+  const profile = user ? await getProfile(supabase, user.id) : null;
 
-    if (!user) {
-      return NextResponse.json(
-        { success: false, message: "Unauthorized" },
-        { status: 401 },
-      );
-    }
-    const ref = doc(db, "users", user.uid);
-    const snap = await getDoc(ref);
-    console.log(snap, 'snap')
-
-    let userData = null;
-
-    if (snap.exists()) {
-      userData = snap.data();
-    }
-
-    return NextResponse.json({
-      success: true,
-      user: {
-        uid: user.uid,
-        email: user.email,
-        ...userData,
-      },
-    });
-  } catch (err) {
-    console.error("PROFILE_ERROR:", err);
-
-    return NextResponse.json(
-      { success: false, message: "Internal Server Error" },
-      { status: 500 },
-    );
-  }
+  return Response.json({ user, profile });
 }

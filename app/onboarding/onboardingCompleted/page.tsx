@@ -12,7 +12,7 @@ const OnboardingCompleted = () => {
 
   const [displayTokens, setDisplayTokens] = useState(0);
   const [showConfetti, setShowConfetti] = useState(true);
-  const targetTokens = 10;
+  const targetTokens = 3;
 
   useEffect(() => {
     if (!targetTokens) return;
@@ -66,9 +66,9 @@ const OnboardingCompleted = () => {
       )}
       <div className="relative w-40 h-40">
         <div className="w-full h-full rounded-full overflow-hidden border-2 border-primary group">
-          {user?.avatarUrl ? (
+          {user?.avatar_url ? (
             <img
-              src={user.avatarUrl}
+              src={user.avatar_url}
               alt="avatar"
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
             />
@@ -91,7 +91,7 @@ const OnboardingCompleted = () => {
         </h1>
 
         <p className="text-sm md:text-xl text-text-secondary max-w-xl">
-          Your profile is live. We've topped up your vault with 10 tokens to get
+          Your profile is live. We've topped up your vault with 3 tokens to get
           your first exchange started.
         </p>
       </div>

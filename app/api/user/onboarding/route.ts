@@ -1,62 +1,67 @@
-import { adminDB } from "@/lib/firebaseAdmin";
 import { getServerUser } from "@/lib/server-auth";
+import { createSupabaseServer } from "@/lib/supabaseServer";
 import { NextRequest, NextResponse } from "next/server";
 
-export async function GET(req: NextRequest) {
+export async function GET() {
   try {
-    const user = await getServerUser(req);
+    const user = await getServerUser();
 
     if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const doc = await adminDB.collection("users").doc(user.uid).get();
+    const supabase = await createSupabaseServer();
 
-    if (!doc.exists) {
-      return NextResponse.json({ step: 1 });
+    const { data, error } = await supabase
+      .from("profiles")
+      .select("onboarding_step")
+      .eq("id", user.id)
+      .single();
+
+    if (error && error.code !== "PGRST116") {
+      throw error;
     }
 
-    const data = doc.data();
-
     return NextResponse.json({
-      step: data?.onboardingStep ?? 1,
+      step: data?.onboarding_step ?? 0,
     });
   } catch (error) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    console.error("GET onboarding error:", error);
+    return NextResponse.json({ error: "Server error" }, { status: 500 });
   }
 }
 
 export async function POST(req: NextRequest) {
   try {
-    const user = await getServerUser(req);
+    const user = await getServerUser();
 
     if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const body = await req.json();
-    const step = Number(body.step);
+    const step = parseInt(body.step, 10);
 
-    if (isNaN(step) || step < 1) {
+    if (isNaN(step) || step < 0 || step > 10) {
       return NextResponse.json({ error: "Invalid step" }, { status: 400 });
     }
 
-    const userRef = adminDB.collection("users").doc(user.uid);
-    const doc = await userRef.get();
+    const supabase = await createSupabaseServer();
 
-    if (!doc.exists) {
-      await userRef.set({
-        onboardingStep: step,
-      });
-    } else {
-      await userRef.update({
-        onboardingStep: step,
-      });
-    }
+    const { error } = await supabase.from("profiles").upsert(
+      {
+        id: user.id,
+        onboarding_step: step,
+        has_onboarded: step >= 3,
+      },
+      { onConflict: "id" },
+    );
+
+    if (error) throw error;
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("Onboarding POST error:", error);
+    console.error("POST onboarding error:", error);
     return NextResponse.json({ error: "Server error" }, { status: 500 });
   }
 }

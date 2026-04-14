@@ -3,9 +3,7 @@ import React from "react";
 
 const MobileStepper = () => {
   const { totalSteps, step } = useOnboardingStore();
-  console.log(step)
   
-
   return (
     <div className="w-full lg:hidden flex justify-between items-center gap-2 px-4">
       {Array.from({ length: totalSteps }).map((_, index) => {
