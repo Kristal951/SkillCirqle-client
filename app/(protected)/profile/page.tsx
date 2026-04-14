@@ -156,7 +156,7 @@ const ProfilePage = () => {
               {user?.wallet?.skillTokens || 0}
             </h2>
             <h3 className="text-sm uppercase tracking-wider font-semibold">
-              Tokens
+              Credits
             </h3>
           </div>
         </div>

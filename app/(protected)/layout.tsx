@@ -21,7 +21,6 @@ export default function RootLayout({
       <div className="flex flex-1 overflow-hidden">
         <Sidebar
           isSideBarOpen={isSideBarOpen}
-          loggingOut={loggingOut}
           setLoggingOut={setLoggingOut}
           setIsSideBarOpen={setIsSideBarOpen}
         />

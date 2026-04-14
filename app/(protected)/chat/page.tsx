@@ -153,7 +153,7 @@ const Chat = () => {
                 />
               )}
 
-              <div className="flex flex-col max-w-[40%]">
+              <div className="flex flex-col md:max-w-[40%] lg:max-w-[40%] max-w-[50%]">
                 <div
                   className={`p-4 text-sm shadow wrap-break-word
                   ${

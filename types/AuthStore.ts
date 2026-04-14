@@ -25,7 +25,10 @@ export interface User {
     lastDailyReward: string | null;
   };
 
-  
+  user_metadata?: {
+    username: string;
+    full_name: string;
+  };
 }
 
 export interface TokenTransaction {

@@ -47,7 +47,7 @@ const Sidebar = () => {
     },
   ];
   return (
-    <div className="w-90 h-full border-r overflow-y-scroll bg-background fixed border-border px-4 py-6 flex flex-col gap-6">
+    <div className="h-full md:border-r w-full overflow-y-scroll bg-background fixed border-border px-4 py-6 flex flex-col gap-6">
       <h2 className="text-2xl font-semibold text-left">Chats</h2>
       <div className="w-full flex flex-col gap-4">
         {dummyChatUsersData.map((chat, i) => (

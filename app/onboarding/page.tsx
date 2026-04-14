@@ -1,21 +1,16 @@
 "use client";
 
 import { useAuthStore } from "@/store/useAuthStore";
-import {
-  ArrowRight,
-  ShieldCheck,
-  Globe,
-  User,
-  Coins,
-} from "lucide-react";
+import { ArrowRight, ShieldCheck, Globe, User, Coins } from "lucide-react";
 import { useOnboardingNavigation } from "@/lib/onboarding";
 import Spinner from "@/components/ui/Spinner";
 
 const Onboarding = () => {
   const { user } = useAuthStore();
-  const firstName = user?.user_metadata?.username?.split(" ")[0] || "User";
-  const { handleMoveToNextOnboardingStep, loading, error } =
-    useOnboardingNavigation();
+  const displayName =
+    user?.user_metadata?.username || user?.user_metadata?.full_name || "Member";
+  const firstName = displayName.split(" ")[0];
+  const { handleMoveToNextOnboardingStep, loading } = useOnboardingNavigation();
 
   return (
     <div className="relative w-full h-full flex py-4 md:py-0 items-center flex-col bg-background md:px-6 px-4 overflow-y-scroll md:overflow-hidden">
@@ -31,9 +26,7 @@ const Onboarding = () => {
 
             <h1 className="text-5xl md:text-6xl font-semibold  text-white tracking-tighter leading-[0.9] mb-6">
               WELCOME TO <br />
-              <span className=" mt-2 text-text-primary">
-                THE CIRCLE.
-              </span>
+              <span className=" mt-2 text-text-primary">THE CIRCLE.</span>
             </h1>
 
             <p className="text-gray-400 text-lg max-w-md leading-relaxed">
@@ -61,7 +54,7 @@ const Onboarding = () => {
             </p>
           </div>
 
-          <div className="flex-1 bg-surface-2 border border-primary/30 border-border rounded-[36px] p-6 flex flex-col items-center gap-4 hover:border-text-secondary transition">
+          <div className="flex-1 bg-surface-2 border border-border rounded-[36px] p-6 flex flex-col items-center gap-4 hover:border-text-secondary transition">
             <div className="p-3 bg-white/5 rounded-full">
               <Globe className="w-5 h-5 text-muted" />
             </div>
