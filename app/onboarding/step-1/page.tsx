@@ -143,15 +143,20 @@ const UploadProfilePicture = () => {
 
   const handleUpload = async () => {
     if (!file) return;
+
     setLoading(true);
+
     try {
       const url = await uploadUserProfilePic(file);
 
-      if (url) {
-        await updateUser({
-          avatarUrl: url,
-        });
-      }
+      if (!url) return;
+
+      const success = await updateUser({
+        avatar_url: url,
+      });
+
+      if (!success) return;
+
       await updateUserOnboardingStepInDB(2);
     } catch (err) {
       console.error("Upload error:", err);

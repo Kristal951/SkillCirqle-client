@@ -22,13 +22,11 @@ export const uploadToCloudinary = async (
     },
   });
 
-  return res.data; // contains secure_url, public_id
+  return res.data; 
 };
 
-// lib/optimizeCloudinaryUrl.ts
+
 export const optimizeCloudinaryUrl = (url: string) => {
   if (!url) return url;
-
-  // Insert transformations into Cloudinary URL
   return url.replace("/upload/", "/upload/f_auto,q_auto/");
 };

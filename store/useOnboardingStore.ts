@@ -51,6 +51,7 @@ export const useOnboardingStore = create<OnboardingState>((set) => ({
       if (data.success) {
         set({ step });
       }
+
     } catch (error) {
       console.error("Onboarding update error:", error);
     }

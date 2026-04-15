@@ -1,38 +1,27 @@
-import { NextRequest, NextResponse } from "next/server";
+
+import { createSupabaseServer } from "@/lib/supabaseServer";
 import { awardTokens } from "@/lib/tokenService";
-import { getSessionUser } from "@/lib/server-auth";
+import { NextResponse } from "next/server";
 
-export async function POST(req: NextRequest) {
+export async function POST() {
+  const supabase = await createSupabaseServer();
+
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   try {
-    const user = await getSessionUser(req);
-
-    if (!user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    if (!user?.profile?.hasOnboarded) {
-      return NextResponse.json(
-        { error: "User has not completed onboarding process." },
-        { status: 403 },
-      );
-    }
-
     const result = await awardTokens({
-      userId: user.uid,
+      userId: user.id,
       amount: 3,
       reason: "onboarding_reward",
     });
 
-    return NextResponse.json({
-      success: true,
-      tokens: result.tokens,
-      total: result.totalEarned,
-    });
+    return NextResponse.json({ success: true, ...result });
   } catch (err: any) {
-    if (err.message === "ALREADY_REWARDED") {
-      return NextResponse.json({ message: "Already rewarded" });
-    }
-
-    return NextResponse.json({ error: err.message }, { status: 500 });
+    const status = err.message === "ALREADY_REWARDED" ? 200 : 500;
+    return NextResponse.json({ error: err.message }, { status });
   }
 }

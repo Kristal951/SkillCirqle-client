@@ -1,35 +1,56 @@
-import { NextRequest, NextResponse } from "next/server";
+import { createServerClient } from "@supabase/ssr";
+import { NextResponse, type NextRequest } from "next/server";
 
-export function middleware(req: NextRequest) {
-  const { pathname } = req.nextUrl;
+export async function middleware(request: NextRequest) {
+  let response = NextResponse.next({
+    request: { headers: request.headers },
+  });
 
-  // ✅ Ignore Next.js internals & static files
-  if (
-    pathname.startsWith("/_next") ||
-    pathname.startsWith("/favicon.ico") ||
-    pathname.includes(".") // covers .css, .js, .png, etc.
-  ) {
-    return NextResponse.next();
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll: () => request.cookies.getAll(),
+        setAll: (cookiesToSet) => {
+          cookiesToSet.forEach(({ name, value }) =>
+            request.cookies.set(name, value),
+          );
+          response = NextResponse.next({
+            request: { headers: request.headers },
+          });
+          cookiesToSet.forEach(({ name, value, options }) =>
+            response.cookies.set(name, value, options),
+          );
+        },
+      },
+    },
+  );
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  const isAuthPage = request.nextUrl.pathname.startsWith("/auth");
+  const isProtectedRoute = ["/dashboard", "/onboarding"].some((path) =>
+    request.nextUrl.pathname.startsWith(path),
+  );
+
+  if (!user && isProtectedRoute) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/auth/signin";
+    return NextResponse.redirect(url);
   }
 
-  const session = req.cookies.get("session")?.value;
-
-  const isAuthPage = pathname.startsWith("/auth");
-
-  const isPublicRoute =
-    pathname === "/" ||
-    pathname.startsWith("/auth") ||
-    pathname.startsWith("/api");
-
-  // 🚫 Not logged in → block protected routes
-  if (!session && !isPublicRoute) {
-    return NextResponse.redirect(new URL("/auth/signin", req.url));
+  if (user && isAuthPage) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/dashboard";
+    return NextResponse.redirect(url);
   }
 
-  // 🚫 Logged in → prevent auth pages
-  if (session && isAuthPage) {
-    return NextResponse.redirect(new URL("/dashboard", req.url));
-  }
-
-  return NextResponse.next();
+  return response;
 }
+
+export const config = {
+  matcher: ["/((?!_next/static|_next/image|favicon.ico|api/auth).*)"],
+};

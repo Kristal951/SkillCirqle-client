@@ -12,7 +12,7 @@ const SkillCard = ({ info }: { info: info }) => {
   const { theme } = useTheme();
   return (
     <div className={`bg-surface ${theme === 'light' ? 'border border-border ' : ''} min-w-50 max-w-90 lg:min-w-75 lg:max-w-100 shrink-0 group rounded-xl overflow-hidden flex flex-col justify-between`}>
-      <div className="h-48 relative">
+      <div className="h-72 relative">
         <img
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
           data-alt="Abstract code on dark screen with purple and blue syntax highlighting, glowing tech background"

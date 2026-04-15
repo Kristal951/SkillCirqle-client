@@ -5,17 +5,17 @@
 ========================= */
 :root {
   /* Base */
-  --color-background-base: #F5F0FF;
+  --color-background-base: #f5f0ff;
   --color-border: rgba(108, 63, 197, 0.25);
 
   /* Text */
-  --color-text-primary: #1A1A2E;
-  --color-text-secondary: #9CA3AF;
-  --color-text-accent: #F4A261;
+  --color-text-primary: #1a1a2e;
+  --color-text-secondary: #9ca3af;
+  --color-text-accent: #f4a261;
 
   /* Brand */
-  --color-primary: #6C3FC5;
-  --color-accent: #F4A261;
+  --color-primary: #6c3fc5;
+  --color-accent: #f4a261;
   --color-surface: #ffffff;
 
   /* Feedback */
@@ -36,14 +36,14 @@
 ========================= */
 .dark {
   --color-background-base: #0d0b1a;
- --color-border: rgba(108, 63, 197, 0.25);
+  --color-border: rgba(108, 63, 197, 0.25);
 
   --color-text-primary: #ffffff;
-  --color-text-secondary: #6B7280;
-  --color-text-accent: #F4A261;
+  --color-text-secondary: #6b7280;
+  --color-text-accent: #f4a261;
 
   --color-primary: #6c3fc5;
-  --color-accent: #F4A261;
+  --color-accent: #f4a261;
   --color-surface: #2a1f4a;
   /* --color-card: #1d0fe3; */
 
@@ -88,6 +88,21 @@ body {
   color: var(--color-text-primary);
   font-family: Arial, Helvetica, sans-serif;
   margin: 0;
+}
+
+@layer components {
+  .button-primary {
+    @apply w-full py-3 px-4 text-sm font-semibold rounded-lg transition-all duration-200;
+    @apply bg-primary/10 text-primary border border-primary/20;
+    @apply hover:bg-primary hover:text-white hover:shadow-md hover:shadow-primary/20;
+    @apply active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none;
+  }
+  .button-secondary {
+    @apply py-3 px-4 text-sm font-semibold rounded-lg transition-all duration-200;
+    @apply bg-primary/10 text-primary border border-primary/20;
+    @apply hover:bg-primary hover:text-white hover:shadow-md hover:shadow-primary/20;
+    @apply active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none;
+  }
 }
 
 /* Smooth theme transition */

@@ -66,12 +66,12 @@ const Toast = ({
         </div>
 
         <div className="flex flex-col gap-1 min-w-0">
-          <p className="text-sm sm:text-base font-semibold text-white wrap-break-word">
+          <p className="text-sm sm:text-base font-semibold text-text-primary wrap-break-word">
             {message}
           </p>
 
           {description && (
-            <p className="text-xs sm:text-sm text-text-surface wrap-break-word">
+            <p className="text-xs sm:text-sm text-text-secondary wrap-break-word">
               {description}
             </p>
           )}

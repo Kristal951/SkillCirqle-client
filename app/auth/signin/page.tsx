@@ -1,6 +1,6 @@
 "use client";
 import Spinner from "@/components/ui/Spinner";
-import { loginWithEmail } from "@/lib/auth";
+import { loginWithEmail } from "@/lib/auth-client";
 import { toast } from "@/lib/toast";
 import { Mail, Lock, Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
@@ -63,8 +63,9 @@ const SignIn = () => {
     }
     try {
       const res = await loginWithEmail(email, password);
+        const firstName = res?.user_metadata?.username?.split(" ")[0] || "User";
 
-      toast.success(`Welcome back, ${res.displayName}!`, "Continue Cirqling");
+      toast.success(`Welcome back, ${firstName}!`, "Continue Cirqling");
 
       router.push("/dashboard");
     } catch (error: any) {

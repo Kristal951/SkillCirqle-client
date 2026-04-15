@@ -117,9 +117,9 @@ const UploadSkills = () => {
 
     try {
       const success = await updateUser({
-        skillsToTeach: teachSkills,
-        skillsToLearn: learnSkills,
-        hasOnboarded: true,
+        skills_to_teach: teachSkills,
+        skills_to_learn: learnSkills,
+        has_onboarded: true,
       });
 
       if (!success) {
@@ -130,7 +130,7 @@ const UploadSkills = () => {
       const res = await awardUserOnboardingTokens();
 
       if (res?.tokens !== undefined) {
-        toast.success(`🎉 +10 tokens awarded!`);
+        toast.success(`🎉 +3 tokens awarded!`);
       } else if (res?.message === "Already rewarded") {
         toast.info("Tokens already awarded");
       }

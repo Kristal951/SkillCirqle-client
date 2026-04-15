@@ -48,7 +48,7 @@ const About = () => {
   const isFormValid = bio.trim().length >= 10 && location.trim() && role.trim();
 
   return (
-    <div className="min-h-[90vh] md:h-full w-full flex items-center md:overflow-hidden justify-center bg-background md:px-6 px-4 py-12 selection:bg-primary/30">
+    <div className="min-h-[90vh] md:h-full lg:h-full w-full flex items-center md:overflow-hidden justify-center bg-background md:px-6 px-4 py-10 selection:bg-primary/30">
       <div className="w-full max-w-6xl grid lg:grid-cols-5 gap-16 md:items-start place-items-center">
         <div className="space-y-8 text-center col-span-3 md:col-span-2 lg:text-left lg:sticky lg:top-12">
           <div className="space-y-4">
