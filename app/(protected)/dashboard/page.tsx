@@ -220,7 +220,7 @@ export default function Dashboard({ loggingOut }: { loggingOut: boolean }) {
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-text-secondary" />
             <input
               className="w-full pl-12 pr-4 py-4 rounded-xl bg-background text-foreground outline-none focus:ring-4 focus:ring-white/20"
-              placeholder="Search skills..."
+              placeholder="Search skills, mentors, or cirqles..."
             />
           </div>
         </div>
@@ -482,12 +482,6 @@ export default function Dashboard({ loggingOut }: { loggingOut: boolean }) {
           </div>
         </div>
       </section>
-
-      {loggingOut && (
-        <div className="fixed inset-0 z-100 bg-black/70 flex items-center justify-center">
-          <Spinner size={48} />
-        </div>
-      )}
     </div>
   );
 }

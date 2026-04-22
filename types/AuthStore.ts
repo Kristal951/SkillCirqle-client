@@ -53,3 +53,13 @@ export type ChatContextType = {
   activeChat: ChatUser | null;
   setActiveChat: (chat: ChatUser | null) => void;
 };
+
+export type ActiveChat = {
+  avatar_url: string;
+  id: string;
+  last_message: string;
+  last_message_at: string;
+  name: string;
+  user_id: string;
+  is_online: boolean
+};

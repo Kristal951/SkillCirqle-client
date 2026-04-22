@@ -1,4 +1,5 @@
 "use client";
+import LoginWithGoogleButton from "@/components/auth/LoginWithGoogleButton";
 import Spinner from "@/components/ui/Spinner";
 import { loginWithEmail } from "@/lib/auth-client";
 import { toast } from "@/lib/toast";
@@ -63,7 +64,7 @@ const SignIn = () => {
     }
     try {
       const res = await loginWithEmail(email, password);
-        const firstName = res?.user_metadata?.username?.split(" ")[0] || "User";
+      const firstName = res?.user_metadata?.username?.split(" ")[0] || "User";
 
       toast.success(`Welcome back, ${firstName}!`, "Continue Cirqling");
 
@@ -172,17 +173,7 @@ const SignIn = () => {
               <div className="flex-1 h-px bg-text-secondary" />
             </div>
 
-            <button
-              onClick={handleGoogleSignIn}
-              className="w-full flex items-center justify-center gap-3 p-3 rounded-md bg-surface md:bg-background cursor-pointer hover:bg-white/10 transition text-sm sm:text-base"
-            >
-              <img
-                src="https://www.svgrepo.com/show/475656/google-color.svg"
-                alt="google"
-                className="w-5 h-5"
-              />
-              <span className="font-medium">Continue with Google</span>
-            </button>
+            <LoginWithGoogleButton loading={loading} setLoading={setLoading} />
 
             <p className="text-xs sm:text-sm text-text-surface text-center">
               Don’t have an account?{" "}

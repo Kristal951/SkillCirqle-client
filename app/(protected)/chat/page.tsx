@@ -1,139 +1,144 @@
 "use client";
 
-import { useChat } from "@/providers/chatContextProvider";
-import React from "react";
+import { useEffect, useMemo, useRef } from "react";
+import { useChatStore, Message } from "@/store/useChatStore";
+import { useAuthStore } from "@/store/useAuthStore";
+import { getSocket } from "@/lib/socket";
+import { initSocketEvents } from "@/lib/socketEvents";
+
+// =====================
+// UI Message type
+// =====================
+type UIMessage = {
+  id: string;
+  message: string;
+  type: "text" | "image";
+  createdAt: string;
+  sender: {
+    id: string;
+    avatar: string;
+  };
+  mediaUrl?: string | null;
+};
 
 const Chat = () => {
-  const { activeChat } = useChat();
-  const currentUserId = "user_1";
+  const { user } = useAuthStore();
 
-  const messagesDummyData = [
-    {
-      id: "msg_1",
-      conversationId: "dm_user1_user2",
-      sender: {
-        id: "user_1",
-        name: "Kristal Dev",
-        avatar: "https://i.pravatar.cc/150?img=12",
-      },
-      receiver: {
-        id: "user_2",
-        name: "Amina",
-        avatar: "https://i.pravatar.cc/150?img=32",
-      },
-      message:
-        " Hey Alex! I just updated the proposal details. I think the 4-hour mentorship block works perfectly for my team. What do you think about the shoot location?",
-      type: "text",
-      createdAt: "2026-04-12T09:30:00Z",
-      status: "read",
-    },
-    {
-      id: "msg_2",
-      conversationId: "dm_user1_user2",
-      sender: {
-        id: "user_2",
-        name: "Amina",
-        avatar:
-          "https://lh3.googleusercontent.com/aida-public/AB6AXuB1u_aQCmsD9Vr1O6jomDYT1-Vak0q3-2k_FknsjIPJm5atj3FdT16EJ20spf0LKYgx5ZHQ2g5tLU14AMyQEjuHzWqonfoOEYmxPm6rAHahU69tpRW-WLORcEQMTBFZbW_WZ0bqxHuq8fJ00oD95dGSb_8y3XZSX2ne611xj94AENraZ8GqMMohchAAJq6ffIjM_KYyS63KD1v-gjDzEyHs8Y7l_CV771rkbAeeLNFtn4VdMMu0IOHdGEzOTnvYcgYDf6JdNhkOzJSO",
-      },
-      receiver: {
-        id: "user_1",
-        name: "Kristal Dev",
-        avatar: "https://i.pravatar.cc/150?img=12",
-      },
-      message: "Hey! It’s going well 🔥 I just finished the dashboard UI",
-      type: "text",
-      createdAt: "2026-04-12T09:31:10Z",
-      status: "read",
-    },
-    {
-      id: "msg_3",
-      conversationId: "dm_user1_user2",
-      sender: {
-        id: "user_1",
-        name: "Kristal Dev",
-        avatar: "https://i.pravatar.cc/150?img=12",
-      },
-      receiver: {
-        id: "user_2",
-        name: "Amina",
-        avatar: "https://i.pravatar.cc/150?img=32",
-      },
-      message: "Nice! Send me a preview 👀",
-      type: "text",
-      createdAt: "2026-04-12T09:32:00Z",
-      status: "delivered",
-    },
-    {
-      id: "msg_4",
-      conversationId: "dm_user1_user2",
-      sender: {
-        id: "user_2",
-        name: "Amina",
-        avatar:
-          "https://lh3.googleusercontent.com/aida-public/AB6AXuB1u_aQCmsD9Vr1O6jomDYT1-Vak0q3-2k_FknsjIPJm5atj3FdT16EJ20spf0LKYgx5ZHQ2g5tLU14AMyQEjuHzWqonfoOEYmxPm6rAHahU69tpRW-WLORcEQMTBFZbW_WZ0bqxHuq8fJ00oD95dGSb_8y3XZSX2ne611xj94AENraZ8GqMMohchAAJq6ffIjM_KYyS63KD1v-gjDzEyHs8Y7l_CV771rkbAeeLNFtn4VdMMu0IOHdGEzOTnvYcgYDf6JdNhkOzJSO",
-      },
-      receiver: {
-        id: "user_1",
-        name: "Kristal Dev",
-        avatar: "https://i.pravatar.cc/150?img=12",
-      },
-      message: "Here it is 🚀",
-      type: "image",
-      mediaUrl:
-        "https://lh3.googleusercontent.com/aida-public/AB6AXuBGMFAHSdzx8DpwAH9rD83E7Lavm2MDGMlEbKfZztWHiqyysLGc6rQppTE8Dz2oO7CLua4XUQoGiQIi2MLgtujP0GsvnZFqE-b5VEFa8e7mFcJ2NnRhbFdmhGup3TtuA0HfIO5T4FxOnTDUjaRsutRNrPEdbQYPGQ0fZaqjgp0xeIj-FCu-pS6_JrSNHGKL0v55jFeKyjgUDpiV8oqZ-ayZdsjdcNxvqmk0b7u-JFdLjF5qEH7m5XOJwlLjmY5qib6NPnwsnv0-SrWy",
-      createdAt: "2026-04-12T09:33:20Z",
-      status: "sent",
-    },
-    {
-      id: "msg_5",
-      conversationId: "dm_user1_user2",
-      sender: {
-        id: "user_1",
-        name: "Kristal Dev",
-        avatar: "https://i.pravatar.cc/150?img=12",
-      },
-      receiver: {
-        id: "user_2",
-        name: "Amina",
-        avatar: "https://i.pravatar.cc/150?img=32",
-      },
-      message: "Looks clean 🔥 I love the spacing",
-      type: "text",
-      createdAt: "2026-04-12T09:34:10Z",
-      status: "sent",
-    },
-  ];
+  const {
+    activeChat,
+    messages: storeMessages,
+    fetchMessages,
+    joinChat,
+    listenForMessages,
+    cleanup,
+  } = useChatStore();
 
+  const currentUserId = user?.id;
+  const bottomRef = useRef<HTMLDivElement | null>(null);
+
+  // =====================
+  // Chat lifecycle
+  // =====================
+  useEffect(() => {
+    if (!activeChat?.id) return;
+
+    fetchMessages(activeChat.id);
+    joinChat(activeChat.id);
+    listenForMessages();
+
+    return () => cleanup();
+  }, [activeChat?.id]);
+
+  useEffect(() => {
+    initSocketEvents();
+  }, []);
+  // =====================
+  // Raw messages
+  // =====================
+  const rawMessages = storeMessages[activeChat?.id || ""] || [];
+
+  // =====================
+  // Transform DB → UI safely
+  // =====================
+  const messages: UIMessage[] = useMemo(() => {
+    return rawMessages
+      .filter((msg) => msg?.id && msg?.content)
+      .map((msg: Message) => ({
+        id: msg.id,
+        message: msg.content || "",
+        type: msg.message_type || "text",
+        createdAt: msg.created_at || new Date().toISOString(),
+
+        sender: {
+          id: msg.sender_id,
+          avatar:
+            msg?.sender?.avatar ||
+            `https://i.pravatar.cc/150?u=${msg.sender_id}`,
+        },
+
+        mediaUrl: msg.message_type === "image" ? msg.metadata?.url : null,
+      }));
+  }, [rawMessages]);
+
+  // =====================
+  // Auto scroll
+  // =====================
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+
+  // =====================
+  // No chat selected
+  // =====================
   if (!activeChat) {
     return (
       <div className="w-full h-full flex items-center justify-center">
-        <div className="text-center flex flex-col items-center">
+        <div className="text-center flex flex-col items-center text-gray-400">
           <span
-            className="material-symbols-outlined text-gray-400"
+            className="material-symbols-outlined"
             style={{ fontSize: "100px" }}
           >
             chat_bubble_off
           </span>
 
-          <h2 className="text-2xl font-medium text-text-secondary mt-2">
-            No chat selected
-          </h2>
-
-          <p className="text-sm text-text-secondary mt-1">
-            Select a conversation to start messaging
-          </p>
+          <h2 className="text-2xl mt-2 text-white">No chat selected</h2>
+          <p className="text-sm">Select a conversation to start messaging</p>
         </div>
       </div>
     );
   }
 
-  const messages = messagesDummyData.filter(
-    (msg) => msg.conversationId === activeChat.id,
-  );
+  // =====================
+  // Empty messages state
+  // =====================
 
+  const isEmpty =
+  !rawMessages || rawMessages.length === 0;
+
+  if (isEmpty) {
+    return (
+      <div className="w-full h-full flex items-center justify-center">
+        <div className="text-center flex flex-col items-center text-gray-400">
+          <span
+            className="material-symbols-outlined"
+            style={{ fontSize: "100px" }}
+          >
+            chat_bubble_off
+          </span>
+
+          <h2 className="text-2xl mt-2 text-white">No Message yet.</h2>
+          <p className="text-sm">Start the conversation</p>
+        </div>
+      </div>
+    );
+  }
+
+  // =====================
+  // Chat UI
+  // =====================
   return (
     <div className="flex flex-col h-full w-full">
+      {/* Messages */}
       <div className="flex-1 overflow-y-auto px-4 py-6 space-y-4">
         {messages.map((msg) => {
           const isMe = msg.sender.id === currentUserId;
@@ -145,52 +150,68 @@ const Chat = () => {
                 isMe ? "justify-end" : "justify-start"
               }`}
             >
+              {/* Avatar */}
               {!isMe && (
                 <img
-                  src={msg.sender.avatar}
-                  alt=""
+                  src={
+                    msg.sender?.avatar ||
+                    `https://i.pravatar.cc/150?u=${msg.sender.id}`
+                  }
                   className="w-8 h-8 rounded-full object-cover"
+                  alt="avatar"
                 />
               )}
 
-              <div className="flex flex-col md:max-w-[40%] lg:max-w-[40%] max-w-[50%]">
+              {/* Message */}
+              <div className="flex flex-col max-w-[50%]">
                 <div
-                  className={`p-4 text-sm shadow wrap-break-word
-                  ${
+                  className={`p-4 text-sm shadow break-words ${
                     isMe
                       ? "bg-primary text-white rounded-t-3xl rounded-bl-3xl"
                       : "bg-surface text-text-primary rounded-t-3xl rounded-br-3xl"
                   }`}
                 >
-                  {msg.type === "text" && <p>{msg.message}</p>}
+                  {/* TEXT */}
+                  {msg.type === "text" && (
+                    <p className="whitespace-pre-wrap">
+                      {msg.message?.trim() || " "}
+                    </p>
+                  )}
 
-                  {msg.type === "image" && (
+                  {/* IMAGE */}
+                  {msg.type === "image" && msg.mediaUrl && (
                     <div className="space-y-2">
                       <img
                         src={msg.mediaUrl}
-                        className="rounded-xl w-full"
-                        alt=""
+                        className="rounded-xl w-full object-cover"
+                        alt="media"
                       />
-                      <p>{msg.message}</p>
+                      {msg.message && (
+                        <p className="whitespace-pre-wrap">{msg.message}</p>
+                      )}
                     </div>
                   )}
                 </div>
 
                 {/* Timestamp */}
                 <span
-                  className={`text-[10px] mt-1 text-text-secondary ${
+                  className={`text-[10px] mt-1 text-gray-400 ${
                     isMe ? "text-right" : "text-left"
                   }`}
                 >
-                  {new Date(msg.createdAt).toLocaleTimeString([], {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })}
+                  {msg.createdAt
+                    ? new Date(msg.createdAt).toLocaleTimeString([], {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })
+                    : "--:--"}
                 </span>
               </div>
             </div>
           );
         })}
+
+        <div ref={bottomRef} />
       </div>
     </div>
   );

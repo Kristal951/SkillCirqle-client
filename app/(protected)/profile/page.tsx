@@ -95,7 +95,7 @@ const ProfilePage = () => {
                 >
                   {user?.name}
                 </h2>
-                <p className="max-w-lg text-lg text-center md:text-center lg:text-left leading-relaxed text-text-secondary">
+                <p className="max-w-lg text-lg text-center md:text-center lg:text-left leading-relaxed text-text-secondary line-clamp-3">
                   {user?.bio}
                 </p>
               </div>

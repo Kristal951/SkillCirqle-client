@@ -1,0 +1,54 @@
+import { createServerClient } from "@supabase/ssr";
+import { cookies } from "next/headers";
+import { NextResponse } from "next/server";
+
+export async function GET(request: Request) {
+  const url = new URL(request.url);
+  const code = url.searchParams.get("code");
+  const next = url.searchParams.get("next") ?? "/dashboard";
+
+  if (!code) {
+    return NextResponse.redirect(new URL("/auth/auth-code-error", url.origin));
+  }
+
+  const cookieStore = await cookies();
+
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return cookieStore.getAll();
+        },
+        setAll(cookiesToSet) {
+          cookiesToSet.forEach(({ name, value, options }) => {
+            cookieStore.set(name, value, options);
+          });
+        },
+      },
+    },
+  );
+
+  const { data, error } = await supabase.auth.exchangeCodeForSession(code);
+
+  if (error) {
+    console.error("Auth error:", error.message);
+    return NextResponse.redirect(new URL("/auth/auth-code-error", url.origin));
+  }
+
+  // optional onboarding logic
+  const user = data.user;
+
+  if (user) {
+    const isNewGoogleUser =
+      user.app_metadata.provider === "google" &&
+      user.created_at === user.last_sign_in_at;
+
+    if (isNewGoogleUser) {
+      return NextResponse.redirect(new URL("/onboarding", url.origin));
+    }
+  }
+
+  return NextResponse.redirect(new URL(next, url.origin));
+}

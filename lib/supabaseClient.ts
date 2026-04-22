@@ -1,23 +1,18 @@
 import { createBrowserClient } from "@supabase/ssr";
 
-let client: ReturnType<typeof createBrowserClient> | undefined;
+function getEnvVariables() {
+  const supabaseURL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+
+  if (!supabaseURL || !supabaseAnonKey) {
+    throw new Error("Missing supabase url or anon key");
+  }
+
+  return { supabaseURL, supabaseAnonKey };
+}
 
 export function getSupabaseBrowserClient() {
-  if (client) return client;
+  const { supabaseURL, supabaseAnonKey } = getEnvVariables();
 
-  client = createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookieOptions: {
-        name: "sb-jzukocvsoupnmwfiradk-auth-token",
-        domain: "localhost",
-        path: "/",
-        sameSite: "lax",
-        secure: process.env.NODE_ENV === "production",
-      },
-    },
-  );
-
-  return client;
+  return createBrowserClient(supabaseURL, supabaseAnonKey);
 }

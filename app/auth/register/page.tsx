@@ -1,5 +1,6 @@
 "use client";
 
+import LoginWithGoogleButton from "@/components/auth/LoginWithGoogleButton";
 import Spinner from "@/components/ui/Spinner";
 import { signUpWithEmail } from "@/lib/auth-client";
 import { toast } from "@/lib/toast";
@@ -80,15 +81,12 @@ const SignUp = () => {
     setLoading(true);
 
     try {
-      // 1. Perform Signup
       await signUpWithEmail(name, email, password);
 
-      // 2. Sync the global store immediately so the layout redirect logic works
       await fetchUser();
 
       toast.success(`Hi ${name}!`, "Welcome to the Cirqle.");
 
-      // 3. Redirect
       router.replace("/onboarding");
     } catch (error: any) {
       console.error("Signup Error:", error);
@@ -98,7 +96,7 @@ const SignUp = () => {
           title: "Invalid Email",
           desc: "This email is already in use. Try logging in instead.",
         },
-        user_already_exists: {
+        'user_already_exists': {
           title: "User Already Registered",
           desc: "Please register with a different email.",
         },
@@ -190,18 +188,7 @@ const SignUp = () => {
               <div className="flex-1 h-px bg-white/10" />
             </div>
 
-            <button
-              type="button"
-              onClick={() => console.log("Google logic here")}
-              className="w-full flex items-center justify-center gap-3 p-3 rounded-md bg-surface border border-white/5 hover:bg-white/5 transition text-sm sm:text-base"
-            >
-              <img
-                src="https://www.svgrepo.com/show/475656/google-color.svg"
-                alt="google"
-                className="w-5 h-5"
-              />
-              <span className="font-medium">Continue with Google</span>
-            </button>
+            <LoginWithGoogleButton loading={loading} setLoading={setLoading} />
 
             <p className="text-xs sm:text-sm text-text-surface text-center">
               Already have an account?{" "}

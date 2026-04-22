@@ -13,40 +13,21 @@ interface SidebarProps {
   isSideBarOpen: boolean;
   setIsSideBarOpen: Dispatch<SetStateAction<boolean>>;
   setLoggingOut: Dispatch<SetStateAction<boolean>>;
+  setShowLogoutModal: Dispatch<SetStateAction<boolean>>;
 }
 
 const Sidebar = ({
   isSideBarOpen,
   setIsSideBarOpen,
-  setLoggingOut,
+  setShowLogoutModal,
 }: SidebarProps) => {
   const pathname = usePathname();
-  const { user, setUser } = useAuthStore();
-  const { setTokens, setTotal } = useTokenStore();
-  
+  const { user } = useAuthStore();
   const [isCollapsed, setIsCollapsed] = useState(false);
 
   const closeSidebar = () => {
     if (isSideBarOpen) setIsSideBarOpen(false);
   };
-
-  const handleLogout = async () => {
-    setLoggingOut(true);
-    try {
-      const supabase = await getSupabaseBrowserClient();
-      await supabase.auth.signOut();
-      setUser(null);
-      setTokens(0);
-      setTotal(0);
-      window.location.href = "/auth/signin";
-    } catch (error) {
-      console.error("Logout failed:", error);
-    } finally {
-      setLoggingOut(false);
-    }
-  };
-
-  console.log(user)
 
   return (
     <>
@@ -63,19 +44,26 @@ const Sidebar = ({
           ${!isSideBarOpen && (isCollapsed ? "md:w-20" : "md:w-72")}
         `}
       >
-
         <div className="px-4 py-6 flex items-center justify-between overflow-hidden">
           {(!isCollapsed || isSideBarOpen) && (
             <h1 className="text-xl font-bold tracking-tight text-primary truncate ml-2">
               SkillCirqle
             </h1>
           )}
-          
-          <button 
-            onClick={isSideBarOpen ? closeSidebar : () => setIsCollapsed(!isCollapsed)}
+
+          <button
+            onClick={
+              isSideBarOpen ? closeSidebar : () => setIsCollapsed(!isCollapsed)
+            }
             className="p-2 rounded-lg hover:bg-secondary transition-colors"
           >
-            {isSideBarOpen ? <X size={20}/> : (isCollapsed ? <ChevronRight size={20}/> : <ChevronLeft size={20}/>)}
+            {isSideBarOpen ? (
+              <X size={20} />
+            ) : isCollapsed ? (
+              <ChevronRight size={20} />
+            ) : (
+              <ChevronLeft size={20} />
+            )}
           </button>
         </div>
 
@@ -100,7 +88,7 @@ const Sidebar = ({
                   {link.icon}
                 </span>
 
-                {(!isCollapsed || isSideBarOpen) ? (
+                {!isCollapsed || isSideBarOpen ? (
                   <span className="text-sm transition-opacity duration-300 whitespace-nowrap">
                     {link.title}
                   </span>
@@ -114,12 +102,18 @@ const Sidebar = ({
           })}
         </nav>
 
-        <div className={`p-4 border-t border-border/20 bg-muted/30 transition-all ${isCollapsed && !isSideBarOpen ? "items-center" : ""}`}>
+        <div
+          className={`p-4 border-t border-border/20 bg-muted/30 transition-all ${isCollapsed && !isSideBarOpen ? "items-center" : ""}`}
+        >
           <div className="flex items-center justify-between w-full gap-3 overflow-hidden">
             <div className="flex items-center gap-3 min-w-0">
               <div className="w-9 h-9 rounded-full bg-primary/20 shrink-0 overflow-hidden flex items-center justify-center text-primary font-bold border border-primary/10">
                 {user?.avatar_url ? (
-                  <img src={user.avatar_url} alt="P" className="object-cover w-full h-full" />
+                  <img
+                    src={user.avatar_url}
+                    alt="P"
+                    className="object-cover w-full h-full"
+                  />
                 ) : (
                   <span>{user?.name?.[0]?.toUpperCase() || "U"}</span>
                 )}
@@ -139,7 +133,7 @@ const Sidebar = ({
 
             {(!isCollapsed || isSideBarOpen) && (
               <button
-                onClick={handleLogout}
+                onClick={() => setShowLogoutModal(true)}
                 className="p-2 hover:bg-red-500/10 rounded-md transition-colors group shrink-0"
                 title="Logout"
               >

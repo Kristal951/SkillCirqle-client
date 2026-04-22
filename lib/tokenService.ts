@@ -1,10 +1,4 @@
-import { createClient } from "@supabase/supabase-js";
-
-// Use service_role to ensure token rewards can't be tampered with by users
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+import { supabaseAdmin } from "./supabaseAdmin";
 
 export async function awardTokens({
   userId,

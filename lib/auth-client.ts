@@ -1,16 +1,12 @@
-// lib/auth-client.ts
 import { getSupabaseBrowserClient } from "./supabaseClient";
-
-/**
- * For use in "use client" components, buttons, and forms.
- */
 
 export const signUpWithEmail = async (
   name: string,
   email: string,
   password: string,
 ) => {
-  const supabase = await getSupabaseBrowserClient();
+  const supabase = getSupabaseBrowserClient();
+
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
@@ -24,7 +20,8 @@ export const signUpWithEmail = async (
 };
 
 export const loginWithEmail = async (email: string, password: string) => {
-  const supabase = await getSupabaseBrowserClient();
+  const supabase = getSupabaseBrowserClient();
+
   const { data, error } = await supabase.auth.signInWithPassword({
     email,
     password,
@@ -35,7 +32,8 @@ export const loginWithEmail = async (email: string, password: string) => {
 };
 
 export const logout = async () => {
-  const supabase = await getSupabaseBrowserClient();
+  const supabase = getSupabaseBrowserClient();
+
   const { error } = await supabase.auth.signOut();
   if (error) throw error;
 };

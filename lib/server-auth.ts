@@ -8,6 +8,7 @@ export async function getServerUser() {
       data: { user },
       error,
     } = await supabase.auth.getUser();
+      console.log("🟡 createSupabaseServer called");
 
     if (error || !user) {
       return null;
