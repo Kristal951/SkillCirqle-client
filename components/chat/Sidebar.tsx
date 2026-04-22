@@ -52,7 +52,7 @@ const Sidebar = () => {
       .replace("second", "s");
   };
   return (
-    <aside className="h-screen w-80 md:w-84 border-r border-border bg-background fixed overflow-y-auto px-4 py-6 flex flex-col gap-6 z-10">
+    <aside className="h-screen w-full md:w-84 md:border-r md:border-border bg-background fixed overflow-y-auto px-4 py-6 flex flex-col gap-6 z-10">
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold tracking-tight">Chats</h2>
       </div>
