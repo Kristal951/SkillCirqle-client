@@ -13,28 +13,34 @@ const Input = () => {
   const { user } = useAuthStore();
 
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const socketRef = useRef<any>(null);
 
   const conversationId = activeChat?.id;
 
+  // ✅ initialize socket once
   useEffect(() => {
+    socketRef.current = getSocket();
+  }, []);
+
+  // ✅ stop typing on unmount/chat change
+  useEffect(() => {
+    const socket = socketRef.current;
+
     return () => {
-      const socket = getSocket();
       if (!socket || !conversationId || !user?.id) return;
 
       socket.emit("stop_typing", {
         conversationId,
-        userId: user.id,
       });
     };
   }, [conversationId, user?.id]);
 
   const handleTyping = () => {
-    const socket = getSocket();
+    const socket = socketRef.current;
     if (!socket || !conversationId || !user?.id) return;
 
     socket.emit("typing", {
       conversationId,
-      userId: user.id,
     });
 
     if (typingTimeoutRef.current) {
@@ -44,9 +50,8 @@ const Input = () => {
     typingTimeoutRef.current = setTimeout(() => {
       socket.emit("stop_typing", {
         conversationId,
-        userId: user.id,
       });
-    }, 1200);
+    }, 800);
   };
 
   const handleSend = () => {
@@ -55,29 +60,24 @@ const Input = () => {
     sendMessage({
       conversationId,
       senderId: user?.id || "",
-      senderAvatar: user?.avatar_url || '',
+      senderAvatar: user?.avatar_url || "",
       content: message,
       type: "text",
     });
 
     setMessage("");
 
-    // stop typing immediately when sending
-    const socket = getSocket();
-    socket?.emit("stop_typing", {
-      conversationId,
-      userId: user?.id,
-    });
+    const socket = socketRef.current;
+    socket?.emit("stop_typing", { conversationId });
   };
 
   return (
-    <div className="w-full sticky bottom-0 right-0 p-3 bg-surface/60 backdrop-blur-md flex items-center gap-2 border-t border-border">
-      <button className="p-2 rounded-lg hover:bg-surface transition">
+    <div className="w-full sticky bottom-0 p-3 bg-surface/60 backdrop-blur-md flex items-center gap-2 border-t border-border">
+      <button className="p-2 rounded-lg hover:bg-surface">
         <CirclePlus className="w-5 h-5" />
       </button>
 
       <input
-        type="text"
         value={message}
         onChange={(e) => {
           setMessage(e.target.value);
@@ -87,19 +87,16 @@ const Input = () => {
         placeholder="Type a message..."
       />
 
-      <button className="hover:opacity-70 transition">
+      <button>
         <Smile className="w-5 h-5" />
       </button>
 
       {message.trim() ? (
-        <button
-          onClick={handleSend}
-          className="p-2 rounded-lg bg-primary text-primary-foreground hover:opacity-90 transition"
-        >
+        <button onClick={handleSend} className="p-2 bg-primary rounded-lg">
           <Send className="w-5 h-5" />
         </button>
       ) : (
-        <button className="p-2 rounded-lg hover:bg-surface transition">
+        <button className="p-2">
           <Mic className="w-5 h-5" />
         </button>
       )}

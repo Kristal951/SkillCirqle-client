@@ -5,7 +5,6 @@ export async function getUser(supabase: SupabaseClient) {
     data: { user },
     error,
   } = await supabase.auth.getUser();
-    console.log("🟡 createSupabaseServer called");
 
   if (error) {
     if (error.message.includes("Auth session missing")) {

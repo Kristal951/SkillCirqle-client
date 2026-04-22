@@ -1,20 +1,16 @@
 import { create } from "zustand";
 
 type SocketState = {
-  // 🟢 ONLINE USERS (Set for performance)
   onlineUsers: Set<string>;
-
-  // 🟡 TYPING (conversation scoped)
   typingUsers: Record<string, Set<string>>;
 
-  // ===== ONLINE =====
+  // ONLINE
   setOnlineUsers: (users: string[]) => void;
   addOnlineUser: (userId: string) => void;
   removeOnlineUser: (userId: string) => void;
   isOnline: (userId: string) => boolean;
 
-  // ===== TYPING =====
-  setTypingUsers: (conversationId: string, users: string[]) => void;
+  // TYPING
   addTypingUser: (conversationId: string, userId: string) => void;
   removeTypingUser: (conversationId: string, userId: string) => void;
   isTyping: (conversationId: string, userId: string) => boolean;
@@ -25,7 +21,7 @@ export const useSocketStore = create<SocketState>((set, get) => ({
   typingUsers: {},
 
   // =====================
-  // 🟢 ONLINE
+  // ONLINE
   // =====================
   setOnlineUsers: (users) =>
     set({ onlineUsers: new Set(users) }),
@@ -47,16 +43,8 @@ export const useSocketStore = create<SocketState>((set, get) => ({
   isOnline: (userId) => get().onlineUsers.has(userId),
 
   // =====================
-  // 🟡 TYPING
+  // TYPING (FIXED)
   // =====================
-  setTypingUsers: (conversationId, users) =>
-    set((state) => ({
-      typingUsers: {
-        ...state.typingUsers,
-        [conversationId]: new Set(users),
-      },
-    })),
-
   addTypingUser: (conversationId, userId) =>
     set((state) => {
       const current = state.typingUsers[conversationId] || new Set();

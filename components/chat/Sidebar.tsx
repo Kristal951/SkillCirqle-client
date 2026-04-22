@@ -14,7 +14,7 @@ const Sidebar = () => {
 
   const onlineUsers = useSocketStore((s) => s.onlineUsers);
   const typingUsers = useSocketStore((s) => s.typingUsers);
-  console.log(typingUsers);
+  console.log(typingUsers, 'typing');
 
   useEffect(() => {
     const fetchChats = async () => {

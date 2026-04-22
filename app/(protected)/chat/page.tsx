@@ -3,7 +3,6 @@
 import { useEffect, useMemo, useRef } from "react";
 import { useChatStore, Message } from "@/store/useChatStore";
 import { useAuthStore } from "@/store/useAuthStore";
-import { getSocket } from "@/lib/socket";
 import { initSocketEvents } from "@/lib/socketEvents";
 
 // =====================
@@ -165,7 +164,7 @@ const Chat = () => {
               {/* Message */}
               <div className="flex flex-col max-w-[50%]">
                 <div
-                  className={`p-4 text-sm shadow break-words ${
+                  className={`p-4 text-sm shadow wrap-break-word ${
                     isMe
                       ? "bg-primary text-white rounded-t-3xl rounded-bl-3xl"
                       : "bg-surface text-text-primary rounded-t-3xl rounded-br-3xl"

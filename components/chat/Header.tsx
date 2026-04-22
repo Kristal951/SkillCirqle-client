@@ -57,7 +57,7 @@ const Header = () => {
 
           <p className="text-[10px] md:text-xs font-medium">
             {isTyping ? (
-              <span className="text-gray-400 animate-pulse">typing...</span>
+              <span className="text-text-primary animate-pulse">typing...</span>
             ) : isOnline ? (
               <span className="text-green-500">Online</span>
             ) : (

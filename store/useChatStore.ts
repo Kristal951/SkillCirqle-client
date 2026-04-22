@@ -18,10 +18,9 @@ export type Message = {
   metadata?: {
     url?: string;
   };
-  sender:{
-    avatar: string
-  }
-
+  sender: {
+    avatar: string;
+  };
   status?: "sending" | "sent" | "failed";
   isTemp?: boolean;
 };
@@ -29,19 +28,17 @@ export type Message = {
 type ChatStore = {
   messages: Record<string, Message[]>;
   activeChat: ActiveChat | null;
-  isListening: boolean;
 
   setActiveChat: (chat: ActiveChat | null) => void;
 
   fetchMessages: (conversationId: string) => Promise<void>;
-
   sendMessage: (data: {
     conversationId: string;
     senderId: string;
     content: string;
     type?: "text" | "image";
     metadata?: any;
-    senderAvatar: string
+    senderAvatar: string;
   }) => void;
 
   listenForMessages: () => void;
@@ -55,12 +52,11 @@ type ChatStore = {
 export const useChatStore = create<ChatStore>((set, get) => ({
   messages: {},
   activeChat: null,
-  isListening: false,
 
   setActiveChat: (chat) => set({ activeChat: chat }),
 
   // =====================
-  // Fetch messages (safe browser Supabase)
+  // FETCH MESSAGES (FIXED)
   // =====================
   fetchMessages: async (conversationId) => {
     const supabase = getSupabaseBrowserClient();
@@ -79,13 +75,13 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     set((state) => ({
       messages: {
         ...state.messages,
-        [conversationId]: data?.map((m) => ({ ...m, status: "sent" })) || [],
+        [conversationId]: data || [],
       },
     }));
   },
 
   // =====================
-  // Send message (optimistic)
+  // SEND MESSAGE (OPTIMISTIC + SAFE)
   // =====================
   sendMessage: ({
     conversationId,
@@ -93,12 +89,11 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     content,
     type = "text",
     metadata,
-    senderAvatar
+    senderAvatar,
   }) => {
     if (!content.trim() && type === "text") return;
 
-    const socket = getSocket(); 
-
+    const socket = getSocket();
     const tempId = `temp-${Date.now()}`;
 
     const tempMessage: Message = {
@@ -111,11 +106,12 @@ export const useChatStore = create<ChatStore>((set, get) => ({
       metadata,
       status: "sending",
       isTemp: true,
-      sender:{
-        avatar: senderAvatar || ''
-      }
+      sender: {
+        avatar: senderAvatar || "",
+      },
     };
 
+    // optimistic update
     set((state) => ({
       messages: {
         ...state.messages,
@@ -137,80 +133,68 @@ export const useChatStore = create<ChatStore>((set, get) => ({
   },
 
   // =====================
-  // Listen for socket messages
+  // LISTEN FOR MESSAGES (FIXED DUPLICATES)
   // =====================
   listenForMessages: () => {
-    if (get().isListening) return;
-
     const socket = getSocket();
-
     if (!socket) return;
 
-    // 🔥 prevent duplicate listeners
+    // 🚨 HARD RESET (prevents duplicates)
     socket.off("new_message");
     socket.off("message_error");
 
-    socket.on("new_message", async (msg: Message & { tempId?: string }) => {
+    // =====================
+    // NEW MESSAGE
+    // =====================
+    socket.on("new_message", (msg: any) => {
       const conversationId = msg.conversation_id;
 
       set((state) => {
         const existing = state.messages[conversationId] || [];
 
-        const replaced = existing.map((m) => {
-          if (msg.tempId && m.id === msg.tempId) {
-            return {
-              ...msg,
-              status: "sent" as const,
-              isTemp: false,
-            };
-          }
-          return m;
-        });
+        // 🔥 STRICT DEDUPE (fixes receiver duplicates)
+        const alreadyExists = existing.some(
+          (m) => m.id === msg.id || (msg.tempId && m.id === msg.tempId)
+        );
 
-        if (replaced.some((m) => m.id === msg.id)) {
-          return state;
-        }
+        if (alreadyExists) return state;
+
+        // replace temp message if exists
+        const updated = existing.map((m) =>
+          msg.tempId && m.id === msg.tempId
+            ? { ...msg, status: "sent", isTemp: false }
+            : m
+        );
 
         return {
           messages: {
             ...state.messages,
-            [conversationId]: [...replaced, msg],
+            [conversationId]: [...updated, msg],
           },
         };
       });
-
-      // ⚠️ This is OK but keep in mind it runs often
-      const supabase = getSupabaseBrowserClient();
-
-      await supabase
-        .from("conversations")
-        .update({
-          last_message: msg.content,
-          last_message_at: msg.created_at,
-        })
-        .eq("id", conversationId);
     });
 
+    // =====================
+    // ERROR HANDLING
+    // =====================
     socket.on("message_error", ({ tempId }) => {
       set((state) => {
-        const updated = Object.fromEntries(
-          Object.entries(state.messages).map(([cid, msgs]) => [
-            cid,
-            msgs.map((m) =>
-              m.id === tempId ? { ...m, status: "failed" as const } : m
-            ),
-          ])
-        );
+        const updated: Record<string, Message[]> = {};
+
+        for (const cid in state.messages) {
+          updated[cid] = state.messages[cid].map((m) =>
+            m.id === tempId ? { ...m, status: "failed" } : m
+          );
+        }
 
         return { messages: updated };
       });
     });
-
-    set({ isListening: true });
   },
 
   // =====================
-  // Join room
+  // JOIN CHAT ROOM
   // =====================
   joinChat: (conversationId) => {
     const socket = getSocket();
@@ -218,14 +202,12 @@ export const useChatStore = create<ChatStore>((set, get) => ({
   },
 
   // =====================
-  // Cleanup
+  // CLEANUP
   // =====================
   cleanup: () => {
     const socket = getSocket();
 
     socket?.off("new_message");
     socket?.off("message_error");
-
-    set({ isListening: false });
   },
 }));

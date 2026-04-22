@@ -71,7 +71,6 @@ export const useAuthStore = create<AuthState>()(
       fetchUser: async () => {
         const supabase = await getSupabaseBrowserClient(); // The Client one
         const { data } = await supabase.auth.getSession();
-          console.log("🟡 createSupabaseServer called");
 
         if (!data.session) return set({ authReady: true });
 
