@@ -48,9 +48,9 @@ export default function RootLayout({
 
         <main className="flex-1 overflow-y-auto mt-17.5">{children}</main>
 
-        <div className="md:hidden lg:hidden absolute bottom-2 right-2">
+        {/* <div className="md:hidden lg:hidden absolute bottom-2 right-2">
           <ThemeToggle />
-        </div>
+        </div> */}
       </div>
 
       {loggingOut && (
