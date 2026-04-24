@@ -19,7 +19,9 @@ const Header = () => {
 
   const isOnline = onlineUsers.has(otherUserId);
 
-  const isTyping = typingUsers[activeChat.id]?.has(otherUserId) || false;
+  const typingList = typingUsers?.[activeChat.id] || [];
+
+  const isTyping = otherUserId ? typingList.includes(otherUserId) : false;
 
   const startSession = async (type: "audio" | "video") => {
     const roomId = `${activeChat.id}-${Date.now()}`;

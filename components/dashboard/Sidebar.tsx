@@ -33,13 +33,13 @@ const Sidebar = ({
     <>
       {isSideBarOpen && (
         <div
-          className="fixed inset-0 bg-black/50 z-40 md:hidden backdrop-blur-sm transition-opacity"
+          className="fixed inset-0 bg-black/50 z-100 md:hidden backdrop-blur-sm transition-opacity"
           onClick={closeSidebar}
         />
       )}
 
       <aside
-        className={`h-full bg-background border-r border-border/20 flex flex-col transition-all duration-300 z-50
+        className={`h-full bg-background border-r border-border/20 flex flex-col transition-all duration-300 z-100
           ${isSideBarOpen ? "fixed translate-x-0 w-72" : "fixed -translate-x-full md:relative md:translate-x-0"}
           ${!isSideBarOpen && (isCollapsed ? "md:w-20" : "md:w-72")}
         `}

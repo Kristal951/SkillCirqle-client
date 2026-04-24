@@ -13,34 +13,39 @@ const Input = () => {
   const { user } = useAuthStore();
 
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const socketRef = useRef<any>(null);
 
   const conversationId = activeChat?.id;
 
-  // ✅ initialize socket once
-  useEffect(() => {
-    socketRef.current = getSocket();
-  }, []);
+  const getSafeSocket = () => getSocket();
 
-  // ✅ stop typing on unmount/chat change
   useEffect(() => {
-    const socket = socketRef.current;
+    const el = document.querySelector("textarea");
+    if (!el) return;
 
+    el.style.height = "0px";
+    el.style.height = el.scrollHeight + "px";
+  }, [message]);
+
+  useEffect(() => {
     return () => {
-      if (!socket || !conversationId || !user?.id) return;
+      const socket = getSafeSocket();
+
+      if (!socket || !conversationId) return;
 
       socket.emit("stop_typing", {
         conversationId,
       });
     };
-  }, [conversationId, user?.id]);
+  }, [conversationId]);
 
   const handleTyping = () => {
-    const socket = socketRef.current;
+    const socket = getSafeSocket();
+
     if (!socket || !conversationId || !user?.id) return;
 
     socket.emit("typing", {
       conversationId,
+      userId: user.id,
     });
 
     if (typingTimeoutRef.current) {
@@ -50,6 +55,7 @@ const Input = () => {
     typingTimeoutRef.current = setTimeout(() => {
       socket.emit("stop_typing", {
         conversationId,
+        userId: user.id,
       });
     }, 800);
   };
@@ -63,12 +69,24 @@ const Input = () => {
       senderAvatar: user?.avatar_url || "",
       content: message,
       type: "text",
+      name: user?.name || "",
     });
 
     setMessage("");
 
-    const socket = socketRef.current;
-    socket?.emit("stop_typing", { conversationId });
+    const socket = getSafeSocket();
+
+    socket?.emit("stop_typing", {
+      conversationId,
+      userId: user?.id,
+    });
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      handleSend();
+    }
   };
 
   return (
@@ -77,12 +95,13 @@ const Input = () => {
         <CirclePlus className="w-5 h-5" />
       </button>
 
-      <input
+      <textarea
         value={message}
         onChange={(e) => {
           setMessage(e.target.value);
           handleTyping();
         }}
+        onKeyDown={handleKeyDown}
         className="flex-1 bg-transparent outline-none text-sm"
         placeholder="Type a message..."
       />

@@ -21,7 +21,7 @@ export const connectSocket = (token: string) => {
 
   // Optional: Add global listeners for debugging
   socket.on("connect", () => {
-    console.log("🚀 Socket connected:", socket?.id);
+    console.log("🚀 Socket connected:");
   });
 
   socket.on("connect_error", (err) => {

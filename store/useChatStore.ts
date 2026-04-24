@@ -5,9 +5,13 @@ import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
 import { ActiveChat } from "@/types/AuthStore";
 import { getSocket } from "@/lib/socket";
 
-// =====================
-// Types
-// =====================
+export type MessageStatus =
+  | "sending"
+  | "sent"
+  | "delivered"
+  | "read"
+  | "failed";
+
 export type Message = {
   id: string;
   conversation_id: string;
@@ -17,21 +21,29 @@ export type Message = {
   message_type: "text" | "image";
   metadata?: {
     url?: string;
+    sender_avatar_url: string;
+    sender_name: string;
   };
   sender: {
     avatar: string;
   };
-  status?: "sending" | "sent" | "failed";
+  status?: MessageStatus;
   isTemp?: boolean;
+  tempId?: string;
 };
 
 type ChatStore = {
   messages: Record<string, Message[]>;
   activeChat: ActiveChat | null;
+  readPointers: Record<string, Record<string, string>>;
+  unreadCounts: Record<string, number>;
+  fetchingMessages: boolean;
 
   setActiveChat: (chat: ActiveChat | null) => void;
 
   fetchMessages: (conversationId: string) => Promise<void>;
+  fetchReadPointers: (conversationId: string) => Promise<void>;
+
   sendMessage: (data: {
     conversationId: string;
     senderId: string;
@@ -39,50 +51,130 @@ type ChatStore = {
     type?: "text" | "image";
     metadata?: any;
     senderAvatar: string;
+    name: string;
   }) => void;
 
   listenForMessages: () => void;
   joinChat: (conversationId: string) => void;
+
+  markAsRead: (conversationId: string, messageId: string) => void;
+
   cleanup: () => void;
 };
 
-// =====================
-// Store
-// =====================
 export const useChatStore = create<ChatStore>((set, get) => ({
   messages: {},
   activeChat: null,
+  readPointers: {},
+  unreadCounts: {},
+  fetchingMessages: false,
 
-  setActiveChat: (chat) => set({ activeChat: chat }),
+  setActiveChat: (chat) => {
+    set({ activeChat: chat });
 
-  // =====================
-  // FETCH MESSAGES (FIXED)
-  // =====================
-  fetchMessages: async (conversationId) => {
-    const supabase = getSupabaseBrowserClient();
+    if (!chat?.id) return;
 
-    const { data, error } = await supabase
-      .from("messages")
-      .select("*")
-      .eq("conversation_id", conversationId)
-      .order("created_at", { ascending: true });
+    const state = get();
+    const messages = state.messages[chat.id];
+    const lastMessage = messages?.[messages.length - 1];
 
-    if (error) {
-      console.error("fetchMessages error:", error);
-      return;
+    if (lastMessage) {
+      state.markAsRead(chat.id, lastMessage.id);
     }
 
-    set((state) => ({
-      messages: {
-        ...state.messages,
-        [conversationId]: data || [],
+    set((s) => ({
+      unreadCounts: {
+        ...s.unreadCounts,
+        [chat.id]: 0,
       },
     }));
   },
 
-  // =====================
-  // SEND MESSAGE (OPTIMISTIC + SAFE)
-  // =====================
+  fetchMessages: async (conversationId) => {
+    const supabase = getSupabaseBrowserClient();
+    set({ fetchingMessages: true });
+
+    try {
+      const { data: messages } = await supabase
+        .from("messages")
+        .select("*")
+        .eq("conversation_id", conversationId)
+        .order("created_at", { ascending: true });
+
+      const { data: receipts } = await supabase
+        .from("message_receipts")
+        .select("*")
+        .eq("conversation_id", conversationId);
+
+        console.log(receipts)
+
+      const receiptMap = new Map();
+
+      receipts?.forEach((r) => {
+        const existing = receiptMap.get(r.message_id) || {
+          delivered: false,
+          read: false,
+        };
+
+        receiptMap.set(r.message_id, {
+          delivered: !!r.delivered_at || existing.delivered,
+          read: !!r.read_at || existing.read,
+        });
+      });
+
+      const enriched = (messages || []).map((msg) => {
+        const r = receiptMap.get(msg.id);
+
+        let status: "sent" | "delivered" | "read" = "sent";
+
+        if (r?.read) status = "read";
+        else if (r?.delivered) status = "delivered";
+
+        return {
+          ...msg,
+          status,
+        };
+      });
+
+      set((state) => ({
+        messages: {
+          ...state.messages,
+          [conversationId]: enriched,
+        },
+      }));
+    } catch (error) {
+      console.error(error);
+    } finally {
+      set({ fetchingMessages: false });
+    }
+  },
+
+  fetchReadPointers: async (conversationId) => {
+    const supabase = getSupabaseBrowserClient();
+
+    const { data } = await supabase
+      .from("conversations_read")
+      .select("*")
+      .eq("conversation_id", conversationId);
+
+    if (!data) return;
+
+    set((state) => {
+      const updated = { ...(state.readPointers[conversationId] || {}) };
+
+      data.forEach((row) => {
+        updated[row.user_id] = row.last_read_message_id;
+      });
+
+      return {
+        readPointers: {
+          ...state.readPointers,
+          [conversationId]: updated,
+        },
+      };
+    });
+  },
+
   sendMessage: ({
     conversationId,
     senderId,
@@ -91,13 +183,14 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     metadata,
     senderAvatar,
   }) => {
-    if (!content.trim() && type === "text") return;
+    if (!content.trim()) return;
 
     const socket = getSocket();
     const tempId = `temp-${Date.now()}`;
 
     const tempMessage: Message = {
       id: tempId,
+      tempId,
       conversation_id: conversationId,
       sender_id: senderId,
       content,
@@ -106,12 +199,9 @@ export const useChatStore = create<ChatStore>((set, get) => ({
       metadata,
       status: "sending",
       isTemp: true,
-      sender: {
-        avatar: senderAvatar || "",
-      },
+      sender: { avatar: senderAvatar || "" },
     };
 
-    // optimistic update
     set((state) => ({
       messages: {
         ...state.messages,
@@ -124,7 +214,6 @@ export const useChatStore = create<ChatStore>((set, get) => ({
 
     socket?.emit("send_message", {
       conversationId,
-      senderId,
       content,
       message_type: type,
       metadata,
@@ -132,59 +221,116 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     });
   },
 
-  // =====================
-  // LISTEN FOR MESSAGES (FIXED DUPLICATES)
-  // =====================
   listenForMessages: () => {
     const socket = getSocket();
     if (!socket) return;
 
-    // 🚨 HARD RESET (prevents duplicates)
     socket.off("new_message");
+    socket.off("message_ack");
+    socket.off("message_status");
     socket.off("message_error");
+    socket.off("messages_seen");
 
-    // =====================
-    // NEW MESSAGE
-    // =====================
+    socket.on("message_ack", ({ tempId, realId }) => {
+      set((state) => {
+        const updated: Record<string, Message[]> = {};
+
+        for (const cid in state.messages) {
+          updated[cid] = state.messages[cid].map((m) =>
+            m.id === tempId
+              ? { ...m, id: realId, status: "sent", isTemp: false }
+              : m,
+          );
+        }
+
+        return { messages: updated };
+      });
+    });
+
     socket.on("new_message", (msg: any) => {
       const conversationId = msg.conversation_id;
+
+      const normalized = {
+        ...msg,
+        status: msg.status || "sent",
+      };
 
       set((state) => {
         const existing = state.messages[conversationId] || [];
 
-        // 🔥 STRICT DEDUPE (fixes receiver duplicates)
-        const alreadyExists = existing.some(
-          (m) => m.id === msg.id || (msg.tempId && m.id === msg.tempId)
-        );
-
+        const alreadyExists = existing.some((m) => m.id === msg.id);
         if (alreadyExists) return state;
 
-        // replace temp message if exists
-        const updated = existing.map((m) =>
-          msg.tempId && m.id === msg.tempId
-            ? { ...msg, status: "sent", isTemp: false }
-            : m
-        );
+        let replaced = false;
+
+        const updated = existing.map((m) => {
+          if (msg.tempId && m.id === msg.tempId) {
+            replaced = true;
+            return {
+              ...normalized,
+              isTemp: false,
+            };
+          }
+          return m;
+        });
+
+        const finalMessages = replaced ? updated : [...existing, msg];
 
         return {
           messages: {
             ...state.messages,
-            [conversationId]: [...updated, msg],
+            [conversationId]: finalMessages,
+          },
+
+          unreadCounts: {
+            ...state.unreadCounts,
+            [conversationId]:
+              state.activeChat?.id === conversationId
+                ? 0
+                : (state.unreadCounts[conversationId] || 0) + 1,
           },
         };
       });
+
+      socket.emit("message_delivered", {
+        messageId: msg.id,
+        conversationId,
+      });
     });
 
-    // =====================
-    // ERROR HANDLING
-    // =====================
+    socket.on("message_status", ({ messageId, status }) => {
+      set((state) => {
+        const updated: Record<string, Message[]> = {};
+
+        for (const cid in state.messages) {
+          updated[cid] = state.messages[cid].map((m) =>
+            m.id === messageId ? { ...m, status } : m,
+          );
+        }
+
+        return { messages: updated };
+      });
+    });
+
+    socket.on("messages_seen", ({ conversationId, userId, messageId }) => {
+      set((state) => ({
+        readPointers: {
+          ...state.readPointers,
+          [conversationId]: {
+            ...(state.readPointers[conversationId] || {}),
+            [userId]: messageId,
+          },
+        },
+      }));
+    });
+
     socket.on("message_error", ({ tempId }) => {
       set((state) => {
         const updated: Record<string, Message[]> = {};
 
         for (const cid in state.messages) {
           updated[cid] = state.messages[cid].map((m) =>
-            m.id === tempId ? { ...m, status: "failed" } : m
+            m.id === tempId ? { ...m, status: "failed" } : m,
           );
         }
 
@@ -193,21 +339,42 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     });
   },
 
-  // =====================
-  // JOIN CHAT ROOM
-  // =====================
+  markAsRead: (conversationId, messageId) => {
+    const socket = getSocket();
+    if (!socket) return;
+
+    socket.emit("mark_as_read", {
+      conversationId,
+      messageId,
+    });
+
+    set((state) => ({
+      readPointers: {
+        ...state.readPointers,
+        [conversationId]: {
+          ...(state.readPointers[conversationId] || {}),
+          me: messageId,
+        },
+      },
+      unreadCounts: {
+        ...state.unreadCounts,
+        [conversationId]: 0,
+      },
+    }));
+  },
+
   joinChat: (conversationId) => {
     const socket = getSocket();
     socket?.emit("join_room", conversationId);
   },
 
-  // =====================
-  // CLEANUP
-  // =====================
   cleanup: () => {
     const socket = getSocket();
 
     socket?.off("new_message");
+    socket?.off("message_ack");
+    socket?.off("message_status");
     socket?.off("message_error");
+    socket?.off("messages_seen");
   },
 }));

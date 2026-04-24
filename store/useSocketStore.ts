@@ -2,15 +2,13 @@ import { create } from "zustand";
 
 type SocketState = {
   onlineUsers: Set<string>;
-  typingUsers: Record<string, Set<string>>;
+  typingUsers: Record<string, string[]>; 
 
-  // ONLINE
   setOnlineUsers: (users: string[]) => void;
   addOnlineUser: (userId: string) => void;
   removeOnlineUser: (userId: string) => void;
   isOnline: (userId: string) => boolean;
 
-  // TYPING
   addTypingUser: (conversationId: string, userId: string) => void;
   removeTypingUser: (conversationId: string, userId: string) => void;
   isTyping: (conversationId: string, userId: string) => boolean;
@@ -20,9 +18,6 @@ export const useSocketStore = create<SocketState>((set, get) => ({
   onlineUsers: new Set(),
   typingUsers: {},
 
-  // =====================
-  // ONLINE
-  // =====================
   setOnlineUsers: (users) =>
     set({ onlineUsers: new Set(users) }),
 
@@ -42,39 +37,32 @@ export const useSocketStore = create<SocketState>((set, get) => ({
 
   isOnline: (userId) => get().onlineUsers.has(userId),
 
-  // =====================
-  // TYPING (FIXED)
-  // =====================
   addTypingUser: (conversationId, userId) =>
     set((state) => {
-      const current = state.typingUsers[conversationId] || new Set();
-      const updated = new Set(current);
-      updated.add(userId);
+      const current = state.typingUsers[conversationId] || [];
+
+      if (current.includes(userId)) return state;
 
       return {
         typingUsers: {
           ...state.typingUsers,
-          [conversationId]: updated,
+          [conversationId]: [...current, userId],
         },
       };
     }),
 
   removeTypingUser: (conversationId, userId) =>
     set((state) => {
-      const current = state.typingUsers[conversationId];
-      if (!current) return state;
-
-      const updated = new Set(current);
-      updated.delete(userId);
+      const current = state.typingUsers[conversationId] || [];
 
       return {
         typingUsers: {
           ...state.typingUsers,
-          [conversationId]: updated,
+          [conversationId]: current.filter((id) => id !== userId),
         },
       };
     }),
 
   isTyping: (conversationId, userId) =>
-    get().typingUsers[conversationId]?.has(userId) || false,
+    get().typingUsers[conversationId]?.includes(userId) || false,
 }));

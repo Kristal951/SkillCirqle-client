@@ -4,6 +4,11 @@ import { getSocket } from "./socket";
 let initialized = false;
 
 export const initSocketEvents = () => {
+  if (initialized) {
+    console.log("already initialised");
+    return;
+  }
+
   const socket = getSocket();
   if (!socket) return;
 
@@ -15,7 +20,6 @@ export const initSocketEvents = () => {
     removeTypingUser,
   } = useSocketStore.getState();
 
-  // 🚨 ALWAYS CLEAR OLD LISTENERS FIRST (IMPORTANT FIX)
   socket.off("online_users");
   socket.off("user_online");
   socket.off("user_offline");
@@ -36,12 +40,15 @@ export const initSocketEvents = () => {
     removeOnlineUser(userId);
   });
 
-  socket.on("typing", ({conversationId, userId}) => {
-    console.log(conversationId, userId)
+  socket.on("typing", ({ conversationId, userId }) => {
+    if (!conversationId || !userId) return;
+
     addTypingUser(conversationId, userId);
   });
 
   socket.on("stop_typing", ({ conversationId, userId }) => {
+    if (!conversationId || !userId) return;
+
     removeTypingUser(conversationId, userId);
   });
 
