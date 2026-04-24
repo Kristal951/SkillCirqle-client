@@ -38,7 +38,6 @@ const Sidebar = () => {
   useEffect(() => {
     fetchChats();
 
-    // realtime: conversation updates
     const convoChannel = supabase
       .channel("sidebar_conversations")
       .on(
@@ -48,7 +47,6 @@ const Sidebar = () => {
       )
       .subscribe();
 
-    // realtime: new messages (important fix)
     const messageChannel = supabase
       .channel("sidebar_messages")
       .on(
@@ -113,7 +111,6 @@ const Sidebar = () => {
                   isActive ? "bg-muted shadow-sm" : "hover:bg-muted/50"
                 }`}
               >
-                {/* Avatar */}
                 <div className="relative shrink-0">
                   <div className="w-12 h-12 rounded-full overflow-hidden border border-border">
                     <img
@@ -128,7 +125,6 @@ const Sidebar = () => {
                   )}
                 </div>
 
-                {/* Content */}
                 <div className="flex-1 min-w-0">
                   <div className="flex justify-between items-baseline">
                     <h3 className="font-semibold truncate">{chat.name}</h3>

@@ -15,7 +15,7 @@ const Header = () => {
 
   if (!activeChat) return null;
 
-  const otherUserId = activeChat.user_id;
+  const otherUserId = activeChat.other_user_id;
 
   const isOnline = onlineUsers.has(otherUserId);
 

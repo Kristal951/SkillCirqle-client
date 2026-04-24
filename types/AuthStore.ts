@@ -61,5 +61,6 @@ export type ActiveChat = {
   last_message_at: string;
   name: string;
   user_id: string;
-  is_online: boolean
+  is_online: boolean;
+  other_user_id: string
 };
