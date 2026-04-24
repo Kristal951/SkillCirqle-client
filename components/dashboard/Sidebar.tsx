@@ -33,7 +33,7 @@ const Sidebar = ({
     <>
       {isSideBarOpen && (
         <div
-          className="fixed inset-0 bg-black/50 z-100 md:hidden backdrop-blur-sm transition-opacity"
+          className="fixed inset-0 bg-black/50 z-90 md:hidden backdrop-blur-sm transition-opacity"
           onClick={closeSidebar}
         />
       )}

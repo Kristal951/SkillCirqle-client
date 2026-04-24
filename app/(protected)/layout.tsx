@@ -1,4 +1,5 @@
 "use client";
+import MediaViewer from "@/components/chat/MediaViewer";
 import Navbar from "@/components/dashboard/Navbar";
 import Sidebar from "@/components/dashboard/Sidebar";
 import ThemeToggle from "@/components/ToggleThemeButton";
@@ -58,6 +59,8 @@ export default function RootLayout({
           <Spinner size={48} />
         </div>
       )}
+
+      <MediaViewer />
 
       {showLogoutModal && (
         <div className="fixed inset-0 z-100 bg-black/70 flex items-center justify-center p-4">

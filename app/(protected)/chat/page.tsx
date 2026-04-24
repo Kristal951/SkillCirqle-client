@@ -1,7 +1,12 @@
 "use client";
 
 import { useEffect, useMemo, useRef } from "react";
-import { useChatStore, Message } from "@/store/useChatStore";
+import {
+  useChatStore,
+  Message,
+  MessageType,
+  MessageStatus,
+} from "@/store/useChatStore";
 import { useAuthStore } from "@/store/useAuthStore";
 import { getSocket } from "@/lib/socket";
 import MessageBubble from "@/components/chat/MessageBubble";
@@ -10,14 +15,21 @@ import Spinner from "@/components/ui/Spinner";
 export type UIMessage = {
   id: string;
   message: string;
-  type: "text" | "image";
+  type: MessageType;
   createdAt: string;
+
   sender: {
     id: string;
     avatar: string;
   };
-  mediaUrl?: string | null;
-  status?: "sending" | "sent" | "delivered" | "read" | "failed";
+
+  media?: {
+    type: "image" | "file" | "video";
+    url: string;
+    name?: string;
+  }[];
+
+  status?: MessageStatus;
 };
 
 const Chat = () => {
@@ -58,7 +70,7 @@ const Chat = () => {
         message: msg.content,
         type: msg.message_type || "text",
         createdAt: msg.created_at,
-        status: msg.status || 'sent',
+        status: msg.status || "sent",
 
         sender: {
           id: msg.sender_id,
@@ -68,9 +80,24 @@ const Chat = () => {
             `https://i.pravatar.cc/150?u=${msg.sender_id}`,
         },
 
-        mediaUrl: msg.message_type === "image" ? msg.metadata?.url : null,
+        media:
+          msg.message_type === "image"
+            ? msg.metadata?.media?.map((img: any) => ({
+                type: "image",
+                url: img.url,
+                name: img.name,
+              })) || []
+            : msg.message_type === "file"
+              ? msg.metadata?.media?.map((file: any) => ({
+                  type: "file",
+                  url: file.url,
+                  name: file.name,
+                }))
+              : [],
       }));
   }, [rawMessages]);
+
+  console.log(rawMessages);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -109,12 +136,12 @@ const Chat = () => {
     );
   }
 
-  if(fetchingMessages){
-    return(
+  if (fetchingMessages) {
+    return (
       <div className="w-full h-full flex items-center justify-center">
-        <Spinner size={30}/>
+        <Spinner size={30} />
       </div>
-    )
+    );
   }
 
   if (rawMessages.length === 0 && !fetchingMessages) {

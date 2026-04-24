@@ -12,21 +12,40 @@ export type MessageStatus =
   | "read"
   | "failed";
 
+export type MessageType = "text" | "image" | "file" | "mixed";
+
+type MediaItem = {
+  type: "image" | "file";
+  url: string;
+  name?: string;
+  size?: number;
+  mime?: string;
+};
+
 export type Message = {
   id: string;
   conversation_id: string;
   sender_id: string;
   content: string;
   created_at: string;
-  message_type: "text" | "image";
+  message_type: MessageType;
+
   metadata?: {
+    media?: MediaItem[];
     url?: string;
-    sender_avatar_url: string;
-    sender_name: string;
+
+    sender_avatar_url?: string;
+    sender_name?: string;
+
+    file_name?: string;
+    file_size?: number;
+    mime_type?: string;
   };
+
   sender: {
     avatar: string;
   };
+
   status?: MessageStatus;
   isTemp?: boolean;
   tempId?: string;
@@ -48,7 +67,7 @@ type ChatStore = {
     conversationId: string;
     senderId: string;
     content: string;
-    type?: "text" | "image";
+    type?: MessageType;
     metadata?: any;
     senderAvatar: string;
     name: string;
@@ -105,8 +124,6 @@ export const useChatStore = create<ChatStore>((set, get) => ({
         .from("message_receipts")
         .select("*")
         .eq("conversation_id", conversationId);
-
-        console.log(receipts)
 
       const receiptMap = new Map();
 
@@ -184,6 +201,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     senderAvatar,
   }) => {
     if (!content.trim()) return;
+    console.log(`send called`);
 
     const socket = getSocket();
     const tempId = `temp-${Date.now()}`;
