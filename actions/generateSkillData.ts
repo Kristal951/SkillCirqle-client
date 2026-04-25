@@ -34,7 +34,7 @@ Return STRICT JSON:
 
     try {
       brainData = JSON.parse(
-        brainResponse.choices[0]?.message?.content || "{}"
+        brainResponse.choices[0]?.message?.content || "{}",
       );
     } catch {
       brainData = {
@@ -53,9 +53,15 @@ Style: ${brainData.style}. Clean, minimal, pure white background, centered, 1:1 
       size: "1024x1024",
     });
 
+    if (!imageResponse?.data?.length) {
+      throw new Error("No image data returned from API");
+    }
+
     const base64Data = imageResponse.data[0].b64_json;
 
-    if (!base64Data) throw new Error("Image generation failed");
+    if (!base64Data) {
+      throw new Error("Missing b64_json in image response");
+    }
 
     const imageBuffer = Buffer.from(base64Data, "base64");
 
