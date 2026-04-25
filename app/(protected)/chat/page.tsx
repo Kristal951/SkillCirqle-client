@@ -11,6 +11,7 @@ import { useAuthStore } from "@/store/useAuthStore";
 import { getSocket } from "@/lib/socket";
 import MessageBubble from "@/components/chat/MessageBubble";
 import Spinner from "@/components/ui/Spinner";
+import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
 
 export type UIMessage = {
   id: string;
@@ -24,7 +25,7 @@ export type UIMessage = {
   };
 
   media?: {
-    type: "image" | "file" | "video";
+    type: "image" | "file" | "video" | "audio";
     url: string;
     name?: string;
   }[];
@@ -53,7 +54,7 @@ const Chat = () => {
     if (!activeChat?.id) return;
 
     fetchReadPointers(activeChat.id);
-    fetchMessages(activeChat.id);
+    fetchMessages(activeChat.id, user?.id || "");
     joinChat(activeChat.id);
     listenForMessages();
 
@@ -70,7 +71,7 @@ const Chat = () => {
         message: msg.content,
         type: msg.message_type || "text",
         createdAt: msg.created_at,
-        status: msg.status || "sent",
+        status: msg.status,
 
         sender: {
           id: msg.sender_id,
@@ -89,14 +90,19 @@ const Chat = () => {
               })) || []
             : msg.message_type === "file"
               ? msg.metadata?.media?.map((file: any) => ({
-                  type: "file",
+                  type: file.type,
                   url: file.url,
                   name: file.name,
                 }))
-              : [],
+              : msg.message_type === "audio"
+                ? msg.metadata?.media?.map((file: any) => ({
+                    type: file.type,
+                    url: file.url,
+                    name: file.name,
+                  }))
+                : [],
       }));
   }, [rawMessages]);
-
   console.log(rawMessages);
 
   useEffect(() => {
@@ -109,18 +115,33 @@ const Chat = () => {
     const socket = getSocket();
     if (!socket) return;
 
-    const messages = storeMessages[activeChat.id] || [];
-    if (messages.length === 0) return;
+    socket.emit("mark_as_read", {
+      conversationId: activeChat.id,
+      userId: currentUserId,
+    });
+  }, [activeChat?.id, currentUserId]);
 
-    const lastMessage = messages[messages.length - 1];
+  useEffect(() => {
+    if (!activeChat?.id || !currentUserId) return;
 
-    if (lastMessage.sender_id !== currentUserId) {
-      socket.emit("mark_as_read", {
-        conversationId: activeChat.id,
-        messageId: lastMessage.id,
-      });
-    }
-  }, [messages.length, activeChat?.id]);
+    const markAsRead = async () => {
+      const supabase = getSupabaseBrowserClient();
+
+      await supabase
+        .from("message_receipts")
+        .update({ read_at: new Date().toISOString() })
+        .eq("user_id", currentUserId)
+        .eq("conversation_id", activeChat.id)
+        .is("read_at", null);
+
+      await supabase
+        .from("conversations")
+        .update({ unread_count: 0 })
+        .eq("id", activeChat.id);
+    };
+
+    markAsRead();
+  }, [activeChat?.id, currentUserId]);
 
   if (!activeChat) {
     return (

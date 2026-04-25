@@ -12,7 +12,7 @@ export type MessageStatus =
   | "read"
   | "failed";
 
-export type MessageType = "text" | "image" | "file" | "mixed";
+export type MessageType = "text" | "image" | "file" | "mixed" | "audio" ;
 
 type MediaItem = {
   type: "image" | "file";
@@ -55,12 +55,11 @@ type ChatStore = {
   messages: Record<string, Message[]>;
   activeChat: ActiveChat | null;
   readPointers: Record<string, Record<string, string>>;
-  unreadCounts: Record<string, number>;
   fetchingMessages: boolean;
 
   setActiveChat: (chat: ActiveChat | null) => void;
 
-  fetchMessages: (conversationId: string) => Promise<void>;
+  fetchMessages: (conversationId: string, userId: string) => Promise<void>;
   fetchReadPointers: (conversationId: string) => Promise<void>;
 
   sendMessage: (data: {
@@ -80,12 +79,18 @@ type ChatStore = {
 
   cleanup: () => void;
 };
+const computeStatus = (messageId: string, receiptsMap: Map<string, any>) => {
+  const receipt = receiptsMap.get(messageId);
+
+  if (receipt?.read) return "read";
+  if (receipt?.delivered) return "delivered";
+  return "sent";
+};
 
 export const useChatStore = create<ChatStore>((set, get) => ({
   messages: {},
   activeChat: null,
   readPointers: {},
-  unreadCounts: {},
   fetchingMessages: false,
 
   setActiveChat: (chat) => {
@@ -100,59 +105,49 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     if (lastMessage) {
       state.markAsRead(chat.id, lastMessage.id);
     }
-
-    set((s) => ({
-      unreadCounts: {
-        ...s.unreadCounts,
-        [chat.id]: 0,
-      },
-    }));
   },
 
-  fetchMessages: async (conversationId) => {
+  fetchMessages: async (conversationId, userId) => {
     const supabase = getSupabaseBrowserClient();
     set({ fetchingMessages: true });
 
     try {
-      const { data: messages } = await supabase
-        .from("messages")
-        .select("*")
-        .eq("conversation_id", conversationId)
-        .order("created_at", { ascending: true });
+      // 1. Fetch messages
+       const { data: messages, error } = await supabase
+      .from("messages")
+      .select(`
+        *,
+        sender:profiles(*),
+        message_receipts(
+          user_id,
+          delivered_at,
+          read_at
+        )
+      `)
+      .eq("conversation_id", conversationId)
+      .order("created_at", { ascending: true });
 
-      const { data: receipts } = await supabase
-        .from("message_receipts")
-        .select("*")
-        .eq("conversation_id", conversationId);
+    if (error) throw error;
 
-      const receiptMap = new Map();
+        const enriched = (messages || []).map((msg: any) => {
+      const receipt = msg.message_receipts?.[0]; 
+      // for DM: only 1 receipt per user
 
-      receipts?.forEach((r) => {
-        const existing = receiptMap.get(r.message_id) || {
-          delivered: false,
-          read: false,
-        };
+      let status: "sent" | "delivered" | "read" = "sent";
 
-        receiptMap.set(r.message_id, {
-          delivered: !!r.delivered_at || existing.delivered,
-          read: !!r.read_at || existing.read,
-        });
-      });
+      if (receipt?.read_at) {
+        status = "read";
+      } else if (receipt?.delivered_at) {
+        status = "delivered";
+      }
 
-      const enriched = (messages || []).map((msg) => {
-        const r = receiptMap.get(msg.id);
+      return {
+        ...msg,
+        status,
+      };
+    });
 
-        let status: "sent" | "delivered" | "read" = "sent";
-
-        if (r?.read) status = "read";
-        else if (r?.delivered) status = "delivered";
-
-        return {
-          ...msg,
-          status,
-        };
-      });
-
+      // 6. Store
       set((state) => ({
         messages: {
           ...state.messages,
@@ -160,7 +155,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
         },
       }));
     } catch (error) {
-      console.error(error);
+      console.error("fetchMessages error:", error);
     } finally {
       set({ fetchingMessages: false });
     }
@@ -201,7 +196,6 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     senderAvatar,
   }) => {
     if (!content.trim()) return;
-    console.log(`send called`);
 
     const socket = getSocket();
     const tempId = `temp-${Date.now()}`;
@@ -267,6 +261,8 @@ export const useChatStore = create<ChatStore>((set, get) => ({
 
     socket.on("new_message", (msg: any) => {
       const conversationId = msg.conversation_id;
+      const state = get();
+      const isActiveChat = state.activeChat?.id === conversationId;
 
       const normalized = {
         ...msg,
@@ -299,21 +295,32 @@ export const useChatStore = create<ChatStore>((set, get) => ({
             ...state.messages,
             [conversationId]: finalMessages,
           },
-
-          unreadCounts: {
-            ...state.unreadCounts,
-            [conversationId]:
-              state.activeChat?.id === conversationId
-                ? 0
-                : (state.unreadCounts[conversationId] || 0) + 1,
-          },
         };
       });
 
-      socket.emit("message_delivered", {
-        messageId: msg.id,
-        conversationId,
-      });
+      if (isActiveChat) {
+        const socket = getSocket();
+
+        socket?.emit("mark_as_read", {
+          conversationId,
+          messageId: msg.id,
+        });
+
+        set((state) => {
+          const messages = state.messages[conversationId] || [];
+
+          const updated = messages.map((m) =>
+            m.id === msg.id ? { ...m, status: "read" } : m,
+          );
+
+          return {
+            messages: {
+              ...state.messages,
+              [conversationId]: updated,
+            },
+          };
+        });
+      }
     });
 
     socket.on("message_status", ({ messageId, status }) => {
@@ -330,18 +337,28 @@ export const useChatStore = create<ChatStore>((set, get) => ({
       });
     });
 
-    socket.on("messages_seen", ({ conversationId, userId, messageId }) => {
-      set((state) => ({
-        readPointers: {
-          ...state.readPointers,
-          [conversationId]: {
-            ...(state.readPointers[conversationId] || {}),
-            [userId]: messageId,
-          },
-        },
-      }));
-    });
+    socket.on("messages_seen", ({ conversationId, messageId }) => {
+      set((state) => {
+        const messages = state.messages[conversationId] || [];
 
+        const updated = messages.map((msg) => {
+          if (msg.id === messageId) {
+            return {
+              ...msg,
+              status: "read",
+            };
+          }
+          return msg;
+        });
+
+        return {
+          messages: {
+            ...state.messages,
+            [conversationId]: updated,
+          },
+        };
+      });
+    });
     socket.on("message_error", ({ tempId }) => {
       set((state) => {
         const updated: Record<string, Message[]> = {};
@@ -366,19 +383,27 @@ export const useChatStore = create<ChatStore>((set, get) => ({
       messageId,
     });
 
-    set((state) => ({
-      readPointers: {
-        ...state.readPointers,
-        [conversationId]: {
-          ...(state.readPointers[conversationId] || {}),
-          me: messageId,
+    set((state) => {
+      const messages = state.messages[conversationId] || [];
+
+      const updated = messages.map((msg): Message => {
+        if (msg.id === messageId) {
+          return {
+            ...msg,
+            status: "read",
+          };
+        }
+
+        return msg;
+      });
+
+      return {
+        messages: {
+          ...state.messages,
+          [conversationId]: updated,
         },
-      },
-      unreadCounts: {
-        ...state.unreadCounts,
-        [conversationId]: 0,
-      },
-    }));
+      };
+    });
   },
 
   joinChat: (conversationId) => {

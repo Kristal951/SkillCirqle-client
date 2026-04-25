@@ -9,6 +9,8 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@daily-co/daily-js": "^0.89.1",
+    "@daily-co/daily-react": "^0.25.0",
     "@google/genai": "^1.50.1",
     "@huggingface/inference": "^4.13.15",
     "@jitsi/react-sdk": "^1.4.4",
@@ -19,9 +21,11 @@
     "axios": "^1.14.0",
     "browser-image-compression": "^2.0.2",
     "date-fns": "^4.1.0",
+    "emoji-picker-react": "^4.19.0",
     "firebase": "^12.11.0",
     "firebase-admin": "^13.7.0",
     "framer-motion": "^12.38.0",
+    "groq-sdk": "^1.1.2",
     "lucide-react": "^1.7.0",
     "next": "16.1.6",
     "next-themes": "^0.4.6",
@@ -34,6 +38,7 @@
     "replicate": "^1.4.0",
     "server-only": "^0.0.1",
     "socket.io-client": "^4.8.3",
+    "wavesurfer.js": "^7.12.6",
     "zustand": "^5.0.12"
   },
   "devDependencies": {

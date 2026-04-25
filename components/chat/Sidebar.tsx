@@ -43,7 +43,7 @@ const Sidebar = () => {
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "dm_conversations" },
-        () => fetchChats()
+        () => fetchChats(),
       )
       .subscribe();
 
@@ -52,13 +52,27 @@ const Sidebar = () => {
       .on(
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "messages" },
-        () => fetchChats()
+        () => fetchChats(),
+      )
+      .subscribe();
+
+    const receiptsChannel = supabase
+      .channel("receipts_updates")
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "message_receipts",
+        },
+        () => fetchChats(),
       )
       .subscribe();
 
     return () => {
       supabase.removeChannel(convoChannel);
       supabase.removeChannel(messageChannel);
+      supabase.removeChannel(receiptsChannel);
     };
   }, []);
 
@@ -98,10 +112,9 @@ const Sidebar = () => {
 
             const isOnline = onlineUsers?.has?.(otherUserId);
 
-            const isTyping =
-              typingUsers?.[chat.id]?.includes?.(otherUserId);
+            const isTyping = typingUsers?.[chat.id]?.includes?.(otherUserId);
 
-            const unreadCount = chat.unreadCount || 0;
+            const unreadCount = chat.unread_count || 0;
 
             return (
               <button
@@ -138,8 +151,8 @@ const Sidebar = () => {
                     <p
                       className={`text-sm truncate flex-1 ${
                         unreadCount > 0
-                          ? "text-foreground font-bold"
-                          : "text-muted-foreground"
+                          ? "text-text-primary font-bold"
+                          : "text-text-secondary"
                       }`}
                     >
                       {isTyping ? (

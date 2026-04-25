@@ -11,14 +11,27 @@ import {
   Play,
 } from "lucide-react";
 import { useMediaViewer } from "@/store/useMediaViewer";
+import VoicePlayer from "./VoicePlayer";
 
 const MessageBubble = ({ isMe, msg }: { isMe: boolean; msg: UIMessage }) => {
   const { openViewer } = useMediaViewer();
 
+  const getStatus = () => {
+    if (!isMe) return null;
+
+    const receipt = msg as any;
+
+    if (receipt.status === "sending") return "sending";
+    if (receipt.status === "failed") return "failed";
+    if (receipt.status === "read") return "read";
+    if (receipt.status === "delivered") return "delivered";
+    return "sent";
+  };
+
   const renderStatus = () => {
     if (!isMe) return null;
 
-    switch (msg.status) {
+    switch (getStatus()) {
       case "sending":
         return <Clock size={12} className="text-gray-300 animate-pulse" />;
       case "sent":
@@ -38,10 +51,11 @@ const MessageBubble = ({ isMe, msg }: { isMe: boolean; msg: UIMessage }) => {
 
   const images = media.filter((m) => m.type === "image");
   const files = media.filter((m) => m.type === "file");
+  const audioMedia = media.filter((m) => m.type === "audio");
+
+  const isAudioMessage = audioMedia.length > 0;
 
   const openFile = (file: any) => {
-    console.log(file);
-    console.log(`opening ${file.name} with ${file.url}`);
     const url = file.url;
     const name = file.name || "";
 
@@ -109,14 +123,24 @@ const MessageBubble = ({ isMe, msg }: { isMe: boolean; msg: UIMessage }) => {
 
       <div className="flex flex-col max-w-[55%]">
         <div
-          className={`p-4 text-sm shadow wrap-break-word ${
+          className={`text-sm shadow wrap-break-word ${
+            isAudioMessage ? "px-4 py-2 rounded-t-xl" : "p-4 rounded-t-3xl"
+          } ${
             isMe
-              ? "bg-primary text-white rounded-t-3xl rounded-bl-3xl"
-              : "bg-surface text-text-primary rounded-t-3xl rounded-br-3xl"
+              ? `bg-primary text-white ${isAudioMessage ? "rounded-bl-xl" : "rounded-bl-3xl"} `
+              : "bg-surface text-text-primary rounded-br-3xl"
           }`}
         >
           {msg.type === "text" && (
             <p className="whitespace-pre-wrap">{msg.message}</p>
+          )}
+
+          {audioMedia.length > 0 && (
+            <div className="mt-2 space-y-2">
+              {audioMedia.map((audio) => (
+                <VoicePlayer key={audio.url} src={audio.url} />
+              ))}
+            </div>
           )}
 
           {images.length > 0 && (
@@ -159,7 +183,7 @@ const MessageBubble = ({ isMe, msg }: { isMe: boolean; msg: UIMessage }) => {
           {msg.type === "file" && files.length > 0 && (
             <div className="space-y-2">
               {files.map((file) => (
-                <button
+                <div
                   key={file.url}
                   onClick={() => openFile(file)}
                   className="flex items-center gap-3 p-3 rounded-lg bg-black/10 hover:bg-black/20 w-full"
@@ -172,12 +196,15 @@ const MessageBubble = ({ isMe, msg }: { isMe: boolean; msg: UIMessage }) => {
                   </div>
 
                   <button
-                    onClick={() => downloadFile(file.url, file.name)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      downloadFile(file.url, file.name);
+                    }}
                     className="hover:scale-110 transition px-2"
                   >
                     <Download className="w-4 h-4" />
                   </button>
-                </button>
+                </div>
               ))}
             </div>
           )}

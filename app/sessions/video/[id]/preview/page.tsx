@@ -6,8 +6,6 @@ import { useEffect, useRef, useState } from "react";
 
 const VideoPreview = () => {
   const videoRef = useRef<HTMLVideoElement | null>(null);
-
-  const [stream, setStream] = useState<MediaStream | null>(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
 
@@ -17,16 +15,18 @@ const VideoPreview = () => {
 
   const [micOn, setMicOn] = useState(true);
   const [camOn, setCamOn] = useState(true);
+  const [stream, setStream] = useState<MediaStream | null>(null);
+  const [devicesReady, setDevicesReady] = useState(false);
+  const [permissionError, setPermissionError] = useState<string | null>(null);
 
-  // 🎯 Avatar fallback
   const getAvatarUrl = (name?: string) =>
     `https://ui-avatars.com/api/?name=${encodeURIComponent(
-      name || "User"
+      name || "User",
     )}&background=4f46e5&color=fff&bold=true&size=256`;
 
   const roomName =
     typeof params?.room_name === "string"
-      ? params.room_name.replace(/\s+/g, "-")
+      ? decodeURIComponent(params.room_name).replace(/\s+/g, "-")
       : "default-session";
 
   const mentorDetails = {
@@ -40,98 +40,152 @@ const VideoPreview = () => {
       ? user.avatar_url
       : getAvatarUrl(user?.name);
 
-  const mentorImage =
-    mentorDetails?.image?.trim()
-      ? mentorDetails.image
-      : getAvatarUrl(mentorDetails?.name);
+  const mentorImage = mentorDetails?.image?.trim()
+    ? mentorDetails.image
+    : getAvatarUrl(mentorDetails?.name);
 
-  useEffect(() => {
-    let currentStream: MediaStream | null = null;
+  const streamRef = useRef<MediaStream | null>(null);
 
-    const startCamera = async () => {
-      try {
-        setLoading(true);
+  const startCamera = async () => {
+    try {
+      setLoading(true);
+      setPermissionError(null);
 
-        currentStream = await navigator.mediaDevices.getUserMedia({
-          video: {
-            width: { ideal: 1280 },
-            height: { ideal: 720 },
-            facingMode: "user",
-          },
-          audio: true,
-        });
+      const currentStream = await navigator.mediaDevices.getUserMedia({
+        video: {
+          width: { ideal: 1280 },
+          height: { ideal: 720 },
+          facingMode: "user",
+        },
+        audio: true,
+      });
 
-        setStream(currentStream);
+      setStream(currentStream);
+      streamRef.current = currentStream;
 
-        if (videoRef.current) {
-          videoRef.current.srcObject = currentStream;
-        }
-
-        setLoading(false);
-      } catch (err: any) {
-        console.error(err);
-        setLoading(false);
-
-        if (err.name === "NotAllowedError") {
-          setError("Camera & microphone permission denied");
-        } else {
-          setError("No camera or microphone found");
-        }
+      if (videoRef.current) {
+        videoRef.current.srcObject = currentStream;
       }
-    };
 
-    startCamera();
+      setLoading(false);
+      setDevicesReady(true);
+    } catch (err: any) {
+      console.error(err);
+      setLoading(false);
+      setDevicesReady(false);
 
-    return () => {
-      if (currentStream) {
-        currentStream.getTracks().forEach((track) => track.stop());
+      if (err.name === "NotAllowedError") {
+        setError("Camera & microphone permission denied");
+        setPermissionError("denied");
+      } else {
+        setError("No camera or microphone found");
       }
-    };
-  }, []);
+    }
+  };
 
-  // 🎤 Mic toggle
+  const retryDevices = async () => {
+    setError("");
+    setLoading(true);
+    await startCamera();
+  };
+
   const toggleMic = () => {
     if (!stream) return;
 
-    stream.getAudioTracks().forEach((track) => {
+    const audioTracks = stream.getAudioTracks();
+    if (!audioTracks.length) return;
+
+    audioTracks.forEach((track) => {
       track.enabled = !track.enabled;
     });
 
     setMicOn((prev) => !prev);
   };
 
-  // 📷 Cam toggle
-  const toggleCam = () => {
+  const toggleCam = async () => {
     if (!stream) return;
 
-    stream.getVideoTracks().forEach((track) => {
-      track.enabled = !track.enabled;
-    });
+    const videoTracks = stream.getVideoTracks();
+    if (!videoTracks.length) return;
 
-    setCamOn((prev) => !prev);
+    const track = videoTracks[0];
+    const isEnabled = track.enabled;
+
+    if (isEnabled) {
+      track.enabled = false;
+      setCamOn(false);
+    } else {
+      track.enabled = true;
+      setCamOn(true);
+
+      await new Promise((r) => setTimeout(r, 50));
+
+      if (videoRef.current) {
+        videoRef.current.srcObject = null;
+        videoRef.current.srcObject = stream;
+
+        videoRef.current.play().catch(() => {});
+      }
+    }
   };
 
-  // 🚪 EXIT HANDLER (IMPORTANT)
-  const handleExit = () => {
-    // stop camera/mic
-    stream?.getTracks().forEach((track) => track.stop());
+  useEffect(() => {
+    if (!videoRef.current || !stream) return;
 
-    // cleanup video
+    const video = videoRef.current;
+
+    video.srcObject = stream;
+
+    const handleCanPlay = () => {
+      video.play().catch(() => {});
+    };
+
+    video.addEventListener("loadedmetadata", handleCanPlay);
+
+    return () => {
+      video.removeEventListener("loadedmetadata", handleCanPlay);
+    };
+  }, [stream]);
+
+  const handleExit = () => {
+    streamRef.current?.getTracks().forEach((t) => {
+      t.stop();
+      t.enabled = false;
+    });
+
     if (videoRef.current) {
       videoRef.current.srcObject = null;
     }
 
-    // go back
     router.back();
+  };
+
+  useEffect(() => {
+    startCamera();
+
+    return () => {
+      stream?.getTracks().forEach((t) => {
+        t.stop();
+        t.enabled = false;
+      });
+
+      if (videoRef.current) {
+        videoRef.current.srcObject = null;
+      }
+
+      setStream(null);
+      setDevicesReady(false);
+    };
+  }, []);
+
+  const handleJoin = () => {
+    streamRef.current?.getTracks().forEach((t) => t.stop());
+    router.push(`/sessions/video/${roomName}/call`);
   };
 
   return (
     <div className="w-full h-screen grid grid-cols-1 md:grid-cols-4 bg-background">
-
-      {/* MAIN */}
-      <div className="col-span-1 md:col-span-3 bg-black flex items-center justify-center relative">
-
-        {/* EXIT BUTTON (TOP LEFT) */}
+      <div className="col-span-1 md:col-span-3 bg-background flex items-center justify-center relative">
         <button
           onClick={handleExit}
           className="absolute top-4 left-4 z-50 bg-surface/40 flex items-center text-white px-4 py-2 rounded-lg backdrop-blur-md"
@@ -139,28 +193,27 @@ const VideoPreview = () => {
           ← Exit
         </button>
 
-        {/* LOADING */}
         {loading && !error && (
-          <p className="text-white animate-pulse">Starting camera...</p>
+          <div className="w-full flex h-full items-center justify-center">
+            <p className="text-white animate-pulse">Starting camera...</p>
+          </div>
         )}
 
-        {/* ERROR */}
         {error && (
           <div className="text-center p-6">
             <p className="text-red-400 mb-3">⚠️ {error}</p>
+
             <button
-              onClick={() => window.location.reload()}
+              onClick={retryDevices}
               className="text-blue-400 text-sm hover:underline"
             >
-              Retry
+              Retry devices
             </button>
           </div>
         )}
 
-        {/* VIDEO / AVATAR */}
         {!error && (
           <div className="w-full h-full relative">
-
             {camOn ? (
               <video
                 ref={videoRef}
@@ -170,7 +223,7 @@ const VideoPreview = () => {
                 className="w-full h-full object-cover scale-x-[-1]"
               />
             ) : (
-              <div className="w-full h-full flex items-center justify-center bg-black">
+              <div className="w-full h-full flex items-center justify-center bg-background">
                 <img
                   src={avatarSrc}
                   alt={user?.name || "User"}
@@ -179,9 +232,7 @@ const VideoPreview = () => {
               </div>
             )}
 
-            {/* CONTROLS */}
             <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-4 bg-surface/40 backdrop-blur-md px-5 py-3 rounded-full">
-
               <button
                 onClick={toggleMic}
                 className={`w-14 h-14 rounded-full ${
@@ -214,18 +265,14 @@ const VideoPreview = () => {
         )}
       </div>
 
-      {/* SIDE */}
       <div className="col-span-1 bg-surface flex flex-col">
-
         <div className="p-6 text-white font-bold text-lg border-b border-white/5">
           Session Preview
         </div>
 
         <div className="flex-1 p-6 space-y-5 text-slate-300">
-
           <h1 className="text-2xl font-bold text-white">{roomName}</h1>
 
-          {/* MENTOR */}
           <div className="flex items-center gap-3 p-3 bg-background rounded-xl">
             <div className="w-12 h-12 rounded-lg overflow-hidden">
               <img
@@ -236,31 +283,27 @@ const VideoPreview = () => {
             </div>
             <div>
               <p className="text-xs text-slate-400">Mentor</p>
-              <p className="text-white font-semibold">
-                {mentorDetails.name}
-              </p>
+              <p className="text-white font-semibold">{mentorDetails.name}</p>
             </div>
           </div>
 
-          {/* STATUS */}
           <div className="flex items-center gap-3 text-sm">
             <span
               className={`w-2 h-2 rounded-full ${
                 stream ? "bg-green-500" : "bg-red-500 animate-pulse"
               }`}
             />
-            <p>
-              {stream ? "Ready to join" : "Initializing devices..."}
-            </p>
+            <p>{devicesReady ? "Ready to join" : "Initializing devices..."}</p>
           </div>
         </div>
 
         <div className="p-6 border-t border-white/5">
           <button
-            disabled={!stream}
+            onClick={handleJoin}
+            disabled={!devicesReady || loading || !!error || !stream}
             className="w-full bg-primary hover:bg-primary/80 disabled:opacity-50 text-white py-3 rounded-xl font-semibold"
           >
-            Join Meeting
+            {!devicesReady ? "Checking devices..." : "Join Meeting"}
           </button>
         </div>
       </div>
