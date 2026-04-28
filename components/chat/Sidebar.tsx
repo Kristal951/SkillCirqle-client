@@ -43,7 +43,6 @@ const Sidebar = () => {
       .select("*")
       .order("last_message_at", { ascending: false })
       .eq("me_id", id);
-      console.log(data)
 
     if (!error) setChats(data || []);
 

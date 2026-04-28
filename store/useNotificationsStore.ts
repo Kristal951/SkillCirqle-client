@@ -115,7 +115,7 @@ export const useNotificationsStore = create<NotificationsState>((set, get) => ({
 
       get().addNotification(notification);
 
-      toast.info(notification.title || "Notification", notification.body);
+      toast.info(notification.title || "Notification", notification.message);
     });
 
     socket.on("notification:updated", (updated: Notification) => {

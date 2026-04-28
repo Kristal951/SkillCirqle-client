@@ -48,9 +48,13 @@ export async function createProposal(data: CreateProposalInput) {
         userId: data.receiverId,
         type: "proposal_received",
         title: "New Skill Proposal",
-        body: `${data.senderName || "Someone"} sent you a proposal`,
+        body: `${data.senderName || "Someone"} sent you a proposal.`,
         data: {
           proposalId: proposal.id,
+          senderImage: data.senderImage,
+          senderName: data.senderName,
+          proposalMsg: data.message,
+          link: data.link,
         },
       });
     } catch (error) {

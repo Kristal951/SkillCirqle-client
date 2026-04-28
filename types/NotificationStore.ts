@@ -9,7 +9,7 @@ export type Notification = {
   user_id: string;
   type: NotificationType;
   title: string;
-  body: string;
+  message: string;
   data: any;
   is_read: boolean;
   created_at: string;

@@ -123,12 +123,15 @@ export default function NewProposal() {
       await createProposal({
         senderId: user.id,
         senderName: user?.name || '',
+        senderImage: user?.avatar_url || '',
         receiverId: profile.id,
         teachSkill,
         learnSkill,
         message,
         engagementType: activeTab,
         sessionFormat: activeFormatTab,
+        proposalMsg: message,
+        link: '/proposals'
       });
 
       toast.success(

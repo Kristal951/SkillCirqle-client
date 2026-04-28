@@ -4,6 +4,7 @@ import React, { Dispatch, SetStateAction } from "react";
 import ThemeToggle from "../ToggleThemeButton";
 import { useTokenStore } from "@/store/useTokenStore";
 import { useNotificationsStore } from "@/store/useNotificationsStore";
+import Link from "next/link";
 
 interface NavbarProps {
   setIsSideBarOpen: Dispatch<SetStateAction<boolean>>;
@@ -12,7 +13,6 @@ interface NavbarProps {
 const Navbar = ({ setIsSideBarOpen }: NavbarProps) => {
   const { tokens } = useTokenStore();
   const unreadCount = useNotificationsStore((s) => s.unreadCount);
-  console.log(unreadCount, 'un')
 
   const toggleSidebar = () => {
     setIsSideBarOpen((prev) => !prev);
@@ -34,12 +34,12 @@ const Navbar = ({ setIsSideBarOpen }: NavbarProps) => {
           <p className="text-sm font-medium text-accent">{tokens ?? 0}</p>
         </div>
 
-        <div className="relative cursor-pointer p-2 hover:bg-text-secondary/20 rounded-full">
+        <Link href='/notifications' className="relative cursor-pointer p-2 hover:bg-text-secondary/20 rounded-full">
           <Bell />
           {unreadCount > 0 && (
             <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full" />
           )}
-        </div>
+        </Link>
 
         <div className="hidden md:flex lg:flex">
           <ThemeToggle />

@@ -70,6 +70,8 @@ type ChatStore = {
     metadata?: any;
     senderAvatar: string;
     name: string;
+    link: string;
+    receiverId: string;
   }) => void;
 
   listenForMessages: () => void;
@@ -195,6 +197,9 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     type = "text",
     metadata,
     senderAvatar,
+    name,
+    link,
+    receiverId,
   }) => {
     if (!content.trim()) return;
 
@@ -231,6 +236,20 @@ export const useChatStore = create<ChatStore>((set, get) => ({
       message_type: type,
       metadata,
       tempId,
+    });
+
+    socket?.emit("notification:send", {
+      userId: receiverId,
+      type: "new_message",
+      title: "New Message",
+      body: `${name || "Someone"} sent you a message.`,
+      data: {
+        conversationId: conversationId,
+        senderImage: senderAvatar,
+        senderName: name,
+        msgPrev: content,
+        link: link,
+      },
     });
   },
 

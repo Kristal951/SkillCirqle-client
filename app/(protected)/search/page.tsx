@@ -18,6 +18,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
 import { User } from "@/types/AuthStore";
 import Link from "next/link";
+import { useAuthStore } from "@/store/useAuthStore";
+import Spinner from "@/components/ui/Spinner";
 
 // --- Types ---
 type CategoryId =
@@ -54,16 +56,29 @@ const SearchPage = () => {
   const [profiles, setProfiles] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const supabase = getSupabaseBrowserClient();
+  const { user } = useAuthStore();
 
   useEffect(() => {
-    const fetchInitial = async () => {
-      const { data } = await supabase.from("profiles").select("*");
-      setProfiles(data || []);
-      setLoading(false);
-    };
+  const fetchProfiles = async () => {
+    setLoading(true);
 
-    fetchInitial();
-  }, []);
+    let query = supabase.from("profiles").select("*");
+
+    if (user) {
+      query = query.neq("id", user.id);
+    }
+
+    const { data, error } = await query;
+
+    if (!error) {
+      setProfiles(data || []);
+    }
+
+    setLoading(false);
+  };
+
+  fetchProfiles();
+}, [user, supabase]);
 
   const filteredProfiles = useMemo(() => {
     const searchLower = searchQuery.toLowerCase().trim();
@@ -97,6 +112,14 @@ const SearchPage = () => {
     { id: "Music", icon: <Music2 size={18} /> },
     { id: "Business", icon: <Briefcase size={18} /> },
   ];
+
+  if (loading) {
+  return (
+    <div className="flex justify-center items-center h-screen">
+      <Spinner size={30}/>
+    </div>
+  );
+}
 
   return (
     <div className="w-full min-h-screen flex flex-col bg-background selection:bg-primary selection:text-white">
@@ -153,7 +176,7 @@ const SearchPage = () => {
 
       <main className="w-full px-4 sm:px-8 py-10 max-w-7xl mx-auto">
         <AnimatePresence mode="popLayout">
-          {profiles.length === 0 ? (
+          {filteredProfiles.length === 0 ? (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}

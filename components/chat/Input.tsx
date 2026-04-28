@@ -256,6 +256,7 @@ const Input = () => {
       sendMessage({
         conversationId: conversationId || "",
         senderId: user?.id || "",
+        receiverId: activeChat?.other_user_id || "",
         senderAvatar: user?.avatar_url || "",
         content: "🎤 Voice message",
         type: "audio",
@@ -263,6 +264,7 @@ const Input = () => {
           media: [{ url, name: file.name, type: "audio" }],
         },
         name: user?.name || "",
+        link: "/chat",
       });
 
       cleanup();
@@ -452,6 +454,7 @@ const Input = () => {
     sendMessage({
       conversationId,
       senderId: user?.id || "",
+      receiverId: activeChat?.other_user_id || "",
       senderAvatar: user?.avatar_url || "",
       content,
       type,
@@ -465,6 +468,7 @@ const Input = () => {
           }
         : undefined,
       name: user?.name || "",
+      link: "/chat",
     });
 
     setMessage("");
@@ -611,7 +615,7 @@ const Input = () => {
                       key={i}
                       className="bg-accent rounded-full transition-all"
                       style={{
-                        width: "2px", 
+                        width: "2px",
                         height: `${Math.max(4, (v / 255) * 100)}%`,
                       }}
                     />

@@ -30,6 +30,7 @@ export type CreateProposalInput = {
   senderId: string;
   receiverId: string;
   senderName: string;
+  senderImage: string;
 
   teachSkill: string;
   learnSkill?: string;
@@ -38,6 +39,8 @@ export type CreateProposalInput = {
 
   engagementType: EngagementType;
   sessionFormat: SessionFormat;
+  proposalMsg: string;
+  link: string;
 };
 
 export type ProposalStore = {
