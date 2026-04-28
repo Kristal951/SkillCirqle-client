@@ -161,7 +161,7 @@ export default function Dashboard({ loggingOut }: { loggingOut: boolean }) {
   ];
 
   return (
-    <div className="w-full mx-auto px-2 md:px-6 py-8 flex flex-col gap-16">
+    <div className="w-full mx-auto md:px-6 py-8 flex flex-col gap-16">
       {!isCompleted && (
         <div className="w-full p-6 md:p-8 rounded-3xl border border-accent/20 bg-linear-to-br from-accent/6 to-transparent flex flex-col lg:flex-row items-center justify-between gap-8 shadow-sm">
           <div className="flex items-center gap-5">
@@ -244,7 +244,7 @@ export default function Dashboard({ loggingOut }: { loggingOut: boolean }) {
           </button>
         </div>
 
-        <div className="flex gap-6 overflow-x-auto pb-4 scrollbar-hide">
+        <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
           {dummySkillData.map((info, i) => (
             <div key={i} className="min-w-75 transition">
               <SkillCard info={info} />

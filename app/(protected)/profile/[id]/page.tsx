@@ -1,27 +1,52 @@
 "use client";
 import SkillsCard from "@/components/profile/SkillsCard";
+import Spinner from "@/components/ui/Spinner";
+import { useUserProfile } from "@/hooks/UserProfileContext";
 import { useAuthStore } from "@/store/useAuthStore";
+import { getOrCreateConversation } from "@/utils/getOrCreateConversation";
 import { Coins } from "lucide-react";
 import { useTheme } from "next-themes";
-import React from "react";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 
-const ProfilePage = () => {
+export default function UserProfilePage() {
+  const { user: profile } = useUserProfile();
   const { user } = useAuthStore();
+  const [creatingConv, setCreatingConv] = useState(false);
+  const router = useRouter()
+
   const { theme } = useTheme();
+  const isLoggedInUser = user?.id === profile?.id;
+
+  const handleStartProposal = ()=> {
+    router.push(`/proposals/new/${profile?.id}`)
+  }
 
   const statCardData = [
     {
       title: "Exchanges",
       icon: "swap_horiz",
-      value: user?.exchanges,
+      value: profile?.exchanges,
     },
     {
       title: "Rating",
       icon: "star",
-      value: user?.rating,
+      value: profile?.rating,
     },
   ];
 
+  const handleConversation = async () => {
+    setCreatingConv(true);
+    const userA = user?.id || "";
+    const userB = profile?.id || "";
+    try {
+      await getOrCreateConversation(userA, userB);
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setCreatingConv(false);
+    }
+  };
 
   return (
     <section className="relative mb-12 w-full md:px-4  h-full flex flex-col py-6">
@@ -30,15 +55,17 @@ const ProfilePage = () => {
           <div className="lg:flex flex flex-col lg:flex-row h-max md:items-end md:justify-between">
             <div className="flex flex-col lg:flex-row lg:flex items-center w-full justify-center md:justify-start gap-5">
               <div className="w-35 h-35 group rounded-full border-primary border-2 bg-primary/20 overflow-hidden flex items-center justify-center text-primary font-semibold">
-                {user?.avatar_url ? (
+                {profile?.avatar_url ? (
                   <img
-                    src={user?.avatar_url}
+                    src={profile?.avatar_url}
                     alt="Profile Image"
                     className="w-full group-hover:scale-110 transition-all h-full object-cover"
                   />
                 ) : (
                   <div>
-                    {user?.avatar_url || user?.name?.[0]?.toUpperCase() || "U"}
+                    {profile?.avatar_url ||
+                      profile?.name?.[0]?.toUpperCase() ||
+                      "U"}
                   </div>
                 )}
               </div>
@@ -46,23 +73,48 @@ const ProfilePage = () => {
                 <h2
                   className={`text-4xl font-bold  lg:text-left  ${theme === "light" ? "text-primary" : "text-white"}`}
                 >
-                  {user?.name}
+                  {profile?.name}
                 </h2>
-                <p className="max-w-lg text-base text-center md:text-center lg:text-left leading-relaxed text-text-secondary line-clamp-3">
-                  {user?.bio}
+                <p className="max-w-lg text-lg text-center md:text-center lg:text-left leading-relaxed text-text-secondary line-clamp-3">
+                  {profile?.bio || "No Bio yet."}
                 </p>
               </div>
             </div>
 
             <div className="flex gap-8 w-full pt-10 justify-center lg:justify-end">
-              <button className="px-4 flex items-center justify-center gap-2 py-3 bg-primary dark:text-white rounded-md border-border border text-primary font-bold shadow-lg hover:scale-105 transition-transform">
-                <span className="material-symbols-outlined">person_edit</span>
-                Edit Profile
-              </button>
-              <button className="px-4 py-3 rounded-md border gap-2 border-border flex items-center justify-center text-text-primary font-bold hover:bg-primary/10 transition-colors">
-                <span className="material-symbols-outlined">share</span>
-                Share
-              </button>
+              {isLoggedInUser ? (
+                <button className="px-4 flex items-center justify-center gap-2 py-3 bg-primary dark:text-white rounded-md border-border border text-primary font-bold shadow-lg hover:scale-105 transition-transform">
+                  <span className="material-symbols-outlined">person_edit</span>
+                  Edit Profile
+                </button>
+              ) : (
+                <button onClick={handleStartProposal} className="px-4 flex items-center justify-center gap-2 py-3 bg-primary dark:text-white rounded-md border-border border text-primary font-bold shadow-lg hover:scale-105 transition-transform">
+                  <span className="material-symbols-outlined">swap_horiz</span>
+                  Propose Swap
+                </button>
+              )}
+
+              {isLoggedInUser ? (
+                <button className="px-4 py-3 rounded-md border gap-2 border-border flex items-center justify-center text-text-primary font-bold hover:bg-primary/10 transition-colors">
+                  <span className="material-symbols-outlined">share</span>
+                  Share
+                </button>
+              ) : (
+                <button
+                  disabled={creatingConv}
+                  onClick={handleConversation}
+                  className="px-4 py-3 rounded-md border gap-2 border-border flex items-center justify-center text-text-primary font-bold hover:bg-primary/10 transition-colors"
+                >
+                  {creatingConv ? (
+                    <Spinner size={20} />
+                  ) : (
+                    <div className="w-full flex gap-2">
+                      <span className="material-symbols-outlined">mail</span>
+                      <p>Message</p>
+                    </div>
+                  )}
+                </button>
+              )}
             </div>
           </div>
         </div>
@@ -106,7 +158,7 @@ const ProfilePage = () => {
             <h2
               className={`text-3xl font-bold ${theme === "light" ? "" : "text-white"}`}
             >
-              {user?.wallet?.skillTokens || 0}
+              {profile?.wallet?.skillTokens || 0}
             </h2>
             <h3 className="text-sm uppercase tracking-wider font-semibold">
               Credits
@@ -139,7 +191,7 @@ const ProfilePage = () => {
               </h3>
               <p className="text-xl font-bold">
                 {" "}
-                {user?.wallet?.skillTokens || 0}
+                {profile?.wallet?.skillTokens || 0}
               </p>
             </div>
           </div>
@@ -150,22 +202,24 @@ const ProfilePage = () => {
         <div className="col-span-2 grid gap-8">
           <SkillsCard
             title="Skills i can teach"
-            skills={user?.skills_to_teach || []}
+            skills={profile?.skills_to_teach || []}
             icon="psychology"
             color="primary"
           />
           <SkillsCard
             title="Skills i want to learn"
-            skills={user?.skills_to_learn || []}
+            skills={profile?.skills_to_learn || []}
             icon="school"
             color="accent"
           />
         </div>
 
         <div className="col-span-1 bg-surface p-4 h-90 rounded-md">
-          {(user?.rating || 0) > 0 ? (
+          {(profile?.rating || 0) > 0 ? (
             <div className="h-full flex flex-col items-center justify-center">
-              <h1 className="text-4xl font-bold">{user?.rating.toFixed(1)}</h1>
+              <h1 className="text-4xl font-bold">
+                {profile?.rating.toFixed(1)}
+              </h1>
               <p className="text-sm text-muted-foreground mt-2">Your Reviews</p>
             </div>
           ) : (
@@ -184,6 +238,4 @@ const ProfilePage = () => {
       </div>
     </section>
   );
-};
-
-export default ProfilePage;
+}

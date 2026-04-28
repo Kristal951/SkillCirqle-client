@@ -19,7 +19,6 @@ export const connectSocket = (token: string) => {
     reconnectionDelay: 1000,
   });
 
-  // Optional: Add global listeners for debugging
   socket.on("connect", () => {
     console.log("🚀 Socket connected:");
   });

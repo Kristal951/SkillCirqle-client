@@ -103,45 +103,38 @@ const Chat = () => {
                 : [],
       }));
   }, [rawMessages]);
-  console.log(rawMessages);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
+  const lastReadRef = useRef<string | null>(null);
+
   useEffect(() => {
-    if (!activeChat?.id || !currentUserId) return;
+    if (!bottomRef.current || !activeChat?.id || messages.length === 0) return;
 
     const socket = getSocket();
     if (!socket) return;
 
-    socket.emit("mark_as_read", {
-      conversationId: activeChat.id,
-      userId: currentUserId,
-    });
-  }, [activeChat?.id, currentUserId]);
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry.isIntersecting) return;
 
-  useEffect(() => {
-    if (!activeChat?.id || !currentUserId) return;
+        const lastMessage = messages[messages.length - 1];
+        if (!lastMessage) return;
 
-    const markAsRead = async () => {
-      const supabase = getSupabaseBrowserClient();
+        socket.emit("mark_as_read", {
+          conversationId: activeChat.id,
+          lastMessageId: lastMessage.id,
+        });
+      },
+      { threshold: 1 },
+    );
 
-      await supabase
-        .from("message_receipts")
-        .update({ read_at: new Date().toISOString() })
-        .eq("user_id", currentUserId)
-        .eq("conversation_id", activeChat.id)
-        .is("read_at", null);
+    observer.observe(bottomRef.current);
 
-      await supabase
-        .from("conversations")
-        .update({ unread_count: 0 })
-        .eq("id", activeChat.id);
-    };
-
-    markAsRead();
-  }, [activeChat?.id, currentUserId]);
+    return () => observer.disconnect();
+  }, [messages, activeChat?.id]);
 
   if (!activeChat) {
     return (

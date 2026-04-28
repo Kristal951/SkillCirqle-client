@@ -3,13 +3,16 @@ import { Bell, Coins, Flame, Menu } from "lucide-react";
 import React, { Dispatch, SetStateAction } from "react";
 import ThemeToggle from "../ToggleThemeButton";
 import { useTokenStore } from "@/store/useTokenStore";
+import { useNotificationsStore } from "@/store/useNotificationsStore";
 
 interface NavbarProps {
   setIsSideBarOpen: Dispatch<SetStateAction<boolean>>;
 }
 
-const Navbar = ({setIsSideBarOpen }: NavbarProps) => {
+const Navbar = ({ setIsSideBarOpen }: NavbarProps) => {
   const { tokens } = useTokenStore();
+  const unreadCount = useNotificationsStore((s) => s.unreadCount);
+  console.log(unreadCount, 'un')
 
   const toggleSidebar = () => {
     setIsSideBarOpen((prev) => !prev);
@@ -33,7 +36,9 @@ const Navbar = ({setIsSideBarOpen }: NavbarProps) => {
 
         <div className="relative cursor-pointer p-2 hover:bg-text-secondary/20 rounded-full">
           <Bell />
-          <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full" />
+          {unreadCount > 0 && (
+            <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full" />
+          )}
         </div>
 
         <div className="hidden md:flex lg:flex">

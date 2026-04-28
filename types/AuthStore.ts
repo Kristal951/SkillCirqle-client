@@ -18,6 +18,7 @@ export interface User {
 
   exchanges: number;
   rating: number;
+  category: string;
 
   wallet: {
     skillTokens: number;

@@ -12,7 +12,7 @@ export type MessageStatus =
   | "read"
   | "failed";
 
-export type MessageType = "text" | "image" | "file" | "mixed" | "audio" ;
+export type MessageType = "text" | "image" | "file" | "mixed" | "audio";
 
 type MediaItem = {
   type: "image" | "file";
@@ -112,10 +112,10 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     set({ fetchingMessages: true });
 
     try {
-      // 1. Fetch messages
-       const { data: messages, error } = await supabase
-      .from("messages")
-      .select(`
+      const { data: messages, error } = await supabase
+        .from("messages")
+        .select(
+          `
         *,
         sender:profiles(*),
         message_receipts(
@@ -123,29 +123,30 @@ export const useChatStore = create<ChatStore>((set, get) => ({
           delivered_at,
           read_at
         )
-      `)
-      .eq("conversation_id", conversationId)
-      .order("created_at", { ascending: true });
+      `,
+        )
+        .eq("conversation_id", conversationId)
+        .order("created_at", { ascending: true });
 
-    if (error) throw error;
+      if (error) throw error;
 
-        const enriched = (messages || []).map((msg: any) => {
-      const receipt = msg.message_receipts?.[0]; 
-      // for DM: only 1 receipt per user
+      const enriched = (messages || []).map((msg: any) => {
+        const receipt = msg.message_receipts?.[0];
 
-      let status: "sent" | "delivered" | "read" = "sent";
+        const isRead = receipt?.read_at || false;
 
-      if (receipt?.read_at) {
-        status = "read";
-      } else if (receipt?.delivered_at) {
-        status = "delivered";
-      }
+        const isDelivered = receipt?.delivered_at || false;
 
-      return {
-        ...msg,
-        status,
-      };
-    });
+        let status: "sent" | "delivered" | "read" = "sent";
+
+        if (isRead) status = "read";
+        else if (isDelivered) status = "delivered";
+
+        return {
+          ...msg,
+          status,
+        };
+      });
 
       // 6. Store
       set((state) => ({

@@ -3,7 +3,7 @@
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
 import { useChatStore } from "@/store/useChatStore";
 import { useAuthStore } from "@/store/useAuthStore";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Spinner from "../ui/Spinner";
 import { formatDistanceToNowStrict } from "date-fns";
 import { useSocketStore } from "@/store/useSocketStore";
@@ -21,60 +21,64 @@ const Sidebar = () => {
 
   const supabase = getSupabaseBrowserClient();
 
-  const fetchChats = async () => {
-    setLoading(true);
+  const fetchTimeout = useRef<NodeJS.Timeout | null>(null);
+
+  const safeFetchChats = () => {
+    if (fetchTimeout.current) clearTimeout(fetchTimeout.current);
+
+    fetchTimeout.current = setTimeout(() => {
+      if (!user?.id) return;
+      fetchChats(true);
+    }, 300);
+  };
+
+  const fetchChats = async (silent = false, userId?: string) => {
+    const id = userId || user?.id;
+    if (!id) return;
+
+    if (!silent) setLoading(true);
 
     const { data, error } = await supabase
       .from("dm_conversations")
       .select("*")
       .order("last_message_at", { ascending: false })
-      .eq("me_id", user?.id);
+      .eq("me_id", id);
+      console.log(data)
 
     if (!error) setChats(data || []);
 
-    setLoading(false);
+    if (!silent) setLoading(false);
   };
 
   useEffect(() => {
-    fetchChats();
+    if (!user?.id) return;
+
+    fetchChats(false, user?.id);
 
     const convoChannel = supabase
-      .channel("sidebar_conversations")
+      .channel("sidebar_live")
       .on(
         "postgres_changes",
-        { event: "*", schema: "public", table: "dm_conversations" },
-        () => fetchChats(),
+        { event: "UPDATE", schema: "public", table: "dm_conversations" },
+        safeFetchChats,
       )
-      .subscribe();
-
-    const messageChannel = supabase
-      .channel("sidebar_messages")
       .on(
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "messages" },
-        () => fetchChats(),
+        safeFetchChats,
       )
-      .subscribe();
-
-    const receiptsChannel = supabase
-      .channel("receipts_updates")
       .on(
         "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "message_receipts",
-        },
-        () => fetchChats(),
+        { event: "UPDATE", schema: "public", table: "conversations_read" },
+        safeFetchChats,
       )
       .subscribe();
 
     return () => {
       supabase.removeChannel(convoChannel);
-      supabase.removeChannel(messageChannel);
-      supabase.removeChannel(receiptsChannel);
+      if (fetchTimeout.current) clearTimeout(fetchTimeout.current);
     };
-  }, []);
+  }, [user?.id, supabase]);
 
   const formatTimeAgoShort = (dateString?: string) => {
     if (!dateString) return "";

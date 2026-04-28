@@ -57,9 +57,6 @@ export default function SocketProvider({
     initSocket();
   }, [user?.id]);
 
-  // =====================
-  // CLEANUP ON LOGOUT
-  // =====================
   useEffect(() => {
     if (!user) {
       const socket = getSocket();

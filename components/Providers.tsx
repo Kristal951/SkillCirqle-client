@@ -5,6 +5,7 @@ import ToastContainer from "./ui/ToastContainer";
 import { Analytics } from "@vercel/analytics/next";
 import AuthProvider from "@/providers/AuthProvider";
 import SocketProvider from "@/providers/SocketProvider";
+import NotificationProvider from "@/providers/NotificationProvider";
 
 export default function Providers({ children }: { children: React.ReactNode }) {
   return (
@@ -12,7 +13,9 @@ export default function Providers({ children }: { children: React.ReactNode }) {
       <ToastContainer />
       <AuthProvider>
         <Analytics />
-        <SocketProvider>{children}</SocketProvider>
+        <SocketProvider>
+          <NotificationProvider>{children}</NotificationProvider>
+        </SocketProvider>
       </AuthProvider>
     </ThemeProvider>
   );

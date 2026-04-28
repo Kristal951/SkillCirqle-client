@@ -1,13 +1,11 @@
 import { useSocketStore } from "@/store/useSocketStore";
+import { useNotificationsStore } from "@/store/useNotificationsStore";
 import { getSocket } from "./socket";
 
 let initialized = false;
 
 export const initSocketEvents = () => {
-  if (initialized) {
-    console.log("already initialised");
-    return;
-  }
+  if (initialized) return;
 
   const socket = getSocket();
   if (!socket) return;
@@ -20,14 +18,13 @@ export const initSocketEvents = () => {
     removeTypingUser,
   } = useSocketStore.getState();
 
-  socket.off("online_users");
-  socket.off("user_online");
-  socket.off("user_offline");
-  socket.off("typing");
-  socket.off("disconnect");
+  const { addNotification,  } = useNotificationsStore.getState();
 
   console.log("🧠 Socket events initialized");
 
+  /**
+   * ONLINE USERS
+   */
   socket.on("online_users", (users: string[]) => {
     setOnlineUsers(users);
   });
@@ -42,14 +39,21 @@ export const initSocketEvents = () => {
 
   socket.on("typing", ({ conversationId, userId }) => {
     if (!conversationId || !userId) return;
-
     addTypingUser(conversationId, userId);
   });
 
   socket.on("stop_typing", ({ conversationId, userId }) => {
     if (!conversationId || !userId) return;
-
     removeTypingUser(conversationId, userId);
+  });
+
+  socket.on("proposal:updated", (proposal) => {
+    // you can update proposal store here if needed
+    console.log("Proposal updated:", proposal);
+  });
+
+  socket.on("proposal:created", (proposal) => {
+    console.log("Proposal created:", proposal);
   });
 
   initialized = true;

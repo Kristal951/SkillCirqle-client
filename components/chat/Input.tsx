@@ -609,9 +609,9 @@ const Input = () => {
                   return (
                     <div
                       key={i}
-                      className="bg-red-500 rounded-full transition-all"
+                      className="bg-accent rounded-full transition-all"
                       style={{
-                        width: "2px", // 👈 consistent thin bars
+                        width: "2px", 
                         height: `${Math.max(4, (v / 255) * 100)}%`,
                       }}
                     />
