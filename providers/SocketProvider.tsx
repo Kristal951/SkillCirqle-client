@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useAuthStore } from "@/store/useAuthStore";
 import { connectSocket, getSocket } from "@/lib/socket";
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
 import { initSocketEvents } from "@/lib/socketEvents";
+import { SocketContext } from "./SocketContext";
 
 export default function SocketProvider({
   children,
@@ -16,6 +17,7 @@ export default function SocketProvider({
 
   const isConnecting = useRef(false);
   const connectedUserId = useRef<string | null>(null);
+  const [socketReady, setSocketReady] = useState(false);
 
   useEffect(() => {
     const initSocket = async () => {
@@ -42,9 +44,11 @@ export default function SocketProvider({
         if (!socket.connected) {
           socket.once("connect", () => {
             initSocketEvents();
+            setSocketReady(true);
           });
         } else {
           initSocketEvents();
+          setSocketReady(true);
         }
         connectedUserId.current = user.id;
       } catch (error) {
@@ -64,13 +68,17 @@ export default function SocketProvider({
       if (socket) {
         console.log("🔌 Cleaning up socket on logout");
 
-        socket.removeAllListeners(); 
-        socket.disconnect(); 
+        socket.removeAllListeners();
+        socket.disconnect();
 
         connectedUserId.current = null;
       }
     }
   }, [user]);
 
-  return <>{children}</>;
+  return (
+    <SocketContext.Provider value={{ socketReady }}>
+      {children}
+    </SocketContext.Provider>
+  );
 }

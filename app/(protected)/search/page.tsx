@@ -123,10 +123,10 @@ const SearchPage = () => {
 
   return (
     <div className="w-full min-h-screen flex flex-col bg-background selection:bg-primary selection:text-white">
-      <section className="w-full px-4 sm:px-8 pt-10 pb-6 border-b border-border bg-surface/40 backdrop-blur-xl sticky top-0 z-30">
+      <section className="w-full px-4 sm:px-8 pt-10 pb-6 border-b border-border bg-background backdrop-blur-xl sticky top-0 z-30">
         <div className="max-w-7xl mx-auto space-y-6">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-            <div className="space-y-1">
+            <div className=" hidden md:flex flex-col space-y-1">
               <h1 className="text-3xl font-bold tracking-tight">
                 Explore Mentors
               </h1>
@@ -143,7 +143,7 @@ const SearchPage = () => {
               <input
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search skills, names, roles..."
+                placeholder="Search a skill or profile..."
                 className="w-full bg-background/50 border border-border rounded-2xl py-3.5 pl-12 pr-4 outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary/40 transition-all text-sm font-medium"
               />
             </div>
@@ -225,7 +225,7 @@ const SearchPage = () => {
                       <span
                         className="material-symbols-outlined"
                         style={{
-                          fontVariationSettings: "'FILL' 1;",
+                          fontVariationSettings: "'FILL' 1",
                           fontSize: "18px",
                         }}
                       >
@@ -274,10 +274,10 @@ const SearchPage = () => {
                     </div>
 
                     <Link
-                      href={`/profile/${mentor?.id}`}
-                      className="flex items-center gap-1 text-text-primary/50 font-black text-[10px] uppercase tracking-widest group-hover:gap-2 group-hover:text-text-primary transition-all"
+                      href={`/proposals/new/${mentor?.id}`}
+                      className="flex bg-primary px-4 py-3 items-center gap-1 text-text-primary rounded-xl font-black text-[10px] uppercase tracking-widest group-hover:gap-2 group-hover:text-text-primary transition-all"
                     >
-                      View Profile
+                      Propose
                       <ChevronRight size={14} />
                     </Link>
                   </div>

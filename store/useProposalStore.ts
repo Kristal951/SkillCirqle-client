@@ -2,6 +2,7 @@ import { create } from "zustand";
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
 import { ProposalStore } from "@/types/Proposal";
 import { getUserProposals } from "@/utils/getUserProposals";
+import { getSocket } from "@/lib/socket";
 
 export const getErrorMessage = (err: unknown): string => {
   console.log(err);
@@ -70,7 +71,13 @@ export const useProposalStore = create<ProposalStore>((set, get) => ({
     }
   },
 
-  updateProposalStatus: async (proposalId, status) => {
+  updateProposalStatus: async (
+    proposalId,
+    status,
+    senderName,
+    senderImage,
+    link,
+  ) => {
     const supabase = getSupabaseBrowserClient();
     set({ updatingStatus: true });
 
@@ -80,8 +87,7 @@ export const useProposalStore = create<ProposalStore>((set, get) => ({
         .update({ status })
         .eq("id", proposalId)
         .select()
-        .maybeSingle()
-        console.log(data)
+        .maybeSingle();
 
       if (error) throw error;
 
@@ -90,6 +96,37 @@ export const useProposalStore = create<ProposalStore>((set, get) => ({
           p.id === proposalId ? { ...p, status } : p,
         ),
       }));
+
+      const socket = getSocket();
+
+      if (socket) {
+        const action =
+          status === "active"
+            ? "Accepted"
+            : status === "completed"
+              ? "Completed"
+              : status === "pending"
+                ? "Pending"
+                : "Rejected";
+
+        try {
+          socket.emit("notification:send", {
+            userId: data.sender_id,
+            type: "proposal_updated",
+            title: `Proposal ${action}`,
+            body: `${senderName || "Someone"} has ${action} your proposal.`,
+            data: {
+              proposalId: proposalId,
+              senderImage,
+              senderName,
+              proposalMsg: "",
+              link: link,
+            },
+          });
+        } catch (error) {
+          console.log(error, "notif error");
+        }
+      }
 
       return data;
     } catch (err) {

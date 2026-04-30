@@ -153,7 +153,7 @@ export default function NewProposal() {
   };
 
   return (
-    <div className="w-full h-full flex flex-col space-y-8 px-4 sm:px-8 py-6 max-w-3xl mx-auto">
+    <div className="w-full h-full flex flex-col space-y-8 px-4 py-6 max-w-3xl mx-auto">
       <div className="space-y-2">
         <h1 className="text-3xl sm:text-4xl font-bold tracking-tight">
           Propose an Exchange
@@ -165,7 +165,7 @@ export default function NewProposal() {
         </p>
       </div>
 
-      <div className="p-6 sm:p-8 bg-surface/40 backdrop-blur-sm rounded-3xl border border-border/50 shadow-xl space-y-10">
+      <div className="p-4 md:p-6 bg-surface/40 backdrop-blur-sm rounded-3xl border border-border/50 shadow-xl space-y-10">
         <section className="space-y-4">
           <header className="flex items-center gap-3">
             <span className="w-6 h-6 rounded-full bg-background flex items-center justify-center text-[10px] font-black border border-border shadow-inner">
@@ -227,7 +227,7 @@ export default function NewProposal() {
                 <button
                   key={tab.id}
                   onClick={() => setActiveFormatTab(tab.id as SessionFormat)}
-                  className={`flex items-center gap-4 p-4 rounded-2xl border-2 transition-all ${
+                  className={`flex items-center gap-4 p-2 md:p-4 rounded-2xl border-2 transition-all ${
                     isActive
                       ? "bg-primary/5 border-primary text-text-primary shadow-lg shadow-primary/5"
                       : "bg-background border-border text-text-secondary hover:border-text-secondary/30"
@@ -328,7 +328,7 @@ export default function NewProposal() {
           />
         </section>
 
-        <div className="flex items-center justify-end pt-4">
+        <div className="flex items-center md:justify-end justify-center w-full pt-4">
           <button
             onClick={handleSendProposal}
             disabled={

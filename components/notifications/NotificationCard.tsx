@@ -12,6 +12,12 @@ import React from "react";
 import { motion } from "framer-motion";
 import { Notification } from "@/types/NotificationStore";
 import { formatDistanceToNowStrict } from "date-fns";
+import { useRouter } from "next/navigation";
+import { getConversationById } from "@/utils/getConversationDetails";
+import { useAuthStore } from "@/store/useAuthStore";
+import { useChatStore } from "@/store/useChatStore";
+import { useNotificationsStore } from "@/store/useNotificationsStore";
+import Spinner from "../ui/Spinner";
 
 const NotificationCard = ({
   notif,
@@ -35,7 +41,22 @@ const NotificationCard = ({
     );
   };
 
-  const firstName = notif?.data?.senderName.trim().split(/\s+/)[0] || "User";
+  const firstName = notif?.data?.senderName?.trim().split(/\s+/)[0] || "User";
+  const router = useRouter();
+  const { user } = useAuthStore();
+  const { setActiveChat } = useChatStore();
+  const { markAsRead, deleteNotification, deletingIds } =
+    useNotificationsStore();
+
+  const isDeleting = deletingIds.includes(notif.id);
+
+  const handleDeleteNotification = async (
+    e: React.MouseEvent,
+    notifId: string,
+  ) => {
+    e.stopPropagation();
+    await deleteNotification(notifId);
+  };
 
   const getIcon = (type: string) => {
     if (type.includes("message")) {
@@ -69,13 +90,37 @@ const NotificationCard = ({
     return <Bell size={18} className="text-text-secondary" />;
   };
 
+  const goToLink = async (
+    link: string,
+    type: string,
+    notifId: string,
+    convId?: string,
+  ) => {
+    await markAsRead(notifId);
+    if (type.includes("message")) {
+      const conversationId = convId || "";
+      const userId = user?.id || "";
+      const conversation = await getConversationById(conversationId, userId);
+      setActiveChat(conversation);
+    }
+    router.push(link);
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, x: -10 }}
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, scale: 0.95 }}
+      onClick={() =>
+        goToLink(
+          notif?.data.link,
+          notif?.type,
+          notif?.id,
+          notif?.data?.conversationId,
+        )
+      }
       transition={{ delay: index * 0.04, ease: "easeOut" }}
-      className={`group relative flex items-center gap-4 p-4 rounded-xl border transition-all duration-300 ${
+      className={`group cursor-pointer relative flex items-center gap-4 p-4 rounded-xl border transition-all duration-300 ${
         notif.is_read
           ? "bg-surface/40 border-border/50 opacity-80 hover:opacity-100"
           : "bg-linear-to-r from-surface to-surface/80 border-primary/20 shadow-[0_8px_30px_rgb(0,0,0,0.04)]"
@@ -119,14 +164,13 @@ const NotificationCard = ({
                 notif.is_read ? "text-text-primary/70" : "text-text-primary"
               }`}
             >
-              {notif?.type.includes("proposal")
+              {notif?.type.includes("_received")
                 ? `${firstName} sent a Proposal`
-                : notif?.type.includes('message') ? (
-                    `${firstName} sent a Message`
-                ) : (
-                    notif.title
-                )
-            }
+                : notif?.type?.includes("_updated")
+                  ? `${notif?.title}`
+                  : notif?.type.includes("message")
+                    ? `${firstName} sent a Message`
+                    : notif.title}
             </h4>
             <span className="text-[10px] font-black text-text-secondary uppercase tracking-tighter">
               {formatTimeAgoShort(notif.created_at)}
@@ -141,12 +185,11 @@ const NotificationCard = ({
 
       <div className="flex items-center gap-1 transition-all duration-300">
         <button
-          onClick={(e) => {
-            e.stopPropagation();
-          }}
-          className="w-9 h-9 flex items-center justify-center hover:bg-red-500/10 rounded-xl text-text-secondary hover:text-red-500 transition-colors"
+          onClick={(e) => handleDeleteNotification(e, notif?.id)}
+          disabled={isDeleting}
+          className="w-9 h-9 flex items-center justify-center hover:bg-red-500/10 rounded-xl text-text-secondary disabled:opacity-50 hover:text-red-500 transition-colors"
         >
-          <Trash2 size={16} />
+          {isDeleting ? <Spinner size={20} /> : <Trash2 size={16} />}
         </button>
       </div>
     </motion.div>

@@ -18,7 +18,6 @@ export const getOrCreateConversation = async (
     user_a: userA,
     user_b: userB,
   });
-  console.log(data, 'fd')
 
   if (error) throw error;
 

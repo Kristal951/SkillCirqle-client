@@ -34,6 +34,7 @@ export type ProposalView = {
   skillToLearnIcon: string;
   senderID: string;
   receiverID: string;
+  message: string;
 
   status: ProposalStatus;
   dateCreated: number;
@@ -47,7 +48,7 @@ const statusStyles: Record<ProposalStatus, string> = {
 };
 
 const ProposalsPage = () => {
- const [activeTab, setActiveTab] = useState<ProposalTab>("received");
+  const [activeTab, setActiveTab] = useState<ProposalTab>("received");
   const { user } = useAuthStore();
   const { proposals, fetchProposals, loading } = useProposalStore();
 
@@ -64,10 +65,10 @@ const ProposalsPage = () => {
     fetchProposals(userId);
   }, []);
 
- const tabs: { id: ProposalTab; label: string }[] = [
-  { id: "received", label: "Received" },
-  { id: "sent", label: "Sent" },
-];
+  const tabs: { id: ProposalTab; label: string }[] = [
+    { id: "received", label: "Received" },
+    { id: "sent", label: "Sent" },
+  ];
 
   const getProposalCounts = (proposals: Proposal[]) => {
     return proposals.reduce(
@@ -111,6 +112,7 @@ const ProposalsPage = () => {
       theyLearn: isSender ? p.teach_skill : p.learn_skill,
       skillToTeachIcon: "school",
       skillToLearnIcon: "psychology",
+      message: p.message,
 
       dateCreated: new Date(p.created_at).getTime(),
 
@@ -118,11 +120,11 @@ const ProposalsPage = () => {
     };
   };
 
- const mapped: ProposalView[] = proposals.map((p) => mapProposal(p));
+  const mapped: ProposalView[] = proposals.map((p) => mapProposal(p));
 
-const filtered = mapped.filter((p) =>
-  activeTab === "sent" ? p.isSender : !p.isSender
-);
+  const filtered = mapped.filter((p) =>
+    activeTab === "sent" ? p.isSender : !p.isSender,
+  );
 
   return (
     <div className="w-full h-full flex flex-col px-4 sm:px-8 py-6 sm:py-10 max-w-7xl mx-auto">
@@ -170,7 +172,7 @@ const filtered = mapped.filter((p) =>
       </header>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-8 sm:mt-12">
-        <div className="lg:col-span-2 space-y-4 sm:space-y-6 order-2 lg:order-1">
+        <div className="lg:col-span-2 space-y-6 order-2 lg:order-1">
           <AnimatePresence mode="wait">
             {loading ? (
               <motion.div

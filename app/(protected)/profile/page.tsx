@@ -135,7 +135,7 @@ const ProfilePage = () => {
           <div className="col-span-1">
             <div className="w-full flex items-center flex-col justify-center">
               <h3 className="text-[10px] uppercase tracking-wider font-semibold">
-                Tokens
+                Credits
               </h3>
               <p className="text-xl font-bold">
                 {" "}

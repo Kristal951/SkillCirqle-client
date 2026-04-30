@@ -54,6 +54,9 @@ export type ProposalStore = {
   updateProposalStatus: (
     proposalId: string,
     status: ProposalStatus,
+    senderName: string,
+    senderImage: string,
+    link: string
   ) => Promise<null>;
   getProposalById: (id: string) => Proposal | undefined;
   clearProposals: () => void;

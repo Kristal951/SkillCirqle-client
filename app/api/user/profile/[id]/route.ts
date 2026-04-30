@@ -6,7 +6,6 @@ export async function GET(
 ) {
   const supabase = await createSupabaseServer();
   const { id } = await params;
-  console.log(id, "id");
 
   const { data: user, error } = await supabase
     .from("profiles")

@@ -8,29 +8,20 @@ import Spinner from "../ui/Spinner";
 import { formatDistanceToNowStrict } from "date-fns";
 import { useSocketStore } from "@/store/useSocketStore";
 import { MessageSquarePlus } from "lucide-react";
+import { getSocket } from "@/lib/socket";
 
 const Sidebar = () => {
   const { activeChat, setActiveChat } = useChatStore();
   const { user } = useAuthStore();
 
-  const [chats, setChats] = useState<any[]>([]);
+  const chats = useChatStore((s) => s.conversations);
+  const setConversations = useChatStore((s) => s.setConversations);
   const [loading, setLoading] = useState(true);
 
   const onlineUsers = useSocketStore((s) => s.onlineUsers);
   const typingUsers = useSocketStore((s) => s.typingUsers);
 
   const supabase = getSupabaseBrowserClient();
-
-  const fetchTimeout = useRef<NodeJS.Timeout | null>(null);
-
-  const safeFetchChats = () => {
-    if (fetchTimeout.current) clearTimeout(fetchTimeout.current);
-
-    fetchTimeout.current = setTimeout(() => {
-      if (!user?.id) return;
-      fetchChats(true);
-    }, 300);
-  };
 
   const fetchChats = async (silent = false, userId?: string) => {
     const id = userId || user?.id;
@@ -44,7 +35,7 @@ const Sidebar = () => {
       .order("last_message_at", { ascending: false })
       .eq("me_id", id);
 
-    if (!error) setChats(data || []);
+    if (!error) setConversations(data || []);
 
     if (!silent) setLoading(false);
   };
@@ -53,30 +44,6 @@ const Sidebar = () => {
     if (!user?.id) return;
 
     fetchChats(false, user?.id);
-
-    const convoChannel = supabase
-      .channel("sidebar_live")
-      .on(
-        "postgres_changes",
-        { event: "UPDATE", schema: "public", table: "dm_conversations" },
-        safeFetchChats,
-      )
-      .on(
-        "postgres_changes",
-        { event: "INSERT", schema: "public", table: "messages" },
-        safeFetchChats,
-      )
-      .on(
-        "postgres_changes",
-        { event: "UPDATE", schema: "public", table: "conversations_read" },
-        safeFetchChats,
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(convoChannel);
-      if (fetchTimeout.current) clearTimeout(fetchTimeout.current);
-    };
   }, [user?.id, supabase]);
 
   const formatTimeAgoShort = (dateString?: string) => {
@@ -92,6 +59,17 @@ const Sidebar = () => {
       .replace("second", "s")
       .replace("days", "d")
       .replace("day", "d");
+  };
+
+  const handelOpenChat = (chatId: string) => {
+    const socket = getSocket();
+    const chat = chats.find((c) => c.id === chatId);
+
+    if (!chat) return;
+    socket?.emit("chat_close", { conversationId: activeChat?.id });
+    socket?.emit("chat_open", { conversationId: chat.id });
+
+    setActiveChat(chat);
   };
 
   return (
@@ -122,7 +100,7 @@ const Sidebar = () => {
             return (
               <button
                 key={chat.id}
-                onClick={() => setActiveChat(chat)}
+                onClick={() => handelOpenChat(chat.id)}
                 className={`w-full p-3 flex gap-3 rounded-xl transition-all text-left ${
                   isActive ? "bg-muted shadow-sm" : "hover:bg-muted/50"
                 }`}
@@ -145,9 +123,11 @@ const Sidebar = () => {
                   <div className="flex justify-between items-baseline">
                     <h3 className="font-semibold truncate">{chat.name}</h3>
 
-                    <span className="text-[10px] text-muted-foreground">
-                      {formatTimeAgoShort(chat.last_message_at)}
-                    </span>
+                    {!isOnline && (
+                      <span className="text-[10px] text-text-secondary">
+                        {formatTimeAgoShort(chat.last_message_at)}
+                      </span>
+                    )}
                   </div>
 
                   <div className="flex items-center justify-between gap-2 mt-0.5">

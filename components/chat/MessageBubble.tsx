@@ -232,3 +232,4 @@ const MessageBubble = ({ isMe, msg }: { isMe: boolean; msg: UIMessage }) => {
 };
 
 export default MessageBubble;
+

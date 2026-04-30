@@ -8,13 +8,13 @@ export const useNotificationsStore = create<NotificationsState>((set, get) => ({
   notifications: [],
   unreadCount: 0,
   loading: false,
+  deletingIds: [],
 
   fetchNotifications: async (userId: string) => {
     if (!userId) {
       console.log(`! userID`);
       return;
     }
-    console.log(userId);
     const supabase = getSupabaseBrowserClient();
     set({ loading: true });
 
@@ -23,7 +23,6 @@ export const useNotificationsStore = create<NotificationsState>((set, get) => ({
       .select("*")
       .eq("user_id", userId)
       .order("created_at", { ascending: false });
-    console.log(data);
 
     if (error) {
       console.error("Fetch notifications error:", error.message);
@@ -32,7 +31,6 @@ export const useNotificationsStore = create<NotificationsState>((set, get) => ({
     }
 
     const unread = data.filter((n) => !n.is_read).length;
-    console.log(unread);
 
     set({
       notifications: data,
@@ -41,14 +39,26 @@ export const useNotificationsStore = create<NotificationsState>((set, get) => ({
     });
   },
 
+  setDeleting: (id: string, value: boolean) =>
+    set((state) => ({
+      deletingIds: value
+        ? [...state.deletingIds, id]
+        : state.deletingIds.filter((x) => x !== id),
+    })),
+
   addNotification: (notification) => {
+    const normalized = {
+      ...notification,
+      is_read: notification.is_read ?? false,
+    };
+
     set((state) => {
-      const exists = state.notifications.some((n) => n.id === notification.id);
+      const exists = state.notifications.some((n) => n.id === normalized.id);
       if (exists) return state;
 
       return {
-        notifications: [notification, ...state.notifications],
-        unreadCount: notification.is_read
+        notifications: [normalized, ...state.notifications],
+        unreadCount: normalized.is_read
           ? state.unreadCount
           : state.unreadCount + 1,
       };
@@ -60,7 +70,7 @@ export const useNotificationsStore = create<NotificationsState>((set, get) => ({
 
     const { error } = await supabase
       .from("notifications")
-      .update({ read: true })
+      .update({ is_read: true })
       .eq("id", notificationId);
 
     if (error) {
@@ -70,7 +80,7 @@ export const useNotificationsStore = create<NotificationsState>((set, get) => ({
 
     set((state) => {
       const updated = state.notifications.map((n) =>
-        n.id === notificationId ? { ...n, read: true } : n,
+        n.id === notificationId ? { ...n, is_read: true } : n,
       );
 
       return {
@@ -80,12 +90,59 @@ export const useNotificationsStore = create<NotificationsState>((set, get) => ({
     });
   },
 
+  deleteNotification: async (notificationId: string) => {
+    const supabase = getSupabaseBrowserClient();
+    get().setDeleting(notificationId, true);
+
+    const { error } = await supabase
+      .from("notifications")
+      .delete()
+      .eq("id", notificationId);
+
+    get().setDeleting(notificationId, false);
+
+    if (error) {
+      console.error("Delete notification error:", error.message);
+      return;
+    }
+
+    set((state) => {
+      const updated = state.notifications.filter(
+        (n) => n.id !== notificationId,
+      );
+
+      return {
+        notifications: updated,
+        unreadCount: updated.filter((n) => !n.is_read).length,
+      };
+    });
+  },
+
+  deleteAllNotifications: async (userId: string) => {
+    const supabase = getSupabaseBrowserClient();
+
+    const { error } = await supabase
+      .from("notifications")
+      .delete()
+      .eq("user_id", userId);
+
+    if (error) {
+      console.error("Delete all notifications error:", error.message);
+      return;
+    }
+
+    set({
+      notifications: [],
+      unreadCount: 0,
+    });
+  },
+
   markAllAsRead: async (userId: string) => {
     const supabase = getSupabaseBrowserClient();
 
     const { error } = await supabase
       .from("notifications")
-      .update({ read: true })
+      .update({ is_read: true })
       .eq("user_id", userId);
 
     if (error) {
@@ -96,7 +153,7 @@ export const useNotificationsStore = create<NotificationsState>((set, get) => ({
     set((state) => ({
       notifications: state.notifications.map((n) => ({
         ...n,
-        read: true,
+        is_read: true,
       })),
       unreadCount: 0,
     }));
@@ -111,7 +168,6 @@ export const useNotificationsStore = create<NotificationsState>((set, get) => ({
     socket.off("notification:all_read");
 
     socket.on("notification:new", (notification: Notification) => {
-      console.log("🔥 notification received:", notification);
 
       get().addNotification(notification);
 

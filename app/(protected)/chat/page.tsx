@@ -11,7 +11,6 @@ import { useAuthStore } from "@/store/useAuthStore";
 import { getSocket } from "@/lib/socket";
 import MessageBubble from "@/components/chat/MessageBubble";
 import Spinner from "@/components/ui/Spinner";
-import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
 
 export type UIMessage = {
   id: string;
@@ -43,7 +42,6 @@ const Chat = () => {
     joinChat,
     listenForMessages,
     cleanup,
-    fetchReadPointers,
     fetchingMessages,
   } = useChatStore();
 
@@ -51,9 +49,23 @@ const Chat = () => {
   const bottomRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
+    const socket = getSocket();
     if (!activeChat?.id) return;
 
-    fetchReadPointers(activeChat.id);
+    socket?.emit("chat_open", {
+      conversationId: activeChat.id,
+    });
+
+    return () => {
+      socket?.emit("chat_close", {
+        conversationId: activeChat.id,
+      });
+    };
+  }, [activeChat?.id]);
+
+  useEffect(() => {
+    if (!activeChat?.id) return;
+
     fetchMessages(activeChat.id, user?.id || "");
     joinChat(activeChat.id);
     listenForMessages();
@@ -111,27 +123,57 @@ const Chat = () => {
   const lastReadRef = useRef<string | null>(null);
 
   useEffect(() => {
-    if (!bottomRef.current || !activeChat?.id || messages.length === 0) return;
+    const socket = getSocket();
+    if (!socket || !activeChat?.id) return;
+
+    const handleVisibility = () => {
+      if (document.visibilityState === "visible") {
+        socket.emit("mark_as_read", {
+          conversationId: activeChat.id,
+        });
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibility);
+
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibility);
+    };
+  }, [activeChat?.id]);
+
+  useEffect(() => {
+    if (!activeChat?.id || !messages.length) return;
 
     const socket = getSocket();
     if (!socket) return;
+
+    const lastMessage = messages[messages.length - 1];
+    if (!lastMessage) return;
+
+    const alreadyMarked = lastReadRef.current === lastMessage.id;
+    if (alreadyMarked) return;
 
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (!entry.isIntersecting) return;
 
-        const lastMessage = messages[messages.length - 1];
-        if (!lastMessage) return;
+        if (lastReadRef.current === lastMessage.id) return;
+
+        if (document.visibilityState !== "visible") return;
 
         socket.emit("mark_as_read", {
           conversationId: activeChat.id,
-          lastMessageId: lastMessage.id,
         });
+
+        lastReadRef.current = lastMessage.id;
       },
-      { threshold: 1 },
+      {
+        threshold: 1.0,
+      },
     );
 
-    observer.observe(bottomRef.current);
+    const el = bottomRef.current;
+    if (el) observer.observe(el);
 
     return () => observer.disconnect();
   }, [messages, activeChat?.id]);

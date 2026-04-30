@@ -26,7 +26,7 @@ type Props = {
   statusStyles: Record<ProposalStatus, string>;
 };
 
-const ProposalCard = ({ p, now, statusStyles }: Props) => {
+const ProposalCard = ({ p, statusStyles }: Props) => {
   const { updateProposalStatus, updatingStatus } = useProposalStore();
   const { user } = useAuthStore();
   const { setActiveChat } = useChatStore();
@@ -66,15 +66,19 @@ const ProposalCard = ({ p, now, statusStyles }: Props) => {
     [p.dateCreated],
   );
   const firstName = p.partnerName?.trim().split(/\s+/)[0] || "User";
+  const senderName = user?.name || "";
+  const senderImage = user?.avatar_url || "";
+  const link = "/proposals";
 
   const acceptProposal = async () => {
     try {
       const proposalId = p?.id;
-      await updateProposalStatus(proposalId, "active" as ProposalStatus);
-
-      toast.success(
-        "Proposal accepted",
-        `We'll let ${firstName} know about this.`,
+      await updateProposalStatus(
+        proposalId,
+        "active" as ProposalStatus,
+        senderName,
+        senderImage,
+        link,
       );
     } catch (err) {
       toast.error(
@@ -88,9 +92,13 @@ const ProposalCard = ({ p, now, statusStyles }: Props) => {
   const declineProposal = async () => {
     try {
       const proposalId = p?.id;
-      await updateProposalStatus(proposalId, "rejected" as ProposalStatus);
-
-      toast.success("Proposal declined");
+      await updateProposalStatus(
+        proposalId,
+        "rejected" as ProposalStatus,
+        senderName,
+        senderImage,
+        link,
+      );
     } catch (err) {
       toast.error("Failed to decline proposal");
       console.error(err);
@@ -104,7 +112,6 @@ const ProposalCard = ({ p, now, statusStyles }: Props) => {
 
       const convID = await getOrCreateConversation(userA, userB);
 
-      console.log("conversation:", convID);
       const conv = await getConversationById(convID, userId);
       setActiveChat(conv);
       router.push(`/chat/`);
@@ -170,45 +177,53 @@ const ProposalCard = ({ p, now, statusStyles }: Props) => {
         </div>
       </div>
 
-     <div className="flex flex-col md:flex-row items-center gap-4">
-  {/* LEFT SIDE */}
-  <div className="w-full flex-1 bg-background/50 border border-border p-4 rounded-xl">
-    <p className="text-[10px] text-text-secondary uppercase font-bold tracking-widest mb-2">
-      {!p.isSender ? `${firstName} wants to learn` : "I want to learn"}
-    </p>
+      <div className="flex flex-col">
+        <div className="flex flex-col md:flex-row items-center gap-4">
+          <div className="w-full flex-1 bg-background/50 border border-border p-4 rounded-xl">
+            <p className="text-[10px] text-text-secondary uppercase font-bold tracking-widest mb-2">
+              {!p.isSender ? `${firstName} wants to learn` : "I want to learn"}
+            </p>
 
-    <div className="flex items-center gap-3">
-      <span className="material-symbols-outlined text-primary">
-        {p.skillToTeachIcon}
-      </span>
-      <span className="font-semibold text-sm truncate">{p.iLearn}</span>
-    </div>
-  </div>
+            <div className="flex items-center gap-3">
+              <span className="material-symbols-outlined text-primary">
+                {p.skillToTeachIcon}
+              </span>
+              <span className="font-semibold text-sm truncate">{p.iLearn}</span>
+            </div>
+          </div>
 
-  {p.type === "swap" && (
-    <>
-      <span className="material-symbols-outlined">swap_horiz</span>
+          {p.type === "swap" && (
+            <>
+              <span className="material-symbols-outlined rotate-90 md:rotate-none">
+                swap_horiz
+              </span>
 
-      <div className="w-full flex-1 bg-background/50 border border-border p-4 rounded-xl">
-        <p className="text-[10px] text-text-secondary uppercase font-bold tracking-widest mb-2">
-          {!p.isSender ? `${firstName} will teach you` : "I will teach you"}
-        </p>
+              <div className="w-full flex-1 bg-background/50 border border-border p-4 rounded-xl">
+                <p className="text-[10px] text-text-secondary uppercase font-bold tracking-widest mb-2">
+                  {!p.isSender
+                    ? `${firstName} will teach you`
+                    : "I will teach you"}
+                </p>
 
-        <div className="flex items-center gap-3">
-          <span className="material-symbols-outlined text-accent">
-            {p.skillToLearnIcon}
-          </span>
-          <span className="font-semibold text-sm truncate">
-            {p.iTeach}
-          </span>
+                <div className="flex items-center gap-3">
+                  <span className="material-symbols-outlined text-accent">
+                    {p.skillToLearnIcon}
+                  </span>
+                  <span className="font-semibold text-sm truncate">
+                    {p.iTeach}
+                  </span>
+                </div>
+              </div>
+            </>
+          )}
+        </div>
+
+        <div className="py-3">
+  <p className="text-xs text-text-secondary">{p?.message}</p>
         </div>
       </div>
-    </>
-  )}
 
-</div>
-
-      <div className="flex flex-col sm:flex-row items-center justify-between mt-6 pt-6 border-t border-border gap-4">
+      <div className="flex flex-row items-center justify-between pt-6 border-t border-border gap-4">
         <div className="flex justify-between w-full sm:w-auto sm:gap-6">
           <div className="flex items-center gap-2 text-text-secondary">
             <span className="material-symbols-outlined text-base text-accent">
@@ -300,7 +315,7 @@ const ProposalCard = ({ p, now, statusStyles }: Props) => {
           <div className="flex">
             <button
               onClick={handleGotoChat}
-              className="w-full bg-primary text-text-primary font-headline font-bold text-xs py-3 px-4 rounded-lg flex items-center justify-center gap-2 cursor-pointer"
+              className="w-max bg-primary text-text-primary font-headline font-bold text-xs py-3 px-4 rounded-lg flex items-center justify-center gap-2 cursor-pointer"
             >
               <span
                 className="material-symbols-outlined text-base"
