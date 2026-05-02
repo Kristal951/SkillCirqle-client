@@ -31,6 +31,8 @@ export type Message = {
   content: string;
   created_at: string;
   message_type: MessageType;
+  is_deleted: boolean;
+  deleted_at?: string | null;
 
   metadata?: {
     media?: MediaItem[];
@@ -46,11 +48,14 @@ export type Message = {
 
   sender: {
     avatar: string;
+    name: string;
   };
 
   status?: MessageStatus;
   isTemp?: boolean;
   tempId?: string;
+  is_edited: boolean;
+  updated_at?: string;
 };
 
 type ChatStore = {
@@ -63,6 +68,11 @@ type ChatStore = {
   setActiveChat: (chat: ActiveChat | null) => void;
 
   fetchMessages: (conversationId: string, userId: string) => Promise<void>;
+  updateMessage: (
+    conversationId: string,
+    messageId: string,
+    updates: Partial<Message>,
+  ) => void;
 
   sendMessage: (data: {
     conversationId: string;
@@ -74,6 +84,7 @@ type ChatStore = {
     name: string;
     link: string;
     receiverId: string;
+    senderName: string;
   }) => void;
 
   listenForMessages: () => void;
@@ -90,6 +101,35 @@ export const useChatStore = create<ChatStore>((set, get) => ({
   fetchingMessages: false,
   conversations: [],
   setConversations: (data) => set({ conversations: data }),
+
+  updateMessage: (
+    conversationId: string,
+    messageId: string,
+    updates: Partial<Message>,
+  ) =>
+    set((state) => {
+      const msgs = state.messages[conversationId];
+
+      if (!msgs) return state;
+
+      let updated = false;
+
+      const newMsgs = msgs.map((msg) => {
+        if (msg.id !== messageId) return msg;
+
+        updated = true;
+        return { ...msg, ...updates };
+      });
+
+      if (!updated) return state;
+
+      return {
+        messages: {
+          ...state.messages,
+          [conversationId]: newMsgs,
+        },
+      };
+    }),
 
   setActiveChat: (chat) => {
     set({ activeChat: chat });
@@ -188,6 +228,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     name,
     link,
     receiverId,
+    senderName
   }) => {
     if (!content.trim()) return;
 
@@ -203,9 +244,11 @@ export const useChatStore = create<ChatStore>((set, get) => ({
       created_at: new Date().toISOString(),
       message_type: type,
       metadata,
+      is_deleted: false,
       status: "sending",
       isTemp: true,
-      sender: { avatar: senderAvatar || "" },
+      is_edited: false,
+      sender: { avatar: senderAvatar || "", name: senderName || "" },
     };
 
     set((state) => ({
@@ -250,6 +293,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     socket.off("message_status");
     socket.off("message_error");
     socket.off("messages_seen");
+    socket.off("message_edited");
 
     socket.on("message_ack", ({ tempId, realId }) => {
       set((state) => {
@@ -312,7 +356,6 @@ export const useChatStore = create<ChatStore>((set, get) => ({
         };
       });
 
-      // 2. REAL-TIME UNREAD COUNT & PREVIEW UPDATE
       set((state) => ({
         conversations: state.conversations.map((conv) => {
           if (conv.id === conversationId) {
@@ -322,7 +365,6 @@ export const useChatStore = create<ChatStore>((set, get) => ({
               ...conv,
               last_message: msg.content,
               last_message_at: msg.created_at,
-              // Only increment if the message is from someone else AND chat isn't active
               unread_count:
                 isIncoming && !isActiveChat
                   ? Number(conv.unread_count || 0) + 1
@@ -333,7 +375,6 @@ export const useChatStore = create<ChatStore>((set, get) => ({
         }),
       }));
 
-      // 3. Status logic
       if (msg.senderId === currentUserId) {
         socket?.emit("message_delivered", {
           messageId: msg.id,
@@ -344,7 +385,6 @@ export const useChatStore = create<ChatStore>((set, get) => ({
 
       if (isActiveChat) {
         if (msg.sender_id !== currentUserId) {
-          // If active, tell DB to reset count immediately
           getSocket()?.emit("mark_as_read", { conversationId });
         }
 
@@ -378,7 +418,6 @@ export const useChatStore = create<ChatStore>((set, get) => ({
       });
     });
 
-    // Inside listenForMessages
     socket.on(
       "message_status_update",
       ({ messageId, conversationId, status }) => {
@@ -421,6 +460,14 @@ export const useChatStore = create<ChatStore>((set, get) => ({
         });
         return { messages: { ...state.messages, [conversationId]: updated } };
       });
+    });
+
+    socket.on("message_edited", (msg) => {
+      useChatStore.getState().updateMessage(msg.conversation_id, msg.id, msg);
+    });
+
+    socket.on("message_deleted", (msg) => {
+      useChatStore.getState().updateMessage(msg.conversation_id, msg.id, msg);
     });
 
     socket.on("message_error", ({ tempId }) => {
@@ -480,5 +527,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     socket?.off("messages_seen");
     socket?.off("conversation:updated");
     socket?.off("messages_delivered");
+    socket?.off("message_edited");
+    socket?.off("message_deleted");
   },
 }));

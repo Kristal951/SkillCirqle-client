@@ -12,7 +12,6 @@ export const useNotificationsStore = create<NotificationsState>((set, get) => ({
 
   fetchNotifications: async (userId: string) => {
     if (!userId) {
-      console.log(`! userID`);
       return;
     }
     const supabase = getSupabaseBrowserClient();

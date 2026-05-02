@@ -6,9 +6,9 @@ const Footer = () => {
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center md:items-start justify-between gap-8">
         
         <div className="flex flex-col items-center md:items-start gap-2 text-center md:text-left">
-          <span className="text-lg font-bold text-primary">
-            Skill Cirqle
-          </span>
+          <h1 className="text-lg font-bold text-transparent bg-linear-to-r from-primary to-accent bg-clip-text">
+            SkillCirqle
+          </h1>
           <p className="text-text-secondary text-sm max-w-xs">
             © 2026 Skill Cirqle. All rights reserved.
           </p>

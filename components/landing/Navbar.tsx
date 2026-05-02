@@ -10,25 +10,23 @@ const Navbar = () => {
   return (
     <nav className="fixed top-0 left-0 w-full h-16 z-50 bg-background-base/80 backdrop-blur-md border-b border-divider">
       <div className="w-full mx-auto h-full px-4 sm:px-6 flex items-center justify-between">
-        <div className="flex items-center gap-2 cursor-pointer">
-          <div className="w-8 h-8 bg-primary rounded-lg rotate-12 transition-transform duration-300" />
-          <p className="text-text-primary font-bold text-xl sm:text-2xl tracking-tight">
-            Skill<span className="text-primary italic">Cirqle</span>
-          </p>
+        <div className="flex items-center gap-1 cursor-pointer">
+         <img src="/SkillCirqle.svg" alt="" className="w-9 h-9" />
+          <h1 className="text-xl text-transparent font-bold tracking-tight bg-linear-to-r from-primary to-accent bg-clip-text truncate">SkillCirqle</h1>
         </div>
 
-        <div className="hidden md:flex items-center gap-3">
+        <div className=" flex items-center md:gap-3">
           <Link
             href="/auth/signin"
-            className="text-text-white font-medium px-4 py-2 rounded-lg hover:bg-surface-1 transition"
+            className="text-text-primary text-base font-medium px-4 py-2 rounded-lg hover:bg-surface-1 transition"
           >
             Login
           </Link>
           <Link
             href="/auth/register"
-            className="bg-primary cursor-pointer text-white px-5 py-2.5 rounded-xl font-semibold shadow-md"
+            className="bg-primary text-base cursor-pointer text-white md:px-5 md:py-2.5 px-3 py-2 rounded-md font-semibold shadow-md"
           >
-            Join Now
+            Sign Up
           </Link>
         </div>
       </div>

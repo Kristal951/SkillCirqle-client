@@ -8,13 +8,68 @@ import {
   Download,
   FileText,
   X,
-  Play,
+  Edit2,
+  Copy,
+  Reply,
+  Trash2,
 } from "lucide-react";
 import { useMediaViewer } from "@/store/useMediaViewer";
 import VoicePlayer from "./VoicePlayer";
+import { motion } from "framer-motion";
+import { useMessageActionsStore } from "@/store/useMessageStore";
+import { useChatStore } from "@/store/useChatStore";
 
 const MessageBubble = ({ isMe, msg }: { isMe: boolean; msg: UIMessage }) => {
   const { openViewer } = useMediaViewer();
+
+  const {
+    activeMessageId,
+    toggleMessageMenu,
+    copyMessage,
+    deleteMessage,
+    setReply,
+    setEditingMessage,
+    setActiveMessage,
+  } = useMessageActionsStore();
+  const { activeChat } = useChatStore();
+
+  const isOpen = activeMessageId === msg.id;
+
+  let time = "";
+
+  if (msg.deleted && msg.deletedAt) {
+    time = `Deleted at ${new Date(msg.deletedAt).toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+    })}`;
+  } else if (msg.edited && msg.updatedAt) {
+    time = `Edited at ${new Date(msg.updatedAt).toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+    })}`;
+  } else {
+    time = new Date(msg.createdAt).toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  }
+
+  const handleToggle = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    toggleMessageMenu(msg.id);
+  };
+
+  const handleEditMsg = (
+    msgId: string,
+    content: string,
+    conversationId: string,
+  ) => {
+    setEditingMessage({
+      id: msgId,
+      content: content,
+      conversationId: conversationId,
+    });
+  };
 
   const getStatus = () => {
     if (!isMe) return null;
@@ -121,7 +176,63 @@ const MessageBubble = ({ isMe, msg }: { isMe: boolean; msg: UIMessage }) => {
         />
       )}
 
-      <div className="flex flex-col max-w-[55%]">
+      <div
+        className="flex flex-col max-w-[55%] cursor-pointer"
+        onClick={(e) => {
+          e.stopPropagation();
+          handleToggle(e);
+        }}
+      >
+        <div className="relative">
+          {isOpen && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 10 }}
+              className={` ${msg?.deleted ? 'hidden' : 'absolute'} -top-12 z-100 flex items-center gap-1 p-1 bg-surface/80 backdrop-blur-md border border-border shadow-xl rounded-2xl ${
+                isMe ? "right-0" : "left-0"
+              }`}
+            >
+              {[
+                {
+                  icon: Copy,
+                  action: () => copyMessage(msg),
+                },
+                {
+                  icon: Edit2,
+                  action: () =>
+                    handleEditMsg(msg.id, msg.message, activeChat?.id || ""),
+                  show: isMe,
+                },
+                {
+                  icon: Reply,
+                  action: () => setReply(msg),
+                },
+                {
+                  icon: Trash2,
+                  action: () => deleteMessage(msg.id, activeChat?.id || ""),
+                  danger: true,
+                  show: isMe,
+                },
+              ]
+                .filter((item) => item.show !== false)
+                .map((item, i) => (
+                  <button
+                    key={i}
+                    onClick={item.action}
+                    className={`p-2  rounded-xl transition-colors hover:bg-background flex items-center gap-2 ${
+                      item.danger
+                        ? "hover:bg-red-500/10 text-red-500"
+                        : "hover:bg-white/10 text-text-primary"
+                    }`}
+                  >
+                    <item.icon size={16} />
+                  </button>
+                ))}
+            </motion.div>
+          )}
+        </div>
+
         <div
           className={`text-sm shadow wrap-break-word ${
             isAudioMessage ? "px-4 py-2 rounded-t-xl" : "p-4 rounded-t-3xl"
@@ -132,7 +243,9 @@ const MessageBubble = ({ isMe, msg }: { isMe: boolean; msg: UIMessage }) => {
           }`}
         >
           {msg.type === "text" && (
-            <p className="whitespace-pre-wrap">{msg.message}</p>
+            <p className="whitespace-pre-wrap">
+              {msg.deleted ? `This message was deleted ${isMe ? 'You' : `${msg?.sender?.name}`}` : msg.message}
+            </p>
           )}
 
           {audioMedia.length > 0 && (
@@ -215,14 +328,7 @@ const MessageBubble = ({ isMe, msg }: { isMe: boolean; msg: UIMessage }) => {
             isMe ? "justify-end" : "justify-start"
           }`}
         >
-          <span>
-            {msg.createdAt
-              ? new Date(msg.createdAt).toLocaleTimeString([], {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                })
-              : "--:--"}
-          </span>
+          <span>{time}</span>
 
           <span>{renderStatus()}</span>
         </div>
@@ -232,4 +338,3 @@ const MessageBubble = ({ isMe, msg }: { isMe: boolean; msg: UIMessage }) => {
 };
 
 export default MessageBubble;
-

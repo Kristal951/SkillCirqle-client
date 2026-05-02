@@ -253,7 +253,7 @@ export default function Dashboard({ loggingOut }: { loggingOut: boolean }) {
         </div>
       </section>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-20">
+      {/* <div className="grid grid-cols-1 lg:grid-cols-2 gap-20">
         <div className="space-y-5 bg-surface px-4 py-8 rounded-xl">
           <div className="flex items-center gap-3">
             <MapPin className="text-primary" />
@@ -309,9 +309,9 @@ export default function Dashboard({ loggingOut }: { loggingOut: boolean }) {
             ))}
           </div>
         </div>
-      </div>
+      </div> */}
 
-      <section className="w-full flex">
+      {/* <section className="w-full flex">
         <div className="space-y-8 w-full">
           <div className="w-full flex items-center justify-between">
             <div className="w-max flex flex-col gap-2">
@@ -392,9 +392,9 @@ export default function Dashboard({ loggingOut }: { loggingOut: boolean }) {
             ))}
           </div>
         </div>
-      </section>
+      </section> */}
 
-      <section className="w-full flex">
+      {/* <section className="w-full flex">
         <div className="space-y-8 w-full">
            <div className="w-full flex items-center justify-between">
             <div className="w-max flex flex-col gap-2">
@@ -481,30 +481,30 @@ export default function Dashboard({ loggingOut }: { loggingOut: boolean }) {
             ))}
           </div>
         </div>
-      </section>
+      </section> */}
     </div>
   );
 }
 
-function ActivityRow({ title, sub, icon }: any) {
-  return (
-    <div
-      className={`p-4 rounded-xl group bg-surface flex justify-between items-center `}
-    >
-      <div className="flex gap-3 group items-center">
-        <div className="w-10 h-10 bg-background flex items-center justify-center rounded-lg">
-          <span className="material-symbols-outlined">{icon}</span>
-        </div>
+// function ActivityRow({ title, sub, icon }: any) {
+//   return (
+//     <div
+//       className={`p-4 rounded-xl group bg-surface flex justify-between items-center `}
+//     >
+//       <div className="flex gap-3 group items-center">
+//         <div className="w-10 h-10 bg-background flex items-center justify-center rounded-lg">
+//           <span className="material-symbols-outlined">{icon}</span>
+//         </div>
 
-        <div>
-          <h3 className="text-lg text-text-primary font-medium">{title}</h3>
-          <p className="text-sm text-text-secondary">{sub}</p>
-        </div>
-      </div>
+//         <div>
+//           <h3 className="text-lg text-text-primary font-medium">{title}</h3>
+//           <p className="text-sm text-text-secondary">{sub}</p>
+//         </div>
+//       </div>
 
-      <button className="button-secondary group-hover:bg-primary group-hover:text-white">
-        Join
-      </button>
-    </div>
-  );
-}
+//       <button className="button-secondary group-hover:bg-primary group-hover:text-white">
+//         Join
+//       </button>
+//     </div>
+//   );
+// }

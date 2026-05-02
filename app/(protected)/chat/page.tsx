@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   useChatStore,
   Message,
@@ -17,10 +17,15 @@ export type UIMessage = {
   message: string;
   type: MessageType;
   createdAt: string;
+  edited?: boolean;
+  updatedAt?: string;
+  deleted?: boolean;
+  deletedAt?: string | null;
 
   sender: {
     id: string;
     avatar: string;
+    name: string;
   };
 
   media?: {
@@ -77,13 +82,17 @@ const Chat = () => {
 
   const messages: UIMessage[] = useMemo(() => {
     return rawMessages
-      .filter((msg) => msg?.id && msg?.content)
+      .filter((msg) => msg?.id)
       .map((msg: Message) => ({
         id: msg.id,
-        message: msg.content,
+        message: msg.content || "",
         type: msg.message_type || "text",
         createdAt: msg.created_at,
+        edited: msg.is_edited,
+        updatedAt: msg.updated_at,
         status: msg.status,
+        deleted: msg.is_deleted,
+        deletedAt: msg.deleted_at,
 
         sender: {
           id: msg.sender_id,
@@ -91,6 +100,8 @@ const Chat = () => {
             msg?.sender?.avatar ||
             msg?.metadata?.sender_avatar_url ||
             `https://i.pravatar.cc/150?u=${msg.sender_id}`,
+          name:
+            msg?.sender?.name || msg.metadata?.sender_name || "Unknown User",
         },
 
         media:
@@ -115,6 +126,7 @@ const Chat = () => {
                 : [],
       }));
   }, [rawMessages]);
+  console.log(messages);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -216,7 +228,7 @@ const Chat = () => {
 
   return (
     <div className="flex flex-col h-full w-full">
-      <div className="flex-1 overflow-y-auto px-4 py-6 space-y-4">
+      <div className="flex-1 overflow-y-auto px-4 py-14 space-y-4">
         {messages.map((msg) => {
           const isMe = msg.sender.id === currentUserId;
           return <MessageBubble key={msg.id} msg={msg} isMe={isMe} />;

@@ -2,33 +2,23 @@
 
 import { useAuthStore } from "@/store/useAuthStore";
 import { MessageType, useChatStore } from "@/store/useChatStore";
-import { Send, Smile, Mic, X, Play, Pause, Trash2 } from "lucide-react";
+import { Send, Smile, Mic, X, Play, Pause, Trash2, Edit2 } from "lucide-react";
 import React, { useRef, useState, useEffect } from "react";
 import { getSocket } from "@/lib/socket";
 import { uploadFile } from "@/utils/uploadFile";
 import EmojiPicker, { Theme } from "emoji-picker-react";
 import { useTheme } from "next-themes";
-import Spinner from "../ui/Spinner";
+import { useMessageActionsStore } from "@/store/useMessageStore";
+import { AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
+import { toast } from "@/lib/toast";
 
-type RecorderState = "idle" | "recording" | "paused" | "preview";
+// type RecorderState = "idle" | "recording" | "paused" | "preview";
 
 const Input = () => {
-  const BAR_COUNT = 50;
   const [message, setMessage] = useState("");
   const [showAttachmentModal, setShowAttachmentModal] = useState(false);
-  const [previewFiles, setPreviewFiles] = useState<File[]>([]);
-  const [previewUrls, setPreviewUrls] = useState<string[]>([]);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
-  const [isRecording, setIsRecording] = useState(false);
-  const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
-  const [audioUrl, setAudioUrl] = useState<string | null>(null);
-  const [recordTime, setRecordTime] = useState(0);
-  const [waveBars, setWaveBars] = useState<number[]>(Array(BAR_COUNT).fill(0));
-  const [isPaused, setIsPaused] = useState(false);
-  const [recorderState, setRecorderState] = useState<RecorderState>("idle");
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [loading, setLoading] = useState(false);
-
   const [uploadingFiles, setUploadingFiles] = useState<
     { file: File; id: string; previewUrl: string }[]
   >([]);
@@ -39,10 +29,23 @@ const Input = () => {
   const [uploadProgress, setUploadProgress] = useState<Record<string, number>>(
     {},
   );
-
   const [isUploading, setIsUploading] = useState(false);
 
+  // const BAR_COUNT = 50;
+  // const [previewFiles, setPreviewFiles] = useState<File[]>([]);
+  // const [previewUrls, setPreviewUrls] = useState<string[]>([]);
+  // const [isRecording, setIsRecording] = useState(false);
+  // const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
+  // const [audioUrl, setAudioUrl] = useState<string | null>(null);
+  // const [recordTime, setRecordTime] = useState(0);
+  // const [waveBars, setWaveBars] = useState<number[]>(Array(BAR_COUNT).fill(0));
+  // const [isPaused, setIsPaused] = useState(false);
+  // const [recorderState, setRecorderState] = useState<RecorderState>("idle");
+  // const [isPlaying, setIsPlaying] = useState(false);
+  // const [loading, setLoading] = useState(false);
+
   const { sendMessage, activeChat } = useChatStore();
+  const { editingMessage, setEditingMessage } = useMessageActionsStore();
   const { user } = useAuthStore();
   const { resolvedTheme } = useTheme();
 
@@ -54,6 +57,7 @@ const Input = () => {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const emojiRef = useRef<HTMLDivElement | null>(null);
   const attachmentModalRef = useRef<HTMLDivElement | null>(null);
+
   // const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   // const audioChunksRef = useRef<Blob[]>([]);
   // const audioContextRef = useRef<AudioContext | null>(null);
@@ -89,6 +93,14 @@ const Input = () => {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  const isEditing = !!editingMessage;
+
+  useEffect(() => {
+    if (editingMessage) {
+      setMessage(editingMessage.content);
+    }
+  }, [editingMessage]);
 
   useEffect(() => {
     const el = document.querySelector("textarea");
@@ -412,8 +424,31 @@ const Input = () => {
 
   const handleSend = async () => {
     setShowAttachmentModal(false);
+    const socket = getSafeSocket();
 
     if (!conversationId || isUploading) return;
+
+    if (editingMessage) {
+      try {
+        if (!message.trim()) return;
+
+        socket?.emit("edit_message", {
+          messageId: editingMessage.id,
+          newText: message,
+          conversationId: editingMessage.conversationId,
+        });
+
+        setMessage("");
+        setEditingMessage(null);
+           toast.info("Message Edited.");
+      } catch (error) {
+        console.log(error);
+      }
+
+      return;
+    }
+
+    setEditingMessage(null);
 
     const images = uploadedMedia.filter((m) =>
       m.file.type.startsWith("image/"),
@@ -468,13 +503,13 @@ const Input = () => {
         : undefined,
       name: user?.name || "",
       link: "/chat",
+      senderName: user?.name || "",
     });
 
     setMessage("");
     setUploadedMedia([]);
     setUploadProgress({});
 
-    const socket = getSafeSocket();
     socket?.emit("stop_typing", {
       conversationId,
       userId: user?.id,
@@ -528,6 +563,42 @@ const Input = () => {
           })}
         </div>
       )}
+      <AnimatePresence>
+        {editingMessage && (
+          <motion.div
+            initial={{ opacity: 0, y: 10, height: 0 }}
+            animate={{ opacity: 1, y: 0, height: "auto" }}
+            exit={{ opacity: 0, y: 10, height: 0 }}
+            className="w-full bg-surface/50 backdrop-blur-md border-t border-primary/20 px-4 py-3 flex items-center justify-between group"
+          >
+            <div className="flex items-center gap-3 overflow-hidden">
+              <div className="shrink-0 w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center text-text-primary">
+                <Edit2 size={14} className="animate-pulse" />
+              </div>
+
+              <div className="flex flex-col min-w-0">
+                <span className="text-[10px] font-semibold uppercase tracking-wide text-text-primary">
+                  Editing Message...
+                </span>
+                <p className="text-sm text-text-secondary truncate">
+                  {editingMessage.content}
+                </p>
+              </div>
+            </div>
+
+            <button
+              onClick={() => {
+                setEditingMessage(null);
+                setMessage("");
+              }}
+              className="shrink-0 p-2 hover:bg-surface rounded-full transition-colors text-text-secondary hover:text-rose-500"
+              title="Cancel editing"
+            >
+              <X size={18} />
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {uploadedMedia.length > 0 && !isUploading && (
         <div className="flex gap-2 flex-wrap">

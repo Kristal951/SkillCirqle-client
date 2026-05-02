@@ -105,7 +105,6 @@ body {
   }
 }
 
-/* Smooth theme transition */
 html {
   transition:
     background-color 0.3s ease,
@@ -158,6 +157,6 @@ button {
   display: none;
 }
 .scrollbar-hide {
-  -ms-overflow-style: none; /* IE and Edge */
-  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; 
+  scrollbar-width: none; 
 }

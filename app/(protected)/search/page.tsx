@@ -122,8 +122,8 @@ const SearchPage = () => {
 }
 
   return (
-    <div className="w-full min-h-screen flex flex-col bg-background selection:bg-primary selection:text-white">
-      <section className="w-full px-4 sm:px-8 pt-10 pb-6 border-b border-border bg-background backdrop-blur-xl sticky top-0 z-30">
+    <div className="w-full min-h-screen flex flex-col bg-background md:py-10 gap-10 md:px-8 pb-6 px-3 selection:bg-primary selection:text-white">
+      <section className="w-full py-6 border-b border-border bg-background backdrop-blur-xl sticky top-0 z-30">
         <div className="max-w-7xl mx-auto space-y-6">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
             <div className=" hidden md:flex flex-col space-y-1">
@@ -149,7 +149,7 @@ const SearchPage = () => {
             </div>
           </div>
 
-          <div className="flex gap-3 overflow-x-auto no-scrollbar pb-1">
+          <div className="flex gap-3 overflow-x-auto scrollbar-hide pb-1">
             {CATEGORY_DATA.map((cat) => {
               const active = selectedCategory === cat.id;
               return (
@@ -174,7 +174,7 @@ const SearchPage = () => {
         </div>
       </section>
 
-      <main className="w-full px-4 sm:px-8 py-10 max-w-7xl mx-auto">
+      <main className="w-full max-w-7xl mx-auto">
         <AnimatePresence mode="popLayout">
           {filteredProfiles.length === 0 ? (
             <motion.div
