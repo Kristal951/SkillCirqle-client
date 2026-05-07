@@ -21,12 +21,23 @@ export type UIMessage = {
   updatedAt?: string;
   deleted?: boolean;
   deletedAt?: string | null;
-
+  reply_to?: string | null;
+  reply?: {
+  id: string;
+  content: string;
+  sender_id: string;
+  metadata?: {
+    sender_name?: string;
+    sender_avatar_url?: string;
+  };
+} | null;
+  caption?: string;
   sender: {
     id: string;
     avatar: string;
     name: string;
   };
+ 
 
   media?: {
     type: "image" | "file" | "video" | "audio";
@@ -35,6 +46,11 @@ export type UIMessage = {
   }[];
 
   status?: MessageStatus;
+};
+
+type GroupedMessages = {
+  date: string;
+  messages: UIMessage[];
 };
 
 const Chat = () => {
@@ -52,6 +68,47 @@ const Chat = () => {
 
   const currentUserId = user?.id;
   const bottomRef = useRef<HTMLDivElement | null>(null);
+  const messageRefs = useRef<Record<string, HTMLDivElement | null>>({});
+
+  const formatDateLabel = (date: Date) => {
+    const now = new Date();
+
+    const isToday = date.toDateString() === now.toDateString();
+
+    const yesterday = new Date();
+    yesterday.setDate(now.getDate() - 1);
+
+    const isYesterday = date.toDateString() === yesterday.toDateString();
+
+    if (isToday) return "Today";
+    if (isYesterday) return "Yesterday";
+
+    return date.toLocaleDateString(undefined, {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+  };
+
+  const groupMessagesByDate = (messages: UIMessage[]) => {
+    const groups: Record<string, UIMessage[]> = {};
+
+    messages.forEach((msg) => {
+      const date = new Date(msg.createdAt);
+      const key = formatDateLabel(date);
+
+      if (!groups[key]) {
+        groups[key] = [];
+      }
+
+      groups[key].push(msg);
+    });
+
+    return Object.entries(groups).map(([date, messages]) => ({
+      date,
+      messages,
+    }));
+  };
 
   useEffect(() => {
     const socket = getSocket();
@@ -78,7 +135,7 @@ const Chat = () => {
     return () => cleanup();
   }, [activeChat?.id]);
 
-  const rawMessages = storeMessages[activeChat?.id || ""] || [];
+  const rawMessages = storeMessages[activeChat?.id || ""] || []
 
   const messages: UIMessage[] = useMemo(() => {
     return rawMessages
@@ -93,7 +150,10 @@ const Chat = () => {
         status: msg.status,
         deleted: msg.is_deleted,
         deletedAt: msg.deleted_at,
+        caption: msg.metadata?.caption || '',
 
+        reply_to: msg.reply_to ?? null,
+        reply: msg.reply ?? undefined,
         sender: {
           id: msg.sender_id,
           avatar:
@@ -126,7 +186,9 @@ const Chat = () => {
                 : [],
       }));
   }, [rawMessages]);
-  console.log(messages);
+    console.log(messages)
+
+  const groupedMessages = groupMessagesByDate(messages);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -228,11 +290,34 @@ const Chat = () => {
 
   return (
     <div className="flex flex-col h-full w-full">
-      <div className="flex-1 overflow-y-auto px-4 py-14 space-y-4">
-        {messages.map((msg) => {
-          const isMe = msg.sender.id === currentUserId;
-          return <MessageBubble key={msg.id} msg={msg} isMe={isMe} />;
-        })}
+      <div className="flex-1 overflow-y-auto px-4 space-y-4">
+        <div className="flex flex-col space-y-2 p-4">
+          {groupedMessages.map((group) => (
+            <div key={group.date} className="flex flex-col">
+              <div className="flex items-center justify-center gap-4 my-3 select-none">
+                <div className="h-px flex-1 bg-linear-to-r from-transparent via-border/60 to-border/60" />
+                <div className="relative group">
+                  <span className="relative z-10 text-[8px] font-black uppercase tracking-[0.2em] px-4 py-1.5 rounded-full text-text-secondary shadow-sm whitespace-nowrap">
+                    {group.date}
+                  </span>
+                </div>
+
+                <div className="h-px flex-1 bg-linear-to-l from-transparent via-border/60 to-border/60" />
+              </div>
+
+              <div className="flex flex-col space-y-5">
+                {group.messages.map((msg) => (
+                  <MessageBubble
+                    key={msg.id}
+                    msg={msg}
+                    isMe={msg.sender.id === currentUserId}
+                    messageRefs={messageRefs}
+                  />
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
 
         <div ref={bottomRef} />
       </div>

@@ -9,6 +9,7 @@ export const useMessageActionsStore = create<MessageActionsState>(
     replyingTo: null,
     editingMessage: null,
     setEditingMessage: (msg) => set({ editingMessage: msg }),
+    clearReply: () => set({ replyingTo: null }),
 
     setActiveMessage: (id) => set({ activeMessageId: id }),
 
@@ -53,7 +54,7 @@ export const useMessageActionsStore = create<MessageActionsState>(
           messageId: msgId,
           conversationId: conversationId,
         });
-          toast.info("Message deleted");
+        toast.info("Message deleted");
       } catch (error) {
         console.log(error);
       }

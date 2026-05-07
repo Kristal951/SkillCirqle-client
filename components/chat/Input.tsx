@@ -2,7 +2,17 @@
 
 import { useAuthStore } from "@/store/useAuthStore";
 import { MessageType, useChatStore } from "@/store/useChatStore";
-import { Send, Smile, Mic, X, Play, Pause, Trash2, Edit2 } from "lucide-react";
+import {
+  Send,
+  Smile,
+  Mic,
+  X,
+  Play,
+  Pause,
+  Trash2,
+  Edit2,
+  Reply,
+} from "lucide-react";
 import React, { useRef, useState, useEffect } from "react";
 import { getSocket } from "@/lib/socket";
 import { uploadFile } from "@/utils/uploadFile";
@@ -17,6 +27,7 @@ import { toast } from "@/lib/toast";
 
 const Input = () => {
   const [message, setMessage] = useState("");
+  const [caption, setCaption] = useState("");
   const [showAttachmentModal, setShowAttachmentModal] = useState(false);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [uploadingFiles, setUploadingFiles] = useState<
@@ -45,7 +56,8 @@ const Input = () => {
   // const [loading, setLoading] = useState(false);
 
   const { sendMessage, activeChat } = useChatStore();
-  const { editingMessage, setEditingMessage } = useMessageActionsStore();
+  const { editingMessage, setEditingMessage, replyingTo, clearReply } =
+    useMessageActionsStore();
   const { user } = useAuthStore();
   const { resolvedTheme } = useTheme();
 
@@ -57,6 +69,7 @@ const Input = () => {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const emojiRef = useRef<HTMLDivElement | null>(null);
   const attachmentModalRef = useRef<HTMLDivElement | null>(null);
+  const inputRef = useRef<HTMLTextAreaElement | null>(null);
 
   // const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   // const audioChunksRef = useRef<Blob[]>([]);
@@ -121,6 +134,12 @@ const Input = () => {
       });
     };
   }, [conversationId]);
+
+  useEffect(() => {
+    if (replyingTo) {
+      inputRef.current?.focus();
+    }
+  }, [replyingTo]);
 
   // const togglePlay = () => {
   //   if (!audioRef.current || !audioUrl) return;
@@ -440,7 +459,7 @@ const Input = () => {
 
         setMessage("");
         setEditingMessage(null);
-           toast.info("Message Edited.");
+        toast.info("Message Edited.");
       } catch (error) {
         console.log(error);
       }
@@ -477,8 +496,8 @@ const Input = () => {
       ? message.trim()
       : hasImages && !hasFiles
         ? imageCount === 1
-          ? "Sent an image"
-          : `Sent ${imageCount} images`
+          ? "Photo"
+          : `${imageCount} Photos`
         : hasFiles && !hasImages
           ? fileCount === 1
             ? "Sent a file"
@@ -492,21 +511,24 @@ const Input = () => {
       senderAvatar: user?.avatar_url || "",
       content,
       type,
-      metadata: uploadedMedia.length
-        ? {
-            media: uploadedMedia.map((m) => ({
-              url: m.url,
-              name: m.file.name,
-              type: m.file.type.startsWith("image/") ? "image" : "file",
-            })),
-          }
-        : undefined,
+      metadata: {
+        caption: caption.trim() || "",
+        ...(uploadedMedia.length > 0 && {
+          media: uploadedMedia.map((m) => ({
+            url: m.url,
+            name: m.file.name,
+            type: m.file.type.startsWith("image/") ? "image" : "file",
+          })),
+        }),
+      },
       name: user?.name || "",
       link: "/chat",
       senderName: user?.name || "",
+      reply_to: replyingTo?.id || null,
     });
 
     setMessage("");
+    setCaption("");
     setUploadedMedia([]);
     setUploadProgress({});
 
@@ -600,6 +622,52 @@ const Input = () => {
         )}
       </AnimatePresence>
 
+      <AnimatePresence>
+        {replyingTo && (
+          <motion.div
+            initial={{ opacity: 0, height: 0, y: 5 }}
+            animate={{ opacity: 1, height: "auto", y: 0 }}
+            exit={{ opacity: 0, height: 0, y: 5 }}
+            className="relative z-0 overflow-hidden"
+          >
+            <div className="mx-2 flex items-stretch gap-0 bg-surface/50 backdrop-blur-md border border-border/50 rounded-xl overflow-hidden group">
+              <div className="w-1.5 bg-primary/60" />
+
+              <div className="flex-1 flex items-center justify-between px-3 py-2 gap-4 min-w-0">
+                <div className="flex flex-col min-w-0">
+                  <div className="flex items-center gap-2 mb-0.5">
+                    <Reply size={10} className="text-text-primary rotate-180" />
+                    <span className="text-[10px] font-black uppercase tracking-widest text-text-primary/80">
+                      Replying to {replyingTo.sender?.name || "User"}
+                    </span>
+                  </div>
+
+                  <div className="text-sm text-text-secondary truncate py-2">
+                    {replyingTo.type === "image" ? (
+                      <img
+                        src={replyingTo.media?.[0]?.url}
+                        className="w-12 h-12 object-cover rounded-lg"
+                      />
+                    ) : (
+                      replyingTo.message || "Media"
+                    )}
+                  </div>
+                </div>
+
+                <button
+                  onClick={clearReply}
+                  className="shrink-0 size-8 flex items-center justify-center rounded-full hover:bg-rose-500/10 hover:text-rose-500 transition-all active:scale-90"
+                >
+                  <X size={16} />
+                </button>
+              </div>
+
+              <div className="absolute top-0 right-0 w-24 h-full bg-linear-to-l from-primary/5 to-transparent pointer-events-none" />
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {uploadedMedia.length > 0 && !isUploading && (
         <div className="flex gap-2 flex-wrap">
           {uploadedMedia.map((item) => (
@@ -643,9 +711,13 @@ const Input = () => {
 
         <div className="flex-1 bg-muted/50 rounded-2xl px-4 py-2 flex items-center min-h-11">
           <textarea
-            value={message}
+            value={uploadedMedia.length > 0 ? caption : message}
             onChange={(e) => {
-              setMessage(e.target.value);
+              if (uploadedMedia.length > 0) {
+                setCaption(e.target.value);
+              } else {
+                setMessage(e.target.value);
+              }
               handleTyping();
             }}
             onKeyDown={(e) =>
@@ -653,8 +725,13 @@ const Input = () => {
               !e.shiftKey &&
               (e.preventDefault(), handleSend())
             }
-            placeholder="Type a Message..."
+            placeholder={
+              uploadedMedia.length > 0
+                ? "Add a caption..."
+                : "Type a message..."
+            }
             rows={1}
+            ref={inputRef}
             className="w-full bg-transparent outline-none text-[15px] resize-none py-1 max-h-32"
           />
         </div>

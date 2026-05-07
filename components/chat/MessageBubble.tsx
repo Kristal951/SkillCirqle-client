@@ -15,11 +15,21 @@ import {
 } from "lucide-react";
 import { useMediaViewer } from "@/store/useMediaViewer";
 import VoicePlayer from "./VoicePlayer";
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { useMessageActionsStore } from "@/store/useMessageStore";
 import { useChatStore } from "@/store/useChatStore";
+import { useEffect, useRef } from "react";
+import { useAuthStore } from "@/store/useAuthStore";
 
-const MessageBubble = ({ isMe, msg }: { isMe: boolean; msg: UIMessage }) => {
+const MessageBubble = ({
+  isMe,
+  msg,
+  messageRefs,
+}: {
+  isMe: boolean;
+  msg: UIMessage;
+  messageRefs: React.RefObject<Record<string, HTMLDivElement | null>>;
+}) => {
   const { openViewer } = useMediaViewer();
 
   const {
@@ -29,11 +39,13 @@ const MessageBubble = ({ isMe, msg }: { isMe: boolean; msg: UIMessage }) => {
     deleteMessage,
     setReply,
     setEditingMessage,
-    setActiveMessage,
   } = useMessageActionsStore();
   const { activeChat } = useChatStore();
+  const { user } = useAuthStore();
 
   const isOpen = activeMessageId === msg.id;
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const menuRef = useRef<HTMLDivElement | null>(null);
 
   let time = "";
 
@@ -57,6 +69,27 @@ const MessageBubble = ({ isMe, msg }: { isMe: boolean; msg: UIMessage }) => {
   const handleToggle = (e: React.MouseEvent) => {
     e.stopPropagation();
     toggleMessageMenu(msg.id);
+  };
+
+  const handleReplyClick = (id: string) => (e: React.MouseEvent) => {
+    e.stopPropagation();
+    scrollToMessage(id);
+  };
+
+  const scrollToMessage = (id: string) => {
+    const el = messageRefs.current[id];
+    if (!el) return;
+
+    el.scrollIntoView({
+      behavior: "smooth",
+      block: "center",
+    });
+
+    el.classList.add("bg-accent/5", "animate-pulse");
+
+    setTimeout(() => {
+      el.classList.remove("bg-accent/5", "animate-pulse");
+    }, 2000);
   };
 
   const handleEditMsg = (
@@ -109,6 +142,7 @@ const MessageBubble = ({ isMe, msg }: { isMe: boolean; msg: UIMessage }) => {
   const audioMedia = media.filter((m) => m.type === "audio");
 
   const isAudioMessage = audioMedia.length > 0;
+  const isFileMessage = files.length > 0;
 
   const openFile = (file: any) => {
     const url = file.url;
@@ -160,9 +194,35 @@ const MessageBubble = ({ isMe, msg }: { isMe: boolean; msg: UIMessage }) => {
     }
   };
 
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (!activeMessageId) return;
+
+      const target = e.target as Node;
+
+      const clickedInsideMenu = menuRef.current?.contains(target);
+
+      const clickedInsideBubble = containerRef.current?.contains(target);
+
+      if (!clickedInsideMenu && !clickedInsideBubble) {
+        toggleMessageMenu("");
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [activeMessageId]);
+
   return (
     <div
-      className={`flex items-end gap-2 ${
+      ref={(el) => {
+        messageRefs.current[msg.id] = el;
+        containerRef.current = el;
+      }}
+      className={`flex items-end gap-2 ${msg?.deleted ? "opacity-70 cursor-not-allowed" : "opacity-100"} ${
         isMe ? "justify-end" : "justify-start"
       }`}
     >
@@ -183,80 +243,98 @@ const MessageBubble = ({ isMe, msg }: { isMe: boolean; msg: UIMessage }) => {
           handleToggle(e);
         }}
       >
-        <div className="relative">
-          {isOpen && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9, y: 10 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.9, y: 10 }}
-              className={` ${msg?.deleted ? 'hidden' : 'absolute'} -top-12 z-100 flex items-center gap-1 p-1 bg-surface/80 backdrop-blur-md border border-border shadow-xl rounded-2xl ${
-                isMe ? "right-0" : "left-0"
-              }`}
-            >
-              {[
-                {
-                  icon: Copy,
-                  action: () => copyMessage(msg),
-                },
-                {
-                  icon: Edit2,
-                  action: () =>
-                    handleEditMsg(msg.id, msg.message, activeChat?.id || ""),
-                  show: isMe,
-                },
-                {
-                  icon: Reply,
-                  action: () => setReply(msg),
-                },
-                {
-                  icon: Trash2,
-                  action: () => deleteMessage(msg.id, activeChat?.id || ""),
-                  danger: true,
-                  show: isMe,
-                },
-              ]
-                .filter((item) => item.show !== false)
-                .map((item, i) => (
-                  <button
-                    key={i}
-                    onClick={item.action}
-                    className={`p-2  rounded-xl transition-colors hover:bg-background flex items-center gap-2 ${
-                      item.danger
-                        ? "hover:bg-red-500/10 text-red-500"
-                        : "hover:bg-white/10 text-text-primary"
-                    }`}
-                  >
-                    <item.icon size={16} />
-                  </button>
-                ))}
-            </motion.div>
-          )}
+        <div className="relative h-0">
+          <AnimatePresence>
+            {isOpen && msg?.status !== "failed" && (
+              <motion.div
+                ref={menuRef}
+                initial={{ opacity: 0, scale: 0.9, y: 10 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.9, y: 10 }}
+                className={` ${msg?.deleted ? "hidden" : "absolute"} -top-12 z-100 flex items-center gap-1 p-1 bg-surface/80 backdrop-blur-md border border-border shadow-xl rounded-2xl ${
+                  isMe ? "right-0" : "left-0"
+                }`}
+              >
+                {[
+                  {
+                    icon: Copy,
+                    action: () => copyMessage(msg),
+                  },
+                  {
+                    icon: Edit2,
+                    action: () =>
+                      handleEditMsg(msg.id, msg.message, activeChat?.id || ""),
+                    show: isMe,
+                  },
+                  {
+                    icon: Reply,
+                    action: () => setReply(msg),
+                  },
+                  {
+                    icon: Trash2,
+                    action: () => deleteMessage(msg.id, activeChat?.id || ""),
+                    danger: true,
+                    show: isMe,
+                  },
+                ]
+                  .filter((item) => item.show !== false)
+                  .map((item, i) => (
+                    <button
+                      key={i}
+                      onClick={item.action}
+                      className={`p-2  rounded-xl transition-colors hover:bg-background flex items-center gap-2 ${
+                        item.danger
+                          ? "hover:bg-red-500/10 text-red-500"
+                          : "hover:bg-white/10 text-text-primary"
+                      }`}
+                    >
+                      <item.icon size={16} />
+                    </button>
+                  ))}
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
-
         <div
           className={`text-sm shadow wrap-break-word ${
-            isAudioMessage ? "px-4 py-2 rounded-t-xl" : "p-4 rounded-t-3xl"
+            isAudioMessage || isFileMessage
+              ? "p-4 rounded-t-xl"
+              : "p-3 rounded-t-3xl"
           } ${
             isMe
               ? `bg-primary text-white ${isAudioMessage ? "rounded-bl-xl" : "rounded-bl-3xl"} `
               : "bg-surface text-text-primary rounded-br-3xl"
           }`}
         >
-          {msg.type === "text" && (
-            <p className="whitespace-pre-wrap">
-              {msg.deleted ? `This message was deleted ${isMe ? 'You' : `${msg?.sender?.name}`}` : msg.message}
-            </p>
+          {msg.reply && !msg.deleted && (
+            <div
+              onClick={handleReplyClick(msg?.reply?.id || "")}
+              className={`flex flex-col mb-2 py-3 px-2 rounded-t-2xl border border-border/50 border-b-0 ${isMe ? "items-end bg-surface/40" : "items-start bg-background/50"} `}
+            >
+              <div className="flex items-center gap-2 border-l-2 border-primary pl-2 overflow-hidden w-full">
+                <div className="min-w-0">
+                  <p className="text-[10px] font-bold text-text-primary/70 uppercase tracking-tighter">
+                    {msg?.reply?.sender_id === user?.id
+                      ? "You"
+                      : msg?.reply?.metadata?.sender_name || "User"}
+                  </p>
+                  <p className="text-xs text-text-secondary truncate">
+                    {msg?.reply?.content}
+                  </p>
+                </div>
+              </div>
+            </div>
           )}
 
-          {audioMedia.length > 0 && (
+          {/* {audioMedia.length > 0 && (
             <div className="mt-2 space-y-2">
               {audioMedia.map((audio) => (
                 <VoicePlayer key={audio.url} src={audio.url} />
               ))}
             </div>
-          )}
+          )} */}
 
-          {images.length > 0 && (
+          {images.length > 0 && !msg?.deleted && (
             <div
               className={`grid gap-1 rounded-xl overflow-hidden ${
                 images.length === 1
@@ -298,7 +376,10 @@ const MessageBubble = ({ isMe, msg }: { isMe: boolean; msg: UIMessage }) => {
               {files.map((file) => (
                 <div
                   key={file.url}
-                  onClick={() => openFile(file)}
+                  onClick={(e: React.MouseEvent) => {
+                    e.stopPropagation();
+                    openFile(file);
+                  }}
                   className="flex items-center gap-3 p-3 rounded-lg bg-black/10 hover:bg-black/20 w-full"
                 >
                   <FileText className="w-5 h-5" />
@@ -313,7 +394,7 @@ const MessageBubble = ({ isMe, msg }: { isMe: boolean; msg: UIMessage }) => {
                       e.stopPropagation();
                       downloadFile(file.url, file.name);
                     }}
-                    className="hover:scale-110 transition px-2"
+                    className={`hover:scale-110 transition px-2 ${isMe ? "bg-primary p-2 rounded-lg" : "bg-background"}`}
                   >
                     <Download className="w-4 h-4" />
                   </button>
@@ -321,6 +402,16 @@ const MessageBubble = ({ isMe, msg }: { isMe: boolean; msg: UIMessage }) => {
               ))}
             </div>
           )}
+
+          <p
+            className={`whitespace-pre-wrap ${msg?.type === "image" || msg?.type === "file" ? "pt-3 px-2" : "py-0"}`}
+          >
+            {msg.deleted
+              ? `This message was deleted by ${isMe ? "You" : `${msg?.sender?.name}`}`
+              : msg?.type === "image" || (msg?.type === "file" && msg?.caption)
+                ? msg.caption
+                : msg?.message}
+          </p>
         </div>
 
         <div

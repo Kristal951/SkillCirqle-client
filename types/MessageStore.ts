@@ -17,6 +17,7 @@ export type MessageActionsState = {
   toggleMessageMenu: (id: string) => void;
 
   setReply: (msg: UIMessage | null) => void;
+  clearReply: () => void;
   editingMessage: EditingMessageState;
   setEditingMessage: (msg: EditingMessageState) => void;
 

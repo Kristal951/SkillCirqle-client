@@ -34,9 +34,22 @@ export type Message = {
   is_deleted: boolean;
   deleted_at?: string | null;
 
+  reply_to?: string | null;
+
+  reply?: {
+    id: string;
+    content: string;
+    sender_id: string;
+    metadata?: {
+      sender_name?: string;
+      sender_avatar_url?: string;
+    };
+  };
+
   metadata?: {
     media?: MediaItem[];
     url?: string;
+    caption?: string;
 
     sender_avatar_url?: string;
     sender_name?: string;
@@ -73,6 +86,7 @@ type ChatStore = {
     messageId: string,
     updates: Partial<Message>,
   ) => void;
+  addOrUpdateMessage: (msg: Message) => void;
 
   sendMessage: (data: {
     conversationId: string;
@@ -85,6 +99,7 @@ type ChatStore = {
     link: string;
     receiverId: string;
     senderName: string;
+    reply_to: string | null;
   }) => void;
 
   listenForMessages: () => void;
@@ -131,6 +146,52 @@ export const useChatStore = create<ChatStore>((set, get) => ({
       };
     }),
 
+  addOrUpdateMessage: (msg: Message) =>
+    set((state) => {
+      const convId = msg.conversation_id;
+      const msgs = state.messages[convId] || [];
+
+      let found = false;
+
+      const updatedMsgs = msgs.map((m) => {
+        if (m.id === msg.id || (msg.tempId && m.id === msg.tempId)) {
+          found = true;
+
+          return {
+            ...m,
+            ...msg,
+            status: msg.status || "sent",
+            reply: msg.reply ?? m.reply,
+            reply_to: msg.reply_to ?? m.reply_to,
+            metadata: {
+              ...m.metadata,
+              ...msg.metadata,
+            },
+          };
+        }
+
+        return m;
+      });
+
+      if (!found) {
+        updatedMsgs.push({
+          ...msg,
+          status: msg.status ?? "sent",
+        });
+      }
+
+      updatedMsgs.sort(
+        (a, b) =>
+          new Date(a.created_at).getTime() - new Date(b.created_at).getTime(),
+      );
+
+      return {
+        messages: {
+          ...state.messages,
+          [convId]: updatedMsgs,
+        },
+      };
+    }),
   setActiveChat: (chat) => {
     set({ activeChat: chat });
 
@@ -159,13 +220,19 @@ export const useChatStore = create<ChatStore>((set, get) => ({
         .from("messages")
         .select(
           `
-        *,
-        sender:profiles(*)
-      `,
+    *,
+    sender:profiles(*),
+
+    reply:reply_to (
+      id,
+      content,
+      sender_id,
+      metadata
+    )
+  `,
         )
         .eq("conversation_id", conversationId)
         .order("created_at", { ascending: true });
-
       if (error) throw error;
 
       const messageIds = (messages || []).map((m) => m.id);
@@ -228,7 +295,8 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     name,
     link,
     receiverId,
-    senderName
+    senderName,
+    reply_to,
   }) => {
     if (!content.trim()) return;
 
@@ -249,6 +317,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
       isTemp: true,
       is_edited: false,
       sender: { avatar: senderAvatar || "", name: senderName || "" },
+      reply_to,
     };
 
     set((state) => ({
@@ -267,8 +336,8 @@ export const useChatStore = create<ChatStore>((set, get) => ({
       message_type: type,
       metadata,
       tempId,
+      reply_to: reply_to || null,
     });
-
     socket?.emit("notification:send", {
       userId: receiverId,
       type: "new_message",
@@ -312,6 +381,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     });
 
     socket.on("conversation:updated", (data) => {
+      console.log(data, 'dat')
       set((state) => ({
         conversations: state.conversations.map((c) =>
           c.id === data.conversationId ? { ...c, ...data } : c,
@@ -320,6 +390,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     });
 
     socket.on("new_message", (msg) => {
+      console.log(msg)
       const conversationId = msg.conversation_id;
       const state = get();
       const isActiveChat = state.activeChat?.id === conversationId;
@@ -331,7 +402,6 @@ export const useChatStore = create<ChatStore>((set, get) => ({
         status: msg.status || "sent",
       };
 
-      // 1. Update the Message List (Bubbles)
       set((state) => {
         const existing = state.messages[conversationId] || [];
         const alreadyExists = existing.some((m) => m.id === msg.id);
@@ -363,7 +433,11 @@ export const useChatStore = create<ChatStore>((set, get) => ({
 
             return {
               ...conv,
-              last_message: msg.content,
+              last_message: {
+                text: msg.content || msg.message || "",
+                type: msg.type || msg.message_type || "text",
+                count: msg.content?.count,
+              },
               last_message_at: msg.created_at,
               unread_count:
                 isIncoming && !isActiveChat
@@ -464,6 +538,9 @@ export const useChatStore = create<ChatStore>((set, get) => ({
 
     socket.on("message_edited", (msg) => {
       useChatStore.getState().updateMessage(msg.conversation_id, msg.id, msg);
+    });
+    socket.on("receive_message", (msg) => {
+      useChatStore.getState().addOrUpdateMessage(msg);
     });
 
     socket.on("message_deleted", (msg) => {

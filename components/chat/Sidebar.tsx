@@ -7,7 +7,7 @@ import React, { useEffect, useRef, useState } from "react";
 import Spinner from "../ui/Spinner";
 import { formatDistanceToNowStrict } from "date-fns";
 import { useSocketStore } from "@/store/useSocketStore";
-import { MessageSquarePlus } from "lucide-react";
+import { FileText, Image, MessageSquarePlus, Mic } from "lucide-react";
 import { getSocket } from "@/lib/socket";
 
 const Sidebar = () => {
@@ -131,7 +131,7 @@ const Sidebar = () => {
                   </div>
 
                   <div className="flex items-center justify-between gap-2 mt-0.5">
-                    <p
+                    <span
                       className={`text-sm truncate flex-1 ${
                         unreadCount > 0
                           ? "text-text-primary font-bold"
@@ -143,9 +143,35 @@ const Sidebar = () => {
                           Typing...
                         </span>
                       ) : (
-                        chat.last_message || "No messages yet"
+                        <div className="flex items-center gap-1">
+                          {chat.last_message?.type === "image" ? (
+                            <Image size={18} />
+                          ) : chat.last_message?.type === "file" ? (
+                            <FileText size={18} />
+                          ) : chat.last_message?.type === "audio" ? (
+                            <Mic size={18} />
+                          ) : (
+                            ""
+                          )}
+
+                          <p className="truncate">
+                            {chat.last_message
+                              ? chat.last_message.type === "image"
+                                ? chat.last_message.count > 1
+                                  ? `${chat.last_message.count} Photos`
+                                  : "Photo"
+                                : chat.last_message.type === "file"
+                                  ? chat.last_message.count > 1
+                                    ? `${chat.last_message.count} Files`
+                                    : "File"
+                                  : chat.last_message.type === "audio"
+                                    ? "Voice message"
+                                    : chat.last_message.text
+                              : "No messages yet"}
+                          </p>
+                        </div>
                       )}
-                    </p>
+                    </span>
 
                     {unreadCount > 0 && (
                       <span className="shrink-0 h-5 px-1.5 flex items-center justify-center bg-primary text-white text-[10px] font-bold rounded-full">
