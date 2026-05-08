@@ -23,21 +23,20 @@ export type UIMessage = {
   deletedAt?: string | null;
   reply_to?: string | null;
   reply?: {
-  id: string;
-  content: string;
-  sender_id: string;
-  metadata?: {
-    sender_name?: string;
-    sender_avatar_url?: string;
-  };
-} | null;
+    id: string;
+    content: string;
+    sender_id: string;
+    metadata?: {
+      sender_name?: string;
+      sender_avatar_url?: string;
+    };
+  } | null;
   caption?: string;
   sender: {
     id: string;
     avatar: string;
     name: string;
   };
- 
 
   media?: {
     type: "image" | "file" | "video" | "audio";
@@ -135,7 +134,7 @@ const Chat = () => {
     return () => cleanup();
   }, [activeChat?.id]);
 
-  const rawMessages = storeMessages[activeChat?.id || ""] || []
+  const rawMessages = storeMessages[activeChat?.id || ""] || [];
 
   const messages: UIMessage[] = useMemo(() => {
     return rawMessages
@@ -150,7 +149,7 @@ const Chat = () => {
         status: msg.status,
         deleted: msg.is_deleted,
         deletedAt: msg.deleted_at,
-        caption: msg.metadata?.caption || '',
+        caption: msg.metadata?.caption || "",
 
         reply_to: msg.reply_to ?? null,
         reply: msg.reply ?? undefined,
@@ -186,7 +185,7 @@ const Chat = () => {
                 : [],
       }));
   }, [rawMessages]);
-    console.log(messages)
+  console.log(messages);
 
   const groupedMessages = groupMessagesByDate(messages);
 

@@ -136,6 +136,7 @@ const MessageBubble = ({
   };
 
   const media = msg.media || [];
+  const isMediaMessage = msg?.type === "image" || msg?.type === "file";
 
   const images = media.filter((m) => m.type === "image");
   const files = media.filter((m) => m.type === "file");
@@ -237,7 +238,7 @@ const MessageBubble = ({
       )}
 
       <div
-        className="flex flex-col max-w-[55%] cursor-pointer"
+        className="flex flex-col md:max-w-[55%] max-w-[70%] cursor-pointer"
         onClick={(e) => {
           e.stopPropagation();
           handleToggle(e);
@@ -404,12 +405,16 @@ const MessageBubble = ({
           )}
 
           <p
-            className={`whitespace-pre-wrap ${msg?.type === "image" || msg?.type === "file" ? "pt-3 px-2" : "py-0"}`}
+            className={`whitespace-pre-wrap ${
+              (msg?.type === "image" || msg?.type === "file") && !msg.deleted
+                ? "pt-3 px-2"
+                : "py-0"
+            }`}
           >
             {msg.deleted
-              ? `This message was deleted by ${isMe ? "You" : `${msg?.sender?.name}`}`
-              : msg?.type === "image" || (msg?.type === "file" && msg?.caption)
-                ? msg.caption
+              ? `This message was deleted by ${isMe ? "You" : msg?.sender?.name}`
+              : isMediaMessage
+                ? msg?.caption
                 : msg?.message}
           </p>
         </div>

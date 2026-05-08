@@ -500,8 +500,8 @@ const Input = () => {
           : `${imageCount} Photos`
         : hasFiles && !hasImages
           ? fileCount === 1
-            ? "Sent a file"
-            : `Sent ${fileCount} files`
+            ? "File"
+            : `${fileCount} files`
           : `Sent ${uploadedMedia.length} items`;
 
     sendMessage({
