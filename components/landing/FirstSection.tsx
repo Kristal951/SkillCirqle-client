@@ -9,10 +9,6 @@ const FirstSection = () => {
 
       <div className="max-w-3xl mx-auto w-full h-full text-center flex items-center justify-center flex-col z-10 space-y-12">
         <div className="space-y-10 flex items-center justify-center flex-col h-full">
-
-           <div className="inline-flex items-center gap-2 px-3 py-2 border border-primary/10 rounded-full bg-primary/10 text-primary text-xs font-bold uppercase tracking-wider">
-             <Sparkles/> Skill Exchange Platform
-            </div>
           <h1 className="text-4xl md:text-6xl text-foreground font-extrabold tracking-tighter leading-[0.9]">
             Teach what you know.
             <br />
