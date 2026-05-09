@@ -24,7 +24,6 @@ export default function OnboardingLayout({
   const router = useRouter();
   const pathname = usePathname();
 
-  // 1. Handle Authentication and Initial Fetching
   useEffect(() => {
     if (!isHydrated) return;
 
@@ -33,19 +32,16 @@ export default function OnboardingLayout({
       return;
     }
 
-    // Initialize onboarding state
     setTotalSteps(3);
     getUserCurrentStepFromDB();
   }, [isHydrated, user?.id]);
 
-  // 2. Handle Route Guarding / Redirects
   useEffect(() => {
     if (!isHydrated || isLoadingStep || !user?.id || user?.has_onboarded) return;
     if (typeof step !== "number") return;
 
     const target = step === 0 ? "/onboarding" : `/onboarding/step-${step}`;
 
-    // Only redirect if we aren't already there
     if (pathname !== target) {
       const t = setTimeout(() => {
         router.replace(target);
@@ -54,7 +50,6 @@ export default function OnboardingLayout({
     }
   }, [step, pathname, isHydrated, isLoadingStep, user?.id, user?.has_onboarded]);
 
-  // 3. Loading State
   if (!isHydrated || isLoadingStep) {
     return (
       <div className="h-screen flex items-center justify-center">
@@ -63,13 +58,12 @@ export default function OnboardingLayout({
     );
   }
 
-  // Safety check to prevent layout flash before redirect
   if (!user?.id) return null;
 
   return (
     <div className="h-screen w-full flex flex-col">
       <Header />
-      <div className="pt-22.5 md:pt-0 w-full">
+      <div className="py-3 md:pt-0 w-full">
         <MobileStepper />
       </div>
       <main className="flex-1 py-4 overflow-y-auto">{children}</main>

@@ -4,13 +4,18 @@ import { useAuthStore } from "@/store/useAuthStore";
 import { ArrowRight, ShieldCheck, Globe, User, Coins } from "lucide-react";
 import { useOnboardingNavigation } from "@/lib/onboarding";
 import Spinner from "@/components/ui/Spinner";
+import { useOnboardingStore } from "@/store/useOnboardingStore";
 
 const Onboarding = () => {
   const { user } = useAuthStore();
   const displayName =
-    user?.user_metadata?.username || user?.user_metadata?.full_name || "Member";
+    user?.user_metadata?.username ||
+    user?.user_metadata?.full_name ||
+    user?.name ||
+    "Member";
   const firstName = displayName.split(" ")[0];
   const { handleMoveToNextOnboardingStep, loading } = useOnboardingNavigation();
+  const { updateUserOnboardingStepInDB } = useOnboardingStore();
 
   return (
     <div className="relative w-full h-full flex py-4 md:py-0 items-center flex-col bg-background md:px-6 px-4 overflow-y-scroll md:overflow-hidden">
@@ -26,12 +31,12 @@ const Onboarding = () => {
 
             <h1 className="text-5xl md:text-6xl font-semibold  text-white tracking-tighter leading-[0.9] mb-6">
               WELCOME TO <br />
-              <span className=" mt-2 text-text-primary">THE CIRCLE.</span>
+              <span className=" mt-2 text-text-primary">THE CIRQLE.</span>
             </h1>
 
             <p className="text-gray-400 text-lg max-w-md leading-relaxed">
-              Hello,{" "}
-              <span className="text-white font-medium">{firstName} </span>
+              Hello{" "}
+              <span className="text-white font-medium">{firstName}, </span>
               Your account is ready. Set up your profile to help you find the
               perfect skill exchange matches in our global community.
             </p>
@@ -40,15 +45,15 @@ const Onboarding = () => {
           <ShieldCheck className="absolute -bottom-10 -right-10 w-64 h-64 text-text-secondary/10 -rotate-12" />
         </div>
 
-        <div className="md:col-span-4 flex flex-col gap-4">
-          <div className="flex-1 bg-text-accent/5 rounded-[40px] p-8 flex flex-col justify-center items-center text-center shadow-2xl shadow-blue-900/20 group">
+        <div className="md:col-span-4 flex flex-col gap-6">
+          <div className="flex-1 bg-accent/10 rounded-[40px] p-8 flex flex-col justify-center items-center text-center group">
             <div className="w-16 h-16 bg-background backdrop-blur-md rounded-2xl flex items-center justify-center mb-4 group-hover:rotate-12 transition-transform duration-500">
               <Coins className="w-8 h-8 text-text-accent" />
             </div>
-            <h3 className="text-white text-2xl font-bold mb-1">
+            <h3 className="text-text-primary text-2xl font-bold mb-1">
               +3 Skill Tokens
             </h3>
-            <p className="text-blue-100 text-xs opacity-80">
+            <p className="text-text-secondary text-sm ">
               Get 3 skill tokens as a welcome gift after completing profile to
               kickstart your learning journey!
             </p>
@@ -79,7 +84,7 @@ const Onboarding = () => {
 
             <div className="text-center">
               <p className="text-text font-medium">
-                Join 12k+ other creators around the globe.
+                Join 12k+ other cirqlers around the globe.
               </p>
             </div>
           </div>
@@ -89,7 +94,10 @@ const Onboarding = () => {
         <button
           disabled={loading}
           className="flex text-base gap-1 disabled:bg-opacity-50 cursor-not-allowed font-semibold rounded-md items-center justify-center p-3 bg-primary"
-          onClick={() => handleMoveToNextOnboardingStep(1)}
+          onClick={() => {
+            handleMoveToNextOnboardingStep(1);
+            updateUserOnboardingStepInDB(0);
+          }}
         >
           {loading ? (
             <Spinner />

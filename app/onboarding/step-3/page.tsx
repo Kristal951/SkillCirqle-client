@@ -7,13 +7,20 @@ import { useAuthStore } from "@/store/useAuthStore";
 import { toast } from "@/lib/toast";
 import { useRouter } from "next/navigation";
 import Spinner from "@/components/ui/Spinner";
-import { useTokenStore } from "@/store/useTokenStore";
+import { useOnboardingStore } from "@/store/useOnboardingStore";
+
+type Skill = {
+  id: string;
+  title: string;
+  slug: string;
+  image_url?: string;
+};
 
 const UploadSkills = () => {
   const [teachInput, setTeachInput] = useState("");
   const [learnInput, setLearnInput] = useState("");
 
-  const [teachSkills, setTeachSkills] = useState<string[]>([]);
+  const [teachSkills, setTeachSkills] = useState<Skill[]>([]);
   const [learnSkills, setLearnSkills] = useState<string[]>([]);
 
   const [teachSuggestions, setTeachSuggestions] = useState<string[]>([]);
@@ -26,7 +33,7 @@ const UploadSkills = () => {
   const suggestedLearn = ["AI", "DevOps", "Docker", "System Design"];
 
   const { updateUser, isUpdatingUser } = useAuthStore();
-  const { awardUserOnboardingTokens } = useTokenStore();
+  const { updateUserOnboardingStepInDB } = useOnboardingStore();
   const router = useRouter();
 
   const handleAddSkill = (
@@ -127,13 +134,7 @@ const UploadSkills = () => {
         return;
       }
 
-      const res = await awardUserOnboardingTokens();
-
-      if (res?.tokens !== undefined) {
-        toast.success(`🎉 +3 tokens awarded!`);
-      } else if (res?.message === "Already rewarded") {
-        toast.info("Tokens already awarded");
-      }
+      await updateUserOnboardingStepInDB(3);
 
       // setTimeout(() => {
       router.replace("/onboarding/onboardingCompleted");

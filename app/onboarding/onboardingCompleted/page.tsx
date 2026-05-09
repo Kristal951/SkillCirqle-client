@@ -5,10 +5,13 @@ import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/store/useAuthStore";
 import Confetti from "react-confetti";
 import Link from "next/link";
+import { toast } from "@/lib/toast";
+import { useTokenStore } from "@/store/useTokenStore";
 
 const OnboardingCompleted = () => {
   const router = useRouter();
   const { user } = useAuthStore();
+  const { awardUserOnboardingTokens } = useTokenStore();
 
   const [displayTokens, setDisplayTokens] = useState(0);
   const [showConfetti, setShowConfetti] = useState(true);
@@ -16,6 +19,22 @@ const OnboardingCompleted = () => {
 
   useEffect(() => {
     if (!targetTokens) return;
+
+    const awardTokens = async () => {
+      try {
+        const res = await awardUserOnboardingTokens();
+
+        if (res?.tokens !== undefined) {
+          toast.success(`🎉 +3 tokens awarded!`);
+        } else if (res?.message === "Already rewarded") {
+          toast.info("Tokens already awarded");
+        }
+      } catch (error) {
+        console.log(error, "award token error");
+      }
+    };
+
+    awardTokens();
 
     let start = 0;
     const end = targetTokens;
@@ -135,3 +154,5 @@ const OnboardingCompleted = () => {
 };
 
 export default OnboardingCompleted;
+
+// chat scroll implementation button - chatgpt

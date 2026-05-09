@@ -184,15 +184,15 @@ const Sidebar = () => {
             );
           })
         ) : (
-          <div className="flex-1 flex flex-col items-center justify-center text-center p-6 space-y-4">
-            <div className="p-4 bg-muted rounded-full">
-              <MessageSquarePlus className="w-8 h-8 text-muted-foreground" />
+          <div className="flex-1 flex flex-col items-center justify-center text-center p-6 space-y-2">
+            <div className="p-2 bg-muted rounded-full">
+              <MessageSquarePlus className="w-18 h-18 text-muted-foreground" />
             </div>
 
             <div>
-              <p className="font-medium">No conversations yet</p>
-              <p className="text-sm text-muted-foreground">
-                Start a chat to see it here!
+              <p className="font-medium text-xl text-text-primary">No conversations yet</p>
+              <p className="text-sm text-text-secondary">
+               Start a proposal to see conversations.
               </p>
             </div>
           </div>

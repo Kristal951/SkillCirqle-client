@@ -1,23 +1,58 @@
 import { NextResponse } from "next/server";
-
-const SKILLS = [
-  "JavaScript",
-  "TypeScript",
-  "React",
-  "Node.js",
-  "Next.js",
-  "Docker",
-  "AI",
-  "DevOps",
-];
+import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
 
 export async function GET(req: Request) {
-  const { searchParams } = new URL(req.url);
-  const query = searchParams.get("q")?.toLowerCase() || "";
+  try {
+    const { searchParams } = new URL(req.url);
 
-  const filtered = SKILLS.filter((skill) =>
-    skill.toLowerCase().includes(query)
-  );
+    const query = searchParams.get("q")?.trim() || "";
 
-  return NextResponse.json({ skills: filtered });
+    if (!query) {
+      return NextResponse.json({
+        skills: [],
+      });
+    }
+
+    const supabase = getSupabaseBrowserClient();
+
+    const { data, error } = await supabase
+      .from("skills")
+      .select(`
+        id,
+        title,
+        slug,
+        image_url,
+        category
+      `)
+      .textSearch("search_vector", query)
+      .limit(10);
+
+    if (error) {
+      console.error(error);
+
+      return NextResponse.json(
+        {
+          error: "Failed to fetch skills",
+        },
+        {
+          status: 500,
+        },
+      );
+    }
+
+    return NextResponse.json({
+      skills: data || [],
+    });
+  } catch (error) {
+    console.error(error);
+
+    return NextResponse.json(
+      {
+        error: "Internal server error",
+      },
+      {
+        status: 500,
+      },
+    );
+  }
 }

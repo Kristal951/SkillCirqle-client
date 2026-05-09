@@ -3,6 +3,7 @@ import MediaViewer from "@/components/chat/MediaViewer";
 import Navbar from "@/components/dashboard/Navbar";
 import Sidebar from "@/components/dashboard/Sidebar";
 import ThemeToggle from "@/components/ToggleThemeButton";
+import BottomBar from "@/components/ui/BottomBar";
 import Spinner from "@/components/ui/Spinner";
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
 import { useAuthStore } from "@/store/useAuthStore";
@@ -49,7 +50,7 @@ export default function RootLayout({
           setShowLogoutModal={setShowLogoutModal}
         />
 
-        <main className={`flex-1 overflow-y-auto mt-17.5 `}>{children}</main>
+        <main className={`flex-1 overflow-y-auto mt-17.5 mb-13`}>{children}</main>
 
         {/* <div className="md:hidden lg:hidden absolute bottom-2 right-2">
           <ThemeToggle />
@@ -95,6 +96,8 @@ export default function RootLayout({
           </div>
         </div>
       )}
+
+      <BottomBar/>
     </div>
   );
 }

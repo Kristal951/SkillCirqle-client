@@ -12,7 +12,7 @@ const MobileStepper = () => {
         return (
           <div
             key={index}
-            className={`h-2 flex-1 rounded-full transition-all duration-300 ${
+            className={`h-px flex-1 rounded-full transition-all duration-300 ${
               isActive ? " bg-text-primary" : " bg-text-secondary/30"
             }`}
           />

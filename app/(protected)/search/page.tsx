@@ -58,17 +58,17 @@ const SearchPage = () => {
   const [loading, setLoading] = useState(true);
   const supabase = getSupabaseBrowserClient();
   const { user } = useAuthStore();
-  const router = useRouter()
+  const router = useRouter();
 
   const inputRef = useRef<HTMLInputElement | null>(null);
 
- useEffect(() => {
-  const timer = setTimeout(() => {
-    inputRef.current?.focus();
-  }, 100);
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      inputRef.current?.focus();
+    }, 100);
 
-  return () => clearTimeout(timer);
-}, []);
+    return () => clearTimeout(timer);
+  }, []);
 
   useEffect(() => {
     const fetchProfiles = async () => {
@@ -133,15 +133,17 @@ const SearchPage = () => {
     );
   }
 
+  const propose = (mentorId: string) => {
+    router.push(`/proposals/new/${mentorId}`);
+  };
+
   return (
     <div className="w-full min-h-screen flex flex-col bg-background md:py-10 gap-10 md:px-8 pb-6 px-3 selection:bg-primary selection:text-white">
       <section className="w-full py-6 border-b border-border bg-background backdrop-blur-xl sticky top-0 z-30">
         <div className="max-w-7xl mx-auto space-y-6">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
             <div className=" hidden md:flex flex-col space-y-1">
-              <h1 className="text-3xl font-bold tracking-tight">
-                Explore
-              </h1>
+              <h1 className="text-3xl font-bold tracking-tight">Explore</h1>
               <p className="text-xs text-text-secondary font-medium">
                 Find the perfect partner to level up your skills.
               </p>
@@ -191,9 +193,7 @@ const SearchPage = () => {
       <main className="w-full max-w-7xl mx-auto">
         <AnimatePresence mode="popLayout">
           {filteredProfiles.length === 0 ? (
-            <div
-              className="flex flex-col items-center justify-center py-32 text-center"
-            >
+            <div className="flex flex-col items-center justify-center py-32 text-center">
               <div className="w-24 h-24 bg-surface rounded-[2.5rem] flex items-center justify-center border border-border mb-6 shadow-inner">
                 <Search size={40} className="text-text-secondary/20" />
               </div>
@@ -216,7 +216,7 @@ const SearchPage = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-8">
               {filteredProfiles.map((mentor) => (
                 <div
-                  onClick={()=> router.push(`/profile/${mentor?.id}`)}
+                  onClick={() => router.push(`/profile/${mentor?.id}`)}
                   key={mentor.id}
                   className="group relative bg-surface border border-border rounded-2xl p-6 hover:border-primary/40 hover:shadow-2xl hover:shadow-primary/5 transition-all cursor-pointer overflow-hidden"
                 >
@@ -280,13 +280,16 @@ const SearchPage = () => {
                       <p className="text-sm">exchanges</p>
                     </div>
 
-                    <Link
-                      href={`/proposals/new/${mentor?.id}`}
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        propose(`${mentor.id}`);
+                      }}
                       className="flex bg-primary px-4 py-3 items-center gap-1 text-text-primary rounded-xl font-black text-[10px] uppercase tracking-widest group-hover:gap-2 group-hover:text-text-primary transition-all"
                     >
                       Propose
                       <ChevronRight size={14} />
-                    </Link>
+                    </button>
                   </div>
                 </div>
               ))}

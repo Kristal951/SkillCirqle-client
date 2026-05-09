@@ -47,12 +47,11 @@ const Sidebar = ({
         <div className="px-4 py-6 flex items-center justify-between overflow-hidden">
           {(!isCollapsed || isSideBarOpen) && (
             <div className="w-full flex items-center">
-              <img src="/SkillCirqle.svg" alt="" className="w-8 h-8"/>
+              <img src="/SkillCirqle.svg" alt="" className="w-8 h-8" />
               <h1 className="text-xl text-transparent font-bold tracking-tight bg-linear-to-r from-primary to-accent bg-clip-text truncate ml-2">
-              SkillCirqle
-            </h1>
+                SkillCirqle
+              </h1>
             </div>
-            
           )}
 
           <button

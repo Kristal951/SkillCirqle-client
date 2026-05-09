@@ -19,10 +19,17 @@ const Navbar = ({ setIsSideBarOpen }: NavbarProps) => {
   };
 
   return (
-    <div className="md:left-64 left-0 bg-background/90 fixed right-0 backdrop-blur-md h-16 flex justify-between items-center md:justify-end lg:justify-end border-b border-border/20 p-4">
-      <button onClick={toggleSidebar} className="md:hidden lg:hidden">
+    <div className="md:left-64 left-0 bg-background/90 fixed right-0 backdrop-blur-md h-16 flex justify-end items-center md:justify-end lg:justify-end border-b border-border/20 p-4">
+      {/* <button onClick={toggleSidebar} className="md:hidden lg:hidden">
         <Menu className="text-3xl" />
-      </button>
+      </button> */}
+
+      <div className="w-full flex items-center md:hidden lg:hidden gap-1">
+        <img src="/SkillCirqle.svg" alt="" className="w-6 h-6" />
+        <h1 className="text-[16px] text-transparent font-bold tracking-tight bg-linear-to-r from-primary to-accent bg-clip-text truncate ">
+          SkillCirqle
+        </h1>
+      </div>
 
       <div className="flex items-center gap-4">
         <div className="px-3 py-2 flex gap-2 items-center bg-accent/20 rounded-2xl">
@@ -34,7 +41,10 @@ const Navbar = ({ setIsSideBarOpen }: NavbarProps) => {
           <p className="text-sm font-medium text-accent">{tokens ?? 0}</p>
         </div>
 
-        <Link href='/notifications' className="relative cursor-pointer p-2 hover:bg-text-secondary/20 rounded-full">
+        <Link
+          href="/notifications"
+          className="relative cursor-pointer p-2 hover:bg-text-secondary/20 rounded-full"
+        >
           <Bell />
           {unreadCount > 0 && (
             <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full" />
