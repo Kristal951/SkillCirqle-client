@@ -18,8 +18,6 @@ export const initSocketEvents = () => {
     removeTypingUser,
   } = useSocketStore.getState();
 
-  const { addNotification,  } = useNotificationsStore.getState();
-
   console.log("🧠 Socket events initialized");
 
   /**
@@ -45,15 +43,6 @@ export const initSocketEvents = () => {
   socket.on("stop_typing", ({ conversationId, userId }) => {
     if (!conversationId || !userId) return;
     removeTypingUser(conversationId, userId);
-  });
-
-  socket.on("proposal:updated", (proposal) => {
-    // you can update proposal store here if needed
-    console.log("Proposal updated:", proposal);
-  });
-
-  socket.on("proposal:created", (proposal) => {
-    console.log("Proposal created:", proposal);
   });
 
   initialized = true;

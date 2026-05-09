@@ -381,7 +381,6 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     });
 
     socket.on("conversation:updated", (data) => {
-      console.log(data, 'dat')
       set((state) => ({
         conversations: state.conversations.map((c) =>
           c.id === data.conversationId ? { ...c, ...data } : c,
@@ -390,7 +389,6 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     });
 
     socket.on("new_message", (msg) => {
-      console.log(msg)
       const conversationId = msg.conversation_id;
       const state = get();
       const isActiveChat = state.activeChat?.id === conversationId;

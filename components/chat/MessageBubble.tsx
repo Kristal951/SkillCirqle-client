@@ -386,7 +386,7 @@ const MessageBubble = ({
                   <FileText className="w-5 h-5" />
 
                   <div className="flex-1 text-left">
-                    <p className="text-sm font-medium">{file.name || "File"}</p>
+                    <p className="text-xs md:text-sm lg:text-sm font-medium">{file.name || "File"}</p>
                     <p className="text-xs opacity-60">Click to open</p>
                   </div>
 
@@ -395,7 +395,7 @@ const MessageBubble = ({
                       e.stopPropagation();
                       downloadFile(file.url, file.name);
                     }}
-                    className={`hover:scale-110 transition px-2 ${isMe ? "bg-primary p-2 rounded-lg" : "bg-background"}`}
+                    className={`hover:scale-110 transition p-2 rounded-lg ${isMe ? "bg-primary " : "bg-background"}`}
                   >
                     <Download className="w-4 h-4" />
                   </button>

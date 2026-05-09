@@ -7,7 +7,8 @@ import Spinner from "@/components/ui/Spinner";
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
 import { useAuthStore } from "@/store/useAuthStore";
 import { useTokenStore } from "@/store/useTokenStore";
-import { useState } from "react";
+import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
 
 export default function RootLayout({
   children,
@@ -35,6 +36,7 @@ export default function RootLayout({
       setLoggingOut(false); 
     }
   };
+
   return (
     <div className="flex relative flex-col h-screen">
       <Navbar setIsSideBarOpen={setIsSideBarOpen} />
@@ -47,7 +49,7 @@ export default function RootLayout({
           setShowLogoutModal={setShowLogoutModal}
         />
 
-        <main className="flex-1 overflow-y-auto mt-17.5">{children}</main>
+        <main className={`flex-1 overflow-y-auto mt-17.5 `}>{children}</main>
 
         {/* <div className="md:hidden lg:hidden absolute bottom-2 right-2">
           <ThemeToggle />

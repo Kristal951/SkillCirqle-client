@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   Search,
   MapPin,
@@ -20,6 +20,7 @@ import { User } from "@/types/AuthStore";
 import Link from "next/link";
 import { useAuthStore } from "@/store/useAuthStore";
 import Spinner from "@/components/ui/Spinner";
+import { useRouter } from "next/navigation";
 
 // --- Types ---
 type CategoryId =
@@ -57,28 +58,39 @@ const SearchPage = () => {
   const [loading, setLoading] = useState(true);
   const supabase = getSupabaseBrowserClient();
   const { user } = useAuthStore();
+  const router = useRouter()
+
+  const inputRef = useRef<HTMLInputElement | null>(null);
+
+ useEffect(() => {
+  const timer = setTimeout(() => {
+    inputRef.current?.focus();
+  }, 100);
+
+  return () => clearTimeout(timer);
+}, []);
 
   useEffect(() => {
-  const fetchProfiles = async () => {
-    setLoading(true);
+    const fetchProfiles = async () => {
+      setLoading(true);
 
-    let query = supabase.from("profiles").select("*");
+      let query = supabase.from("profiles").select("*");
 
-    if (user) {
-      query = query.neq("id", user.id);
-    }
+      if (user) {
+        query = query.neq("id", user.id);
+      }
 
-    const { data, error } = await query;
+      const { data, error } = await query;
 
-    if (!error) {
-      setProfiles(data || []);
-    }
+      if (!error) {
+        setProfiles(data || []);
+      }
 
-    setLoading(false);
-  };
+      setLoading(false);
+    };
 
-  fetchProfiles();
-}, [user, supabase]);
+    fetchProfiles();
+  }, [user, supabase]);
 
   const filteredProfiles = useMemo(() => {
     const searchLower = searchQuery.toLowerCase().trim();
@@ -114,12 +126,12 @@ const SearchPage = () => {
   ];
 
   if (loading) {
-  return (
-    <div className="flex justify-center items-center h-screen">
-      <Spinner size={30}/>
-    </div>
-  );
-}
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <Spinner size={30} />
+      </div>
+    );
+  }
 
   return (
     <div className="w-full min-h-screen flex flex-col bg-background md:py-10 gap-10 md:px-8 pb-6 px-3 selection:bg-primary selection:text-white">
@@ -128,7 +140,7 @@ const SearchPage = () => {
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
             <div className=" hidden md:flex flex-col space-y-1">
               <h1 className="text-3xl font-bold tracking-tight">
-                Explore Mentors
+                Explore
               </h1>
               <p className="text-xs text-text-secondary font-medium">
                 Find the perfect partner to level up your skills.
@@ -142,8 +154,10 @@ const SearchPage = () => {
               />
               <input
                 value={searchQuery}
+                ref={inputRef}
+                autoFocus
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search a skill or profile..."
+                placeholder="Search a skill or user..."
                 className="w-full bg-background/50 border border-border rounded-2xl py-3.5 pl-12 pr-4 outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary/40 transition-all text-sm font-medium"
               />
             </div>
@@ -177,10 +191,7 @@ const SearchPage = () => {
       <main className="w-full max-w-7xl mx-auto">
         <AnimatePresence mode="popLayout">
           {filteredProfiles.length === 0 ? (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95 }}
+            <div
               className="flex flex-col items-center justify-center py-32 text-center"
             >
               <div className="w-24 h-24 bg-surface rounded-[2.5rem] flex items-center justify-center border border-border mb-6 shadow-inner">
@@ -200,17 +211,13 @@ const SearchPage = () => {
               >
                 Reset Filters
               </button>
-            </motion.div>
+            </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-8">
               {filteredProfiles.map((mentor) => (
-                <motion.div
+                <div
+                  onClick={()=> router.push(`/profile/${mentor?.id}`)}
                   key={mentor.id}
-                  layout
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.9 }}
-                  whileHover={{ y: -6 }}
                   className="group relative bg-surface border border-border rounded-2xl p-6 hover:border-primary/40 hover:shadow-2xl hover:shadow-primary/5 transition-all cursor-pointer overflow-hidden"
                 >
                   <div className="flex justify-between items-start mb-6">
@@ -281,7 +288,7 @@ const SearchPage = () => {
                       <ChevronRight size={14} />
                     </Link>
                   </div>
-                </motion.div>
+                </div>
               ))}
             </div>
           )}

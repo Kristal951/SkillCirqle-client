@@ -531,6 +531,7 @@ const Input = () => {
     setCaption("");
     setUploadedMedia([]);
     setUploadProgress({});
+    clearReply();
 
     socket?.emit("stop_typing", {
       conversationId,

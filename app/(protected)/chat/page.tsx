@@ -11,6 +11,7 @@ import { useAuthStore } from "@/store/useAuthStore";
 import { getSocket } from "@/lib/socket";
 import MessageBubble from "@/components/chat/MessageBubble";
 import Spinner from "@/components/ui/Spinner";
+import { ArrowDown, ChevronDown } from "lucide-react";
 
 export type UIMessage = {
   id: string;
@@ -68,6 +69,8 @@ const Chat = () => {
   const currentUserId = user?.id;
   const bottomRef = useRef<HTMLDivElement | null>(null);
   const messageRefs = useRef<Record<string, HTMLDivElement | null>>({});
+  const scrollContainerRef = useRef<HTMLDivElement | null>(null);
+  const [showScrollButton, setShowScrollButton] = useState(false);
 
   const formatDateLabel = (date: Date) => {
     const now = new Date();
@@ -107,6 +110,12 @@ const Chat = () => {
       date,
       messages,
     }));
+  };
+
+  const scrollToBottom = () => {
+    bottomRef.current?.scrollIntoView({
+      behavior: "smooth",
+    });
   };
 
   useEffect(() => {
@@ -185,7 +194,6 @@ const Chat = () => {
                 : [],
       }));
   }, [rawMessages]);
-  console.log(messages);
 
   const groupedMessages = groupMessagesByDate(messages);
 
@@ -213,6 +221,27 @@ const Chat = () => {
       document.removeEventListener("visibilitychange", handleVisibility);
     };
   }, [activeChat?.id]);
+
+  useEffect(() => {
+    const container = scrollContainerRef.current;
+
+    if (!container) return;
+
+    const handleScroll = () => {
+      const distanceFromBottom =
+        container.scrollHeight - container.scrollTop - container.clientHeight;
+
+      setShowScrollButton(distanceFromBottom > 300);
+    };
+
+    handleScroll();
+
+    container.addEventListener("scroll", handleScroll);
+
+    return () => {
+      container.removeEventListener("scroll", handleScroll);
+    };
+  }, [messages]);
 
   useEffect(() => {
     if (!activeChat?.id || !messages.length) return;
@@ -288,12 +317,15 @@ const Chat = () => {
   }
 
   return (
-    <div className="flex flex-col h-full w-full">
-      <div className="flex-1 overflow-y-auto px-4 space-y-4">
+    <div className="relative flex flex-col h-full w-full">
+      <div
+        ref={scrollContainerRef}
+        className="flex-1 overflow-y-auto space-y-4 overflow-x-hidden"
+      >
         <div className="flex flex-col space-y-2 p-4">
           {groupedMessages.map((group) => (
             <div key={group.date} className="flex flex-col">
-              <div className="flex items-center justify-center gap-4 my-3 select-none">
+              <div className="flex items-center justify-center gap-4 my-8 select-none">
                 <div className="h-px flex-1 bg-linear-to-r from-transparent via-border/60 to-border/60" />
                 <div className="relative group">
                   <span className="relative z-10 text-[8px] font-black uppercase tracking-[0.2em] px-4 py-1.5 rounded-full text-text-secondary shadow-sm whitespace-nowrap">
@@ -320,6 +352,16 @@ const Chat = () => {
 
         <div ref={bottomRef} />
       </div>
+
+      {showScrollButton && (
+        <button
+          onClick={scrollToBottom}
+          className="absolute bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center justify-center px-3 py-2 gap-1 rounded-full bg-surface text-white shadow-xl hover:scale-105 transition-all duration-200"
+        >
+          <ArrowDown size={22} />
+          <p>Scroll to bottom</p>
+        </button>
+      )}
     </div>
   );
 };

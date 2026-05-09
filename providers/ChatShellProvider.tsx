@@ -8,7 +8,7 @@ export default function ChatShell({ children }: { children: React.ReactNode }) {
   const { activeChat } = useChatStore();
 
   return (
-    <main className="flex h-screen w-full bg-background overflow-hidden">
+    <main className="flex h-screen w-full bg-background overflow-hidden relative">
       <aside
         className={`
           ${activeChat ? "hidden" : "flex"} 

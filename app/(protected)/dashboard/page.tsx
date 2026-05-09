@@ -22,10 +22,9 @@ import {
 import { useTheme } from "next-themes";
 import { useRouter } from "next/navigation";
 
-export default function Dashboard({ loggingOut }: { loggingOut: boolean }) {
+export default function Dashboard() {
   const router = useRouter();
   const { step, totalSteps } = useOnboardingStore();
-  const { theme } = useTheme();
 
   const safeStep = step ?? 0;
 
@@ -206,21 +205,22 @@ export default function Dashboard({ loggingOut }: { loggingOut: boolean }) {
       )}
 
       <section className="relative w-full p-4 md:p-10 bg-primary rounded-md overflow-hidden">
-        <div className="relative z-10 flex flex-col gap-8 text-primary-foreground">
+        <div className="relative z-10 flex flex-col gap-4 text-primary-foreground">
           <div>
             <h1 className="text-3xl md:text-4xl text-white font-bold">
-              What will you master today?
+              Start learning today.
             </h1>
             <p className="text-white/70 max-w-lg">
-              Learn from people. Teach what you know. Grow faster.
+              Use your credits to book your first session.
             </p>
           </div>
 
           <div className="relative max-w-xl">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-text-secondary" />
             <input
+              onClick={() => router.push("/search")}
               className="w-full pl-12 pr-4 py-4 rounded-xl bg-background text-foreground outline-none focus:ring-4 focus:ring-white/20"
-              placeholder="Search skills, mentors, or cirqles..."
+              placeholder="Find Someone to learn from ..."
             />
           </div>
         </div>
