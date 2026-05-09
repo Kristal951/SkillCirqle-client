@@ -20,7 +20,7 @@ const UploadSkills = () => {
   const [teachInput, setTeachInput] = useState("");
   const [learnInput, setLearnInput] = useState("");
 
-  const [teachSkills, setTeachSkills] = useState<Skill[]>([]);
+  const [teachSkills, setTeachSkills] = useState<string[]>([]);
   const [learnSkills, setLearnSkills] = useState<string[]>([]);
 
   const [teachSuggestions, setTeachSuggestions] = useState<string[]>([]);
