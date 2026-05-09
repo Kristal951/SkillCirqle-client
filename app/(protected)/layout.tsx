@@ -7,6 +7,7 @@ import BottomBar from "@/components/ui/BottomBar";
 import Spinner from "@/components/ui/Spinner";
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
 import { useAuthStore } from "@/store/useAuthStore";
+import { useChatStore } from "@/store/useChatStore";
 import { useTokenStore } from "@/store/useTokenStore";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -19,14 +20,22 @@ export default function RootLayout({
   const [isSideBarOpen, setIsSideBarOpen] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [isInChatPage, setIsInChatPage] = useState(false)
   const { setTokens, setTotal } = useTokenStore();
   const { setUser } = useAuthStore();
+  const {activeChat} = useChatStore()
+  const pathname = usePathname()
+
+  useEffect(()=> {
+    setIsInChatPage(pathname.startsWith('/chat'))
+  })
+
 
   const handleLogout = async () => {
     setShowLogoutModal(false); 
     setLoggingOut(true);
     try {
-      const supabase = await getSupabaseBrowserClient();
+      const supabase = getSupabaseBrowserClient();
       await supabase.auth.signOut();
       setUser(null);
       setTokens(0);
@@ -50,7 +59,7 @@ export default function RootLayout({
           setShowLogoutModal={setShowLogoutModal}
         />
 
-        <main className={`flex-1 overflow-y-auto mt-17.5 mb-13`}>{children}</main>
+        <main className={`flex-1 overflow-y-auto mt-17.5 ${isInChatPage && activeChat ? 'mb-0' : 'mb-13'}`}>{children}</main>
 
         {/* <div className="md:hidden lg:hidden absolute bottom-2 right-2">
           <ThemeToggle />
