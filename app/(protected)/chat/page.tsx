@@ -12,6 +12,7 @@ import { getSocket } from "@/lib/socket";
 import MessageBubble from "@/components/chat/MessageBubble";
 import Spinner from "@/components/ui/Spinner";
 import { ArrowDown, ChevronDown } from "lucide-react";
+import { useSocketStore } from "@/store/useSocketStore";
 
 export type UIMessage = {
   id: string;
@@ -71,6 +72,11 @@ const Chat = () => {
   const messageRefs = useRef<Record<string, HTMLDivElement | null>>({});
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
   const [showScrollButton, setShowScrollButton] = useState(false);
+
+  const typingUsers =
+    useSocketStore((s) => s.typingUsers[activeChat?.id || ""]) || [];
+
+  const visibleTypingUsers = typingUsers.filter((u) => u.id !== currentUserId);
 
   const formatDateLabel = (date: Date) => {
     const now = new Date();
@@ -348,6 +354,29 @@ const Chat = () => {
               </div>
             </div>
           ))}
+
+          <div className="w-full py-4">
+            {typingUsers.length > 0 && (
+              <div className="w-full flex items-center gap-2 px-4 py-2 text-xs text-gray-400">
+                <div className="flex -space-x-2">
+                  {typingUsers.slice(0, 3).map((user) => (
+                    <img
+                      key={user.id}
+                      src={user.avatar}
+                      alt={user.name}
+                      className="w-6 h-6 rounded-full border border-gray-800 object-cover"
+                    />
+                  ))}
+                </div>
+
+                <span>
+                  {typingUsers.length === 1
+                    ? `${typingUsers[0].name} is typing...`
+                    : `${typingUsers[0].name} and ${typingUsers.length - 1} others are typing...`}
+                </span>
+              </div>
+            )}
+          </div>
         </div>
 
         <div ref={bottomRef} />

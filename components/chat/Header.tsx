@@ -24,7 +24,10 @@ const Header = () => {
 
   const typingList = typingUsers?.[activeChat.id] || [];
 
-  const isTyping = otherUserId ? typingList.includes(otherUserId) : false;
+ const isTyping = otherUserId
+  ? typingList.some((user) => user.id === otherUserId)
+  : false;
+  
   const lastSeenMap = useChatStore((s) => s.lastSeen);
 
   const lastSeen = lastSeenMap[otherUserId];

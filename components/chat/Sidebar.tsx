@@ -62,7 +62,6 @@ const Sidebar = () => {
   }, [chats, user?.id]);
 
   useEffect(() => {
-    console.log(userIds);
     if (!userIds.length) return;
 
     const socket = getSocket();
@@ -99,7 +98,6 @@ const Sidebar = () => {
 
     socket?.emit("get_last_seen", { userId: otherUserId }, (data: any) => {
       if (data?.lastSeen) {
-        console.log(data);
         setLastSeen(data.userId, Number(data.lastSeen));
       }
     });
