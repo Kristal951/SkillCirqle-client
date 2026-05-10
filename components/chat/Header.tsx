@@ -2,11 +2,14 @@
 
 import { useChatStore } from "@/store/useChatStore";
 import { useSocketStore } from "@/store/useSocketStore";
+import { formatLastSeenShort } from "@/utils/formatTime";
 import { EllipsisVertical, Phone, Video, ChevronLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
 const Header = () => {
   const { activeChat, setActiveChat } = useChatStore();
+  const [tick, setTick] = useState(0);
 
   const onlineUsers = useSocketStore((s) => s.onlineUsers);
   const typingUsers = useSocketStore((s) => s.typingUsers);
@@ -22,11 +25,36 @@ const Header = () => {
   const typingList = typingUsers?.[activeChat.id] || [];
 
   const isTyping = otherUserId ? typingList.includes(otherUserId) : false;
+  const lastSeenMap = useChatStore((s) => s.lastSeen);
+
+  const lastSeen = lastSeenMap[otherUserId];
 
   const startSession = async (type: "audio" | "video") => {
     const roomId = `${activeChat.id}-${Date.now()}`;
     router.push(`/sessions/video/${roomId}`);
   };
+
+  const getStatus = () => {
+    if (isOnline) return "online";
+
+    if (!lastSeen) return "offline";
+
+    const diff = Date.now() - Number(lastSeen);
+
+    const THRESHOLD = 30 * 1000;
+
+    if (diff < THRESHOLD) return "offline";
+
+    return "last_seen";
+  };
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setTick((t) => t + 1);
+    }, 15000);
+
+    return () => clearInterval(interval);
+  }, []);
 
   return (
     <div className="w-full sticky top-0 z-50 bg-background/80 backdrop-blur-md flex items-center justify-between p-3 border-b border-border">
@@ -60,10 +88,16 @@ const Header = () => {
           <p className="text-[10px] md:text-xs font-medium">
             {isTyping ? (
               <span className="text-text-primary animate-pulse">typing...</span>
-            ) : isOnline ? (
+            ) : getStatus() === "online" ? (
               <span className="text-green-500">Online</span>
-            ) : (
+            ) : getStatus() === "offline" ? (
               <span className="text-gray-400">Offline</span>
+            ) : (
+              <span className="text-gray-400">
+                {lastSeen
+                  ? `Last seen ${formatLastSeenShort(lastSeen)} ago`
+                  : "Offline"}
+              </span>
             )}
           </p>
         </div>

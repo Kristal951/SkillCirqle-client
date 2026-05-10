@@ -6,6 +6,7 @@ import { ActiveChat } from "@/types/AuthStore";
 import { getSocket } from "@/lib/socket";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import { useAuthStore } from "./useAuthStore";
+import { useSocketStore } from "./useSocketStore";
 
 export type MessageStatus =
   | "sending"
@@ -76,7 +77,11 @@ type ChatStore = {
   activeChat: ActiveChat | null;
   fetchingMessages: boolean;
   conversations: any[];
+  lastSeen: Record<string, number>;
   setConversations: (data: any[]) => void;
+  setLastSeen: (userId: string, timestamp: number) => void;
+
+  clearLastSeen: (userId: string) => void;
 
   setActiveChat: (chat: ActiveChat | null) => void;
 
@@ -115,7 +120,29 @@ export const useChatStore = create<ChatStore>((set, get) => ({
   activeChat: null,
   fetchingMessages: false,
   conversations: [],
+  lastSeen: {},
   setConversations: (data) => set({ conversations: data }),
+
+  setLastSeen: (userId, timestamp) =>
+    set((state) => ({
+      lastSeen: {
+        ...state.lastSeen,
+        [userId]: timestamp,
+      },
+    })),
+
+  clearLastSeen: (userId) =>
+    set((state) => {
+      const updated = {
+        ...state.lastSeen,
+      };
+
+      delete updated[userId];
+
+      return {
+        lastSeen: updated,
+      };
+    }),
 
   updateMessage: (
     conversationId: string,
@@ -539,6 +566,11 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     });
     socket.on("receive_message", (msg) => {
       useChatStore.getState().addOrUpdateMessage(msg);
+    });
+    socket.on("user_offline", ({ userId, lastSeen }) => {
+      useChatStore.getState().setLastSeen(userId, Number(lastSeen));
+
+      useSocketStore.getState().onlineUsers?.delete?.(userId);
     });
 
     socket.on("message_deleted", (msg) => {
