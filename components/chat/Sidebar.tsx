@@ -144,7 +144,7 @@ const Sidebar = () => {
 
   return (
     <aside className="h-screen w-full md:w-84 md:border-r border-border bg-background fixed overflow-y-auto px-4 py-6 flex flex-col gap-6 z-10">
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-3 border-b border-border pb-6">
         <h2 className="text-2xl font-bold tracking-tight text-foreground px-1">
           Chats
         </h2>
