@@ -35,9 +35,9 @@ export const initSocketEvents = () => {
     removeOnlineUser(userId);
   });
 
-  socket.on("typing", ({ conversationId, userId }) => {
-    if (!conversationId || !userId) return;
-    addTypingUser(conversationId, userId);
+  socket.on("typing", ({ conversationId, user }) => {
+    if (!conversationId || !user) return;
+    addTypingUser(conversationId, user);
   });
 
   socket.on("stop_typing", ({ conversationId, userId }) => {
