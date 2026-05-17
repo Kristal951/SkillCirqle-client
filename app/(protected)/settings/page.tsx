@@ -37,7 +37,7 @@ const SettingsPage = () => {
           </div>
         </div>
 
-        <div className="w-full md:mt-12 lg:mt-12 my-20 space-y-6">
+        <div className="w-full md:mt-12 lg:mt-12 mt-25 mb-10 space-y-6">
           <h1 className="text-3xl md:text-4xl lg:text-4xl font-bold ">Account Settings</h1>
 
           <div className="w-full flex flex-col gap-8">

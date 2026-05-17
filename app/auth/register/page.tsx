@@ -130,7 +130,6 @@ const SignUp = () => {
   return (
     <div className="min-h-screen w-full flex items-center justify-center bg-background px-4 sm:px-6 lg:px-8 py-6">
       <div className="w-full max-w-6xl grid md:bg-surface rounded-xl md:shadow-lg grid-cols-1 md:grid-cols-2 overflow-hidden">
-        {/* Left Side: Illustration */}
         <div className="hidden md:block relative">
           <img
             src="https://lh3.googleusercontent.com/aida-public/AB6AXuBkfTLY2_FjNY9BbFBnjpF0yjMomBA3ldQ3rkP_KXVYCag1uuo0Sbb_74WyznSefv3iq_7nzM0WjkDX6NPdm4KLosF7xUSh2ovFDiU9evUs5lYr8xz5u6frKc5GaeTumpWlG9oAlZR9PhST-90SAWxTCc1rkrZVufZQS9L_1pCn_YHEQez183RweFVgdf0U-YTERCnRfMYOgQFh_miEqENcRZd-g8d8wEEEorHX8CofiiuWPJ4GTSgkz8fICJrL58hfqaAYDA-95V60"
@@ -140,7 +139,6 @@ const SignUp = () => {
           <div className="absolute inset-0 bg-black/20" />
         </div>
 
-        {/* Right Side: Form */}
         <div className="flex items-center justify-center px-4 sm:px-8 py-10">
           <div className="w-full max-w-md space-y-6 sm:space-y-8">
             <div className="space-y-2 text-center md:text-left">
