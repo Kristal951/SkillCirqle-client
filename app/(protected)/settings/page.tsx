@@ -59,7 +59,7 @@ const SettingsPage = () => {
             <div className="flex-col flex md:flex-row lg:flex gap-8">
               <ChangePasswordPanel setShowPasswdMdl={setShowPasswordModal} />
               <TwoFactorAuthPanel setShow2faMdl={setShow2FaModal} />
-              <SignOutConfirmation onConfirmSignOut={handleLogout} />
+              <SignOutConfirmation />
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
