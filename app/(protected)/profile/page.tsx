@@ -1,14 +1,19 @@
 "use client";
+import ProfileQR from "@/components/profile/ProfileQR";
+import SharePopoverModal from "@/components/profile/SharePopOverModal";
 import SkillsCard from "@/components/profile/SkillsCard";
+import { toast } from "@/lib/toast";
 import { useAuthStore } from "@/store/useAuthStore";
 import { Coins } from "lucide-react";
 import { useTheme } from "next-themes";
 import Link from "next/link";
-import React from "react";
+import React, { useState } from "react";
 
 const ProfilePage = () => {
   const { user } = useAuthStore();
   const { theme } = useTheme();
+  const [showShareModal, setShowShareModal] = useState(false);
+  const [showQrModal, setShowQrModal] = useState(false);
 
   const statCardData = [
     {
@@ -54,15 +59,38 @@ const ProfilePage = () => {
               </div>
             </div>
 
-            <div className="flex gap-8 w-full pt-4 justify-center lg:justify-end">
-              <Link href="/settings" className="px-4 flex items-center justify-center gap-2 py-3 bg-primary dark:text-white rounded-md border-border border text-primary font-bold shadow-lg hover:scale-105 transition-transform">
+            <div className="flex relative gap-8 w-full pt-4 justify-center lg:justify-end">
+              <Link
+                href="/settings"
+                className="px-4 flex items-center justify-center gap-2 py-3 bg-primary dark:text-white rounded-md border-border border text-primary font-bold shadow-lg hover:scale-105 transition-transform"
+              >
                 <span className="material-symbols-outlined">settings</span>
                 Profile Settings
               </Link>
-              <button className="px-4 py-3 rounded-md border gap-2 border-border flex items-center justify-center text-text-primary font-bold hover:bg-primary/10 transition-colors">
+              <button
+                onClick={() => setShowShareModal(!showShareModal)}
+                className="px-4 py-3 rounded-md border gap-2 border-border flex items-center justify-center text-text-primary font-bold hover:bg-primary/10 transition-colors"
+              >
                 <span className="material-symbols-outlined">share</span>
                 Share
+                {showShareModal ? (
+                  <span className="material-symbols-outlined">
+                    keyboard_arrow_up
+                  </span>
+                ) : (
+                  <span className="material-symbols-outlined">
+                    keyboard_arrow_down
+                  </span>
+                )}
               </button>
+
+              {showShareModal && (
+                <SharePopoverModal
+                  setShowQrModal={setShowQrModal}
+                  setShowShareModal={setShowShareModal}
+                  showShareModal={showShareModal}
+                />
+              )}
             </div>
           </div>
         </div>
@@ -163,7 +191,7 @@ const ProfilePage = () => {
         </div>
 
         <div className="col-span-2 md:col-span-1 lg:col-span-1 bg-surface p-4 h-90 rounded-md">
-           <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3">
             <div className="w-10 h-10 flex items-center bg-background rounded-xl justify-center border border-border shadow-inner">
               <span className="material-symbols-outlined text-text-primary">
                 reviews
@@ -344,6 +372,8 @@ const ProfilePage = () => {
           </div>
         </div>
       </div>
+
+      {showQrModal && <ProfileQR id={user?.id || ""} setShowQrModal={setShowQrModal}/>}
     </section>
   );
 };
