@@ -122,7 +122,7 @@ const SignUp = () => {
   if (isSubmitted) {
     return (
       <div className="min-h-screen bg-background">
-        <CheckMail email={email} onChangeEmail={() => setIsSubmitted(false)} />
+        <CheckMail email={email} />
       </div>
     );
   }
