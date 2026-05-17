@@ -64,17 +64,17 @@ export default function ActiveSessionsList({
           className="p-4 md:p-5 flex group items-center justify-between md:rounded-2xl lg:rounded-2xl rounded-xl transition-all duration-200 md:hover:bg-surface/40 bg-surface/40 lg:hover:bg-surface/40"
         >
           <div className="flex items-center gap-4 min-w-0">
-            <div className={`w-11 h-11 relative rounded-xl bg-background/60 border border-border/40 text-text-primary flex items-center justify-center shrink-0 shadow-inner`}>
+            <div
+              className={`w-11 h-11 relative rounded-xl bg-background/60 border border-border/40 text-text-primary flex items-center justify-center shrink-0 shadow-inner`}
+            >
               {session.device_name === "Desktop" ? (
                 <Monitor size={18} className="text-text-primary/80" />
               ) : (
                 <Smartphone size={18} className="text-text-primary/80" />
               )}
-              {
-                session.is_current && (
-                    <span className="bg-green-500 bottom-0 right-0 absolute w-2 h-2 rounded-full"/>
-                )
-              }
+              {session.is_current && (
+                <span className="bg-green-500 bottom-0 right-0 absolute w-2 h-2 rounded-full" />
+              )}
             </div>
 
             <div className="flex flex-col gap-1 items-start min-w-0">
@@ -91,9 +91,7 @@ export default function ActiveSessionsList({
                   </span>
                 </span>
 
-                {session.is_current ? (
-                  ""
-                ) : (
+                {!session.is_current && (
                   <span className="md:hidden lg:hidden flex items-center gap-1">
                     <Clock size={13} className="text-text-secondary" />
                     <span>
@@ -111,9 +109,7 @@ export default function ActiveSessionsList({
                   </span>
                 </span>
 
-                {session.is_current ? (
-                  ""
-                ) : (
+                {!session.is_current && (
                   <span className="md:flex lg:flex hidden items-center gap-1">
                     <Clock size={13} className="text-text-secondary" />
                     <span>
@@ -128,11 +124,7 @@ export default function ActiveSessionsList({
           </div>
 
           <div className="shrink-0 pl-2">
-            {session.is_current ? (
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full font-semibold uppercase tracking-wider bg-green-500/10 border border-green-500/20 text-green-500 shadow-sm">
-                <p className="text-[10px]">Current</p>
-              </span>
-            ) : (
+            {!session.is_current && (
               <button
                 type="button"
                 onClick={() => onRevokeSession?.(session.id)}

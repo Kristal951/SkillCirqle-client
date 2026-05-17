@@ -9,19 +9,14 @@ import { LogOut, X, ChevronLeft, ChevronRight } from "lucide-react";
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
 import { useTokenStore } from "@/store/useTokenStore";
 import Image from "next/image";
+import { useLogoutModal } from "@/providers/LogoutContext";
 
 interface SidebarProps {
   isSideBarOpen: boolean;
   setIsSideBarOpen: Dispatch<SetStateAction<boolean>>;
-  setLoggingOut: Dispatch<SetStateAction<boolean>>;
-  setShowLogoutModal: Dispatch<SetStateAction<boolean>>;
 }
 
-const Sidebar = ({
-  isSideBarOpen,
-  setIsSideBarOpen,
-  setShowLogoutModal,
-}: SidebarProps) => {
+const Sidebar = ({ isSideBarOpen, setIsSideBarOpen }: SidebarProps) => {
   const pathname = usePathname();
   const { user } = useAuthStore();
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -29,6 +24,8 @@ const Sidebar = ({
   const closeSidebar = () => {
     if (isSideBarOpen) setIsSideBarOpen(false);
   };
+
+  const { openLogoutModal } = useLogoutModal();
 
   return (
     <>
@@ -83,7 +80,7 @@ const Sidebar = ({
                 key={i}
                 href={link.path}
                 onClick={closeSidebar}
-                className={`flex items-center gap-4 px-3  ${link.onlyOnDesktop ? 'hidden md:flex lg:flex' : ''} py-2.5 transition-all duration-200 group relative ${
+                className={`flex items-center gap-4 px-3  ${link.onlyOnDesktop ? "hidden md:flex lg:flex" : ""} py-2.5 transition-all duration-200 group relative ${
                   isActive
                     ? "text-white border-r-2 font-semibold"
                     : "text-text-secondary hover:bg-secondary hover:text-foreground"
@@ -157,7 +154,7 @@ const Sidebar = ({
 
             {(!isCollapsed || isSideBarOpen) && (
               <button
-                onClick={() => setShowLogoutModal(true)}
+                onClick={() => openLogoutModal()}
                 className="p-2 hover:bg-red-500/10 rounded-md transition-colors group shrink-0"
                 title="Logout"
               >

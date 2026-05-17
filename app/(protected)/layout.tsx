@@ -2,13 +2,11 @@
 import MediaViewer from "@/components/chat/MediaViewer";
 import Navbar from "@/components/dashboard/Navbar";
 import Sidebar from "@/components/dashboard/Sidebar";
-import ThemeToggle from "@/components/ToggleThemeButton";
 import BottomBar from "@/components/ui/BottomBar";
 import Spinner from "@/components/ui/Spinner";
-import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
+import { LogoutModalProvider, useLogoutModal } from "@/providers/LogoutContext";
 import { useAuthStore } from "@/store/useAuthStore";
 import { useChatStore } from "@/store/useChatStore";
-import { useTokenStore } from "@/store/useTokenStore";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -19,18 +17,20 @@ export default function RootLayout({
 }) {
   const [isSideBarOpen, setIsSideBarOpen] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
-  const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [isInChatPage, setIsInChatPage] = useState(false);
   const { activeChat } = useChatStore();
   const pathname = usePathname();
   const { logout } = useAuthStore();
+
+  const { showLogoutModal, openLogoutModal, closeLogoutModal } =
+    useLogoutModal();
 
   useEffect(() => {
     setIsInChatPage(pathname.startsWith("/chat"));
   });
 
   const handleLogout = async () => {
-    setShowLogoutModal(false);
+    openLogoutModal();
     setLoggingOut(true);
     try {
       logout();
@@ -47,9 +47,7 @@ export default function RootLayout({
       <div className="flex flex-1 overflow-hidden">
         <Sidebar
           isSideBarOpen={isSideBarOpen}
-          setLoggingOut={setLoggingOut}
           setIsSideBarOpen={setIsSideBarOpen}
-          setShowLogoutModal={setShowLogoutModal}
         />
 
         <main
@@ -86,7 +84,7 @@ export default function RootLayout({
 
             <div className="flex flex-col sm:flex-row gap-3 py-4">
               <button
-                onClick={() => setShowLogoutModal(false)}
+                onClick={() => closeLogoutModal()}
                 className="flex-1 px-4 py-2 b rounded-lg bg-text-primary text-primary font-medium transition-colors"
               >
                 Cancel
@@ -96,7 +94,7 @@ export default function RootLayout({
                 onClick={handleLogout}
                 className="flex-1 px-4 py-2 text-secondary hover:text-white rounded-lg font-medium transition-colors"
               >
-                Log Out
+                Sign Out
               </button>
             </div>
           </div>

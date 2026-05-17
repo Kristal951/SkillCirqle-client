@@ -165,6 +165,8 @@ const ProfileDetailsPanel = () => {
     return true;
   }, [avatarRemoved, hasRealAvatar]);
 
+  console.log(avatarRemoved)
+
   const discardChanges = () => {
     setName(initialState.name);
     setBio(initialState.bio);

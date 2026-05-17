@@ -6,6 +6,7 @@ import { Analytics } from "@vercel/analytics/next";
 import AuthProvider from "@/providers/AuthProvider";
 import SocketProvider from "@/providers/SocketProvider";
 import NotificationProvider from "@/providers/NotificationProvider";
+import { LogoutModalProvider } from "@/providers/LogoutContext";
 
 export default function Providers({ children }: { children: React.ReactNode }) {
   return (
@@ -14,7 +15,9 @@ export default function Providers({ children }: { children: React.ReactNode }) {
       <AuthProvider>
         <Analytics />
         <SocketProvider>
-          <NotificationProvider>{children}</NotificationProvider>
+          <NotificationProvider>
+            <LogoutModalProvider>{children}</LogoutModalProvider>
+          </NotificationProvider>
         </SocketProvider>
       </AuthProvider>
     </ThemeProvider>

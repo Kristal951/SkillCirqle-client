@@ -6,7 +6,7 @@ interface DeleteAccountPanelProps {
 
 const DeleteAccountPanel = ({ onDeleteClick }: DeleteAccountPanelProps) => {
   return (
-    <div className="flex-1 p-6 flex flex-col gap-10 rounded-2xl bg-red-500/10 shadow-sm">
+    <div className="p-6 flex w-full flex-col gap-10 rounded-2xl bg-red-500/10 shadow-sm">
       <h1 className="text-3xl text-rose-300 font-semibold ">Danger Zone</h1>
 
       <p className="text-sm text-text-secondary leading-relaxed">
