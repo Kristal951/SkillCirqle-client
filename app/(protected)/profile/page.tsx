@@ -3,6 +3,7 @@ import SkillsCard from "@/components/profile/SkillsCard";
 import { useAuthStore } from "@/store/useAuthStore";
 import { Coins } from "lucide-react";
 import { useTheme } from "next-themes";
+import Link from "next/link";
 import React from "react";
 
 const ProfilePage = () => {
@@ -54,10 +55,10 @@ const ProfilePage = () => {
             </div>
 
             <div className="flex gap-8 w-full pt-4 justify-center lg:justify-end">
-              <button className="px-4 flex items-center justify-center gap-2 py-3 bg-primary dark:text-white rounded-md border-border border text-primary font-bold shadow-lg hover:scale-105 transition-transform">
-                <span className="material-symbols-outlined">person_edit</span>
-                Edit Profile
-              </button>
+              <Link href="/settings" className="px-4 flex items-center justify-center gap-2 py-3 bg-primary dark:text-white rounded-md border-border border text-primary font-bold shadow-lg hover:scale-105 transition-transform">
+                <span className="material-symbols-outlined">settings</span>
+                Profile Settings
+              </Link>
               <button className="px-4 py-3 rounded-md border gap-2 border-border flex items-center justify-center text-text-primary font-bold hover:bg-primary/10 transition-colors">
                 <span className="material-symbols-outlined">share</span>
                 Share

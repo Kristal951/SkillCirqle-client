@@ -13,6 +13,7 @@ import React, { useEffect, useState } from "react";
 import DeleteAccountPanel from "@/components/settings/DeleteAccountPanel";
 import ProfileDetailsPanel from "@/components/settings/ProfileDetailsPanel";
 import SignOutConfirmation from "@/components/settings/LogoutPanel";
+import AppearancePanel from "@/components/settings/AppearancePanel";
 
 const SettingsPage = () => {
   const [showPasswordModal, setShowPasswordModal] = useState(false);
@@ -23,9 +24,12 @@ const SettingsPage = () => {
   return (
     <div className="w-full h-full px-3 md:px-8 md:py-6 py-4 gap-6 flex flex-col">
       <div className="w-full">
-        <h1 className="text-3xl md:text-4xl lg:text-4xl font-bold ">
+        <h1 className="text-3xl md:text-4xl lg:text-4xl font-bold">
           Profile Settings
         </h1>
+        <p className="text-text-secondary text-sm mt-1">
+          Customize your experience across SkillCirqle.
+        </p>
       </div>
 
       <div className="w-full h-max">
@@ -37,25 +41,30 @@ const SettingsPage = () => {
           <div className="flex flex-col gap-6 md:gap-8">
             <NotificationSettings />
             <LocalizationSettings />
+            <AppearancePanel />
           </div>
         </div>
 
         <div className="w-full md:mt-12 lg:mt-12 mt-25 mb-10 space-y-6">
-          <h1 className="text-3xl md:text-4xl lg:text-4xl font-bold ">
-            Account Settings
-          </h1>
+          <div className="w-full">
+            <h1 className="text-3xl md:text-4xl lg:text-4xl font-bold">
+              Account Settings
+            </h1>
+            <p className="text-text-secondary text-sm mt-1">
+              Manage your personal information and account preferences.
+            </p>
+          </div>
 
           <div className="w-full flex flex-col gap-8">
             <div className="flex-col flex md:flex-row lg:flex gap-8">
               <ChangePasswordPanel setShowPasswdMdl={setShowPasswordModal} />
               <TwoFactorAuthPanel setShow2faMdl={setShow2FaModal} />
-               <SignOutConfirmation onConfirmSignOut={handleLogout} />
+              <SignOutConfirmation onConfirmSignOut={handleLogout} />
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
               <ActiveSessionsPanel />
               <div className="col-span-2 md:col-span-1 lg:col-span-1">
-               
                 <DeleteAccountPanel />
               </div>
             </div>

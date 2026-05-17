@@ -157,6 +157,26 @@ button {
   display: none;
 }
 .scrollbar-hide {
-  -ms-overflow-style: none; 
-  scrollbar-width: none; 
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+html {
+  font-size: 16px;
+}
+
+html[data-font-size="small"] {
+  font-size: 14px;
+}
+
+html[data-font-size="medium"] {
+  font-size: 16px;
+}
+
+html[data-font-size="large"] {
+  font-size: 18px;
+}
+
+html {
+  transition: font-size 200ms ease;
 }

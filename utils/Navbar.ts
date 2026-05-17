@@ -22,12 +22,12 @@ export const NavLinks = [
   {
     title: "Profile",
     path: "/profile",
-    avatar: true,
+    icon: "account_circle",
   },
   {
     title: "Settings",
     path: "/settings",
     icon: "settings",
-    onlyOnDesktop: true
+    onlyOnDesktop: true,
   },
 ];
