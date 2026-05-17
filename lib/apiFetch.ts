@@ -1,3 +1,5 @@
+import { useAuthStore } from "@/store/useAuthStore";
+
 export const apiFetch = async (url: string, options?: RequestInit) => {
   const isFormData = options?.body instanceof FormData;
 
@@ -11,8 +13,11 @@ export const apiFetch = async (url: string, options?: RequestInit) => {
   });
 
   if (res.status === 401) {
+    await useAuthStore.getState().logout();
+
     const error = new Error("UNAUTHORIZED");
     (error as any).status = 401;
+
     throw error;
   }
 

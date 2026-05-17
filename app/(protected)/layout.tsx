@@ -20,30 +20,23 @@ export default function RootLayout({
   const [isSideBarOpen, setIsSideBarOpen] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
-  const [isInChatPage, setIsInChatPage] = useState(false)
-  const { setTokens, setTotal } = useTokenStore();
-  const { setUser } = useAuthStore();
-  const {activeChat} = useChatStore()
-  const pathname = usePathname()
+  const [isInChatPage, setIsInChatPage] = useState(false);
+  const { activeChat } = useChatStore();
+  const pathname = usePathname();
+  const { logout } = useAuthStore();
 
-  useEffect(()=> {
-    setIsInChatPage(pathname.startsWith('/chat'))
-  })
-
+  useEffect(() => {
+    setIsInChatPage(pathname.startsWith("/chat"));
+  });
 
   const handleLogout = async () => {
-    setShowLogoutModal(false); 
+    setShowLogoutModal(false);
     setLoggingOut(true);
     try {
-      const supabase = getSupabaseBrowserClient();
-      await supabase.auth.signOut();
-      setUser(null);
-      setTokens(0);
-      setTotal(0);
-      window.location.href = "/auth/signin";
+      logout();
     } catch (error) {
       console.error("Logout failed:", error);
-      setLoggingOut(false); 
+      setLoggingOut(false);
     }
   };
 
@@ -59,7 +52,11 @@ export default function RootLayout({
           setShowLogoutModal={setShowLogoutModal}
         />
 
-        <main className={`flex-1 overflow-y-auto mt-17.5 ${isInChatPage && activeChat ? 'mb-0' : 'mb-13'}`}>{children}</main>
+        <main
+          className={`flex-1 overflow-y-auto mt-17.5 ${isInChatPage && activeChat ? "mb-0" : "mb-13 md:mb-0"}`}
+        >
+          {children}
+        </main>
 
         {/* <div className="md:hidden lg:hidden absolute bottom-2 right-2">
           <ThemeToggle />
@@ -106,7 +103,7 @@ export default function RootLayout({
         </div>
       )}
 
-      <BottomBar/>
+      <BottomBar />
     </div>
   );
 }

@@ -71,6 +71,10 @@ const ProposalCard = ({ p, statusStyles }: Props) => {
   const link = "/proposals";
 
   const acceptProposal = async () => {
+    if (p?.isSender) {
+      return;
+    }
+
     try {
       const proposalId = p?.id;
       await updateProposalStatus(
@@ -90,6 +94,10 @@ const ProposalCard = ({ p, statusStyles }: Props) => {
   };
 
   const declineProposal = async () => {
+    if (p?.isSender) {
+      return;
+    }
+
     try {
       const proposalId = p?.id;
       await updateProposalStatus(
@@ -219,7 +227,7 @@ const ProposalCard = ({ p, statusStyles }: Props) => {
         </div>
 
         <div className="py-3">
-  <p className="text-xs text-text-secondary">{p?.message}</p>
+          <p className="text-xs text-text-secondary">{p?.message}</p>
         </div>
       </div>
 

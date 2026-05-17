@@ -12,11 +12,11 @@ const SkillsCard = ({
     color: string;
   }) => {
     return (
-      <div className="col-span-2 p-6 h-max rounded-md bg-surface">
+      <div className="col-span-2 md:p-6 p-4 h-max rounded-md bg-surface">
         <div className="h-full flex flex-col w-full gap-8">
           <div className="w-full flex gap-2 items-center justify-between">
             <div className="w-max h-max flex items-center gap-2">
-              <div className="w-10 h-10 flex items-center bg-background rounded-md justify-center">
+              <div className="w-10 h-10 flex items-center bg-background rounded-xl justify-center">
                 <span className="material-symbols-outlined">{icon}</span>
               </div>
               <h1 className="text-2xl font-bold">{title}</h1>
@@ -39,7 +39,7 @@ const SkillsCard = ({
               <div className="w-full h-full flex flex-col items-center justify-center">
                 <h2 className="text-2xl">No skill yet.</h2>
                 <p className="text-text-secondary text-sm">
-                  Complete Profile Setup to add skil
+                  Complete Profile Setup to add skill
                 </p>
               </div>
             )}

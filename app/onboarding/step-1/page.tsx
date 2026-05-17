@@ -157,7 +157,7 @@ const UploadProfilePicture = () => {
 
       if (!success) return;
 
-      await updateUserOnboardingStepInDB(1);
+      await updateUserOnboardingStepInDB(2);
     } catch (err) {
       console.error("Upload error:", err);
     } finally {

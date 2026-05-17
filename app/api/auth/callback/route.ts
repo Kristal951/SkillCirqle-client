@@ -37,7 +37,6 @@ export async function GET(request: Request) {
     return NextResponse.redirect(new URL("/auth/auth-code-error", url.origin));
   }
 
-  // optional onboarding logic
   const user = data.user;
 
   if (user) {
@@ -51,4 +50,5 @@ export async function GET(request: Request) {
   }
 
   return NextResponse.redirect(new URL(next, url.origin));
+  // Todo: redirect to a success page for session storage. reference: chatgpt chat, email verifcation supabase
 }

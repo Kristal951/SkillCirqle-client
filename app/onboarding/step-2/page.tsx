@@ -39,7 +39,7 @@ const About = () => {
         role,
         location,
       });
-      await updateUserOnboardingStepInDB(2);
+      await updateUserOnboardingStepInDB(3);
     } catch (error) {
       console.error(error);
     }

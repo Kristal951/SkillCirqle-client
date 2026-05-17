@@ -5,7 +5,7 @@ const UPLOAD_PRESET = "SkillCirqle";
 
 export const uploadToCloudinary = async (
   file: File,
-  onProgress: (progress: number) => void
+  onProgress?: (progress: number) => void
 ) => {
   const url = `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`;
 
@@ -17,7 +17,7 @@ export const uploadToCloudinary = async (
     onUploadProgress: (event) => {
       if (event.total) {
         const percent = Math.round((event.loaded / event.total) * 100);
-        onProgress(percent);
+        onProgress?.(percent);
       }
     },
   });

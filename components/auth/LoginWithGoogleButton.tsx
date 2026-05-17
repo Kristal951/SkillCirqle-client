@@ -11,12 +11,11 @@ const LoginWithGoogleButton = ({
   loading: boolean;
   setLoading: React.Dispatch<React.SetStateAction<boolean>>;
 }) => {
-  const { fetchUser } = useAuthStore();
 
   const handleGoogleLogin = async () => {
     setLoading(true);
     try {
-      const supabase = await getSupabaseBrowserClient();
+      const supabase = getSupabaseBrowserClient();
 
       const { error, data } = await supabase.auth.signInWithOAuth({
         provider: "google",

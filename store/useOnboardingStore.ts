@@ -38,22 +38,36 @@ export const useOnboardingStore = create<OnboardingState>((set) => ({
     }
   },
 
-  updateUserOnboardingStepInDB: async (step: number) => {
+  updateUserOnboardingStepInDB: async (step: number, update?: boolean) => {
     try {
+      set({ step });
+
+      if (!update) return;
+
       const res = await apiFetch("/api/user/onboarding", {
         method: "POST",
         body: JSON.stringify({ step }),
         headers: { "Content-Type": "application/json" },
       });
 
-      const data = await res.json();
-
-      if (data.success) {
-        set({ step });
+      if (!res.ok) {
+        throw new Error("Failed to update onboarding step");
       }
 
+      const data = await res.json();
+
+      if (!data?.success) {
+        throw new Error(data?.message || "Update failed");
+      }
+
+      return data;
     } catch (error) {
       console.error("Onboarding update error:", error);
+
+      // optional rollback (recommended)
+      // set({ step: previousStep });
+
+      throw error;
     }
   },
 

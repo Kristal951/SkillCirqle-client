@@ -8,6 +8,10 @@ import {
 } from "@/lib/uploadToCloudinary";
 import { getProfile } from "@/lib/getProfile";
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
+import { getSocket } from "@/lib/socket";
+import { useTokenStore } from "./useTokenStore";
+import { useOnboardingStore } from "./useOnboardingStore";
+import { UAParser } from "ua-parser-js";
 
 interface AuthState {
   user: User | null;
@@ -53,7 +57,34 @@ export const useAuthStore = create<AuthState>()(
       setIsUploadingProfilePic: (isUploadingProfilePic) =>
         set({ isUploadingProfilePic }),
 
-      logout: () => set({ user: null, uploadProgress: 0, authReady: false }),
+      logout: async () => {
+        try {
+          const supabase = getSupabaseBrowserClient();
+          const socket = getSocket();
+
+          await supabase.auth.signOut();
+
+          socket?.disconnect();
+
+          set({
+            user: null,
+            uploadProgress: 0,
+            authReady: false,
+          });
+
+          useTokenStore.getState().setTokens(0);
+          useTokenStore.getState().setTotal(0);
+
+          useOnboardingStore.getState().setTotalSteps(0);
+
+          localStorage.removeItem("auth-storage");
+          sessionStorage.removeItem("device_session_id");
+
+          window.location.replace("/auth/signin");
+        } catch (error) {
+          console.error("Logout failed:", error);
+        }
+      },
 
       reset: () =>
         set({
@@ -67,19 +98,39 @@ export const useAuthStore = create<AuthState>()(
 
       isAuthenticated: () => !!get().user,
 
-      // Inside useAuthStore.ts
       fetchUser: async () => {
-        const supabase = await getSupabaseBrowserClient(); // The Client one
+        const supabase = getSupabaseBrowserClient();
         const { data } = await supabase.auth.getSession();
 
         if (!data.session) return set({ authReady: true });
 
-        // Pass the browser client into the helper
+        const parser = new UAParser();
+        const result = parser.getResult();
+
+        let sessionId = sessionStorage.getItem("device_session_id");
+
+        if (!sessionId) {
+          sessionId = crypto.randomUUID();
+          sessionStorage.setItem("device_session_id", sessionId);
+        }
+
+        await apiFetch("/api/user/session", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            session_id: sessionId,
+            device_name: result.device.model || "Desktop",
+            browser: result.browser.name,
+            os: result.os.name,
+            user_agent: navigator.userAgent,
+          }),
+        });
+
         const user = await getProfile(supabase, data.session.user.id);
 
         set({ user, authReady: true });
-        // useTokenStore().setTokens(user?.wallet?.skillTokens);
-        // useTokenStore().setTotal(user?.wallet?.totalEarned);
       },
 
       uploadUserProfilePic: async (file: File) => {
@@ -101,10 +152,10 @@ export const useAuthStore = create<AuthState>()(
 
       updateUser: async (updates: Partial<User>) => {
         const prevUser = get().user;
+
         if (!prevUser) return false;
 
-        // Optimistic Update
-        set({ user: { ...prevUser, ...updates }, isUpdatingUser: true });
+        set({ isUpdatingUser: true });
 
         try {
           const res = await apiFetch("/api/user/update-profile", {
@@ -114,10 +165,18 @@ export const useAuthStore = create<AuthState>()(
           });
 
           if (!res.ok) throw new Error("Update failed");
+
+          const { user } = await res.json();
+
+          set({ user });
+
           return true;
         } catch (error) {
           console.error("❌ Update user failed:", error);
-          set({ user: prevUser }); // Rollback
+
+          // rollback
+          set({ user: prevUser });
+
           return false;
         } finally {
           set({ isUpdatingUser: false });

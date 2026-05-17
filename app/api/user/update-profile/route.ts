@@ -28,6 +28,7 @@ export async function PATCH(req: NextRequest) {
       skills_to_learn: "skills_to_learn",
       has_onboarded: "has_onboarded",
       avatar_url: "avatar_url",
+      name: 'name'
     };
 
     const filteredUpdates: Record<string, any> = {};
@@ -47,23 +48,25 @@ export async function PATCH(req: NextRequest) {
 
     const supabase = await createSupabaseServer();
 
-    const { error } = await supabase.from("profiles").upsert(
-      {
-        id: user.id,
-        ...filteredUpdates,
-        updated_at: new Date().toISOString(),
-      },
-      {
-        onConflict: "id",
-      },
-    );
-
+    const { error, data } = await supabase
+  .from("profiles")
+  .upsert(
+    {
+      id: user.id,
+      ...filteredUpdates,
+      updated_at: new Date().toISOString(),
+    },
+    { onConflict: "id" }
+  )
+  .select()
+  .single();
+  
     if (error) {
       console.error("Supabase update error:", error);
       throw error;
     }
 
-    return NextResponse.json({ success: true });
+    return NextResponse.json({ success: true, user: data });
   } catch (error: any) {
     console.error("PATCH error:", error?.message || error);
 

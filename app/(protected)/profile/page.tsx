@@ -22,19 +22,18 @@ const ProfilePage = () => {
     },
   ];
 
-
   return (
-    <section className="relative mb-12 w-full md:px-4  h-full flex flex-col py-6">
-      <div className="flex flex-col md:flex-row items-center md:items-end gap-8">
+    <section className="relative w-full md:px-4 h-full flex flex-col py-6 px-4">
+      <div className="flex flex-col md:flex-row items-center md:items-end gap-4">
         <div className="w-full flex flex-col">
           <div className="lg:flex flex flex-col lg:flex-row h-max md:items-end md:justify-between">
             <div className="flex flex-col lg:flex-row lg:flex items-center w-full justify-center md:justify-start gap-5">
-              <div className="w-35 h-35 group rounded-full border-primary border-2 bg-primary/20 overflow-hidden flex items-center justify-center text-primary font-semibold">
+              <div className="w-35 z-10 h-35 group rounded-full border-primary border-2 bg-primary/20 overflow-hidden flex items-center justify-center text-primary font-semibold">
                 {user?.avatar_url ? (
                   <img
                     src={user?.avatar_url}
                     alt="Profile Image"
-                    className="w-full group-hover:scale-110 transition-all h-full object-cover"
+                    className="w-full z-10 group-hover:scale-110 transition-all h-full object-cover"
                   />
                 ) : (
                   <div>
@@ -54,7 +53,7 @@ const ProfilePage = () => {
               </div>
             </div>
 
-            <div className="flex gap-8 w-full pt-10 justify-center lg:justify-end">
+            <div className="flex gap-8 w-full pt-4 justify-center lg:justify-end">
               <button className="px-4 flex items-center justify-center gap-2 py-3 bg-primary dark:text-white rounded-md border-border border text-primary font-bold shadow-lg hover:scale-105 transition-transform">
                 <span className="material-symbols-outlined">person_edit</span>
                 Edit Profile
@@ -162,7 +161,16 @@ const ProfilePage = () => {
           />
         </div>
 
-        <div className="col-span-1 bg-surface p-4 h-90 rounded-md">
+        <div className="col-span-2 md:col-span-1 lg:col-span-1 bg-surface p-4 h-90 rounded-md">
+           <div className="flex items-center gap-3">
+            <div className="w-10 h-10 flex items-center bg-background rounded-xl justify-center border border-border shadow-inner">
+              <span className="material-symbols-outlined text-text-primary">
+                reviews
+              </span>
+            </div>
+            <h1 className="text-xl font-bold tracking-tight">Reviews</h1>
+          </div>
+
           {(user?.rating || 0) > 0 ? (
             <div className="h-full flex flex-col items-center justify-center">
               <h1 className="text-4xl font-bold">{user?.rating.toFixed(1)}</h1>
@@ -180,6 +188,159 @@ const ProfilePage = () => {
               </h3>
             </div>
           )}
+        </div>
+      </div>
+
+      <div className="w-full grid lg:grid-cols-2 md:grid-cols-2 gap-8 py-8">
+        <div className="col-span-1 md:p-6 p-4 bg-surface rounded-md flex flex-col gap-6">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 flex items-center bg-background rounded-xl justify-center border border-border shadow-inner">
+              <span className="material-symbols-outlined text-text-primary">
+                local_fire_department
+              </span>
+            </div>
+            <h1 className="text-xl font-bold tracking-tight">Streak History</h1>
+          </div>
+
+          <div className="flex items-end gap-2">
+            <div className="flex items-center">
+              <span
+                className="material-symbols-outlined text-accent animate-pulse"
+                style={{
+                  fontVariationSettings: "'FILL' 1",
+                  fontSize: "3.5rem",
+                }}
+              >
+                local_fire_department
+              </span>
+              <span className="text-5xl font-black tracking-tighter">
+                {user?.streaks || 0}
+              </span>
+            </div>
+            <div className="pb-1.5">
+              <p className="text-[10px] font-bold text-text-secondary uppercase tracking-[0.2em] leading-none">
+                Week(s)
+              </p>
+              <p className="text-[10px] font-bold text-text-secondary uppercase tracking-[0.2em] leading-none">
+                Streak
+              </p>
+            </div>
+          </div>
+
+          <div className="w-full flex flex-col gap-4">
+            <div className="flex justify-between items-center bg-background/50 p-4 rounded-xl border border-border/50">
+              {["S", "M", "T", "W", "T", "F", "S"].map((day, i) => {
+                const today = new Date().getDay();
+                const isToday = today === i;
+
+                const isSpecialDay = i === 1 || i === 2;
+                return (
+                  <div key={i} className="flex flex-col items-center gap-2">
+                    <span
+                      className={`text-[10px] font-bold ${isToday ? "text-accent" : "text-text-secondary"}`}
+                    >
+                      {day}
+                    </span>
+                    <div
+                      className={`w-8 h-8 rounded-full flex items-center justify-center text-xs transition-all duration-500 border ${
+                        isToday ? "border-accent " : "border-border"
+                      } ${
+                        isToday && (i === 1 || i === 2) ? "animate-pulse" : ""
+                      } ${
+                        i === 1 || i === 2
+                          ? "bg-accent text-white shadow-lg shadow-accent/20 border-accent"
+                          : "bg-surface text-text-secondary/40"
+                      }`}
+                    >
+                      {i === 1 || i === 2 ? (
+                        <span
+                          className="material-symbols-outlined text-sm"
+                          style={{ fontVariationSettings: "'wght' 700" }}
+                        >
+                          check
+                        </span>
+                      ) : null}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="px-1">
+              {/* {user?.streaks > 0 ? (
+                <p className="text-sm text-text-secondary">
+                  <span className="text-accent font-medium">Keep it up!</span>{" "}
+                  You haven't missed a beat this week.
+                </p>
+              ) : (
+                <p className="text-sm text-text-secondary">
+                  Start a swap today to kickstart your streak!
+                </p>
+              )} */}
+              <p className="text-sm font-medium text-text-secondary">
+                <span className="text-text-accent font-bold">+0</span> credits
+                today
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="col-span-1 md:p-6 p-4 bg-surface rounded-md flex flex-col gap-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 flex items-center bg-background rounded-xl justify-center border border-border shadow-inner">
+                <span className="material-symbols-outlined text-text-primary">
+                  history
+                </span>
+              </div>
+              <h1 className="text-xl font-bold tracking-tight">
+                Exchange History
+              </h1>
+            </div>
+            <button className="text-xs font-bold text-accent hover:underline uppercase tracking-wider transition-colors">
+              View All
+            </button>
+          </div>
+
+          <div className="flex flex-col gap-3">
+            {[1, 2, 3].map((_, i) => (
+              <div
+                key={i}
+                className="flex items-center justify-between p-3 rounded-xl bg-background/40 border border-border/50 hover:border-border transition-all group cursor-pointer"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center text-primary font-bold text-xs">
+                    JD
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold truncate text-text-primary transition-colors">
+                      UI Design with Aisha
+                    </p>
+                    <p className="text-[10px] text-text-secondary uppercase font-medium">
+                      24 May, 2026
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-0.5 text-amber-400">
+                  {[...Array(5)].map((_, index) => {
+                    const rating = 4;
+                    return (
+                      <span
+                        key={index}
+                        className="material-symbols-outlined text-lg!"
+                        style={{
+                          fontVariationSettings: `'FILL' ${index < rating ? 1 : 0}`,
+                        }}
+                      >
+                        star
+                      </span>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </section>

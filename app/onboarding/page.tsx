@@ -96,7 +96,7 @@ const Onboarding = () => {
           className="flex text-base gap-1 disabled:bg-opacity-50 cursor-not-allowed font-semibold rounded-md items-center justify-center p-3 bg-primary"
           onClick={() => {
             handleMoveToNextOnboardingStep(1);
-            updateUserOnboardingStepInDB(0);
+            updateUserOnboardingStepInDB(1);
           }}
         >
           {loading ? (

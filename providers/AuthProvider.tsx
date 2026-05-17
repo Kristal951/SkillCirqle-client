@@ -20,6 +20,7 @@ export default function AuthProvider({
   const setUser = useAuthStore((s) => s.setUser);
   const { setTokens, setTotal } = useTokenStore();
   const { setStep } = useOnboardingStore();
+  const { fetchUser } = useAuthStore();
 
   const loadProfile = useCallback(async () => {
     try {
@@ -48,7 +49,14 @@ export default function AuthProvider({
 
         if (event === "TOKEN_REFRESHED") return;
 
-        // logout
+        if (event === "SIGNED_IN") {
+          await fetchUser();
+        }
+
+        if (event === "SIGNED_OUT") {
+          useAuthStore.getState().reset();
+        }
+
         if (!user) {
           setUser(null);
           setTokens(0);
@@ -60,7 +68,7 @@ export default function AuthProvider({
 
         await loadProfile();
         setLoading(false);
-      }
+      },
     );
 
     return () => {

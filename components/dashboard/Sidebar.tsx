@@ -8,6 +8,7 @@ import { useAuthStore } from "@/store/useAuthStore";
 import { LogOut, X, ChevronLeft, ChevronRight } from "lucide-react";
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
 import { useTokenStore } from "@/store/useTokenStore";
+import Image from "next/image";
 
 interface SidebarProps {
   isSideBarOpen: boolean;
@@ -33,13 +34,13 @@ const Sidebar = ({
     <>
       {isSideBarOpen && (
         <div
-          className="fixed inset-0 bg-black/50 z-90 md:hidden backdrop-blur-sm transition-opacity"
+          className="fixed inset-0 bg-black/50 z-8 md:hidden backdrop-blur-sm transition-opacity"
           onClick={closeSidebar}
         />
       )}
 
       <aside
-        className={`h-full bg-background border-r border-border/20 flex flex-col transition-all duration-300 z-100
+        className={`h-full bg-background border-r border-border/20 flex flex-col transition-all duration-300 z-80
           ${isSideBarOpen ? "fixed translate-x-0 w-72" : "fixed -translate-x-full md:relative md:translate-x-0"}
           ${!isSideBarOpen && (isCollapsed ? "md:w-20" : "md:w-72")}
         `}
@@ -72,6 +73,7 @@ const Sidebar = ({
 
         <nav className="flex-1 px-3 py-2 space-y-2 overflow-y-auto overflow-x-hidden">
           {NavLinks.map((link, i) => {
+            const isProfile = link.path === "/profile";
             const isActive =
               pathname === link.path ||
               (link.path !== "/" && pathname.startsWith(link.path));
@@ -81,15 +83,34 @@ const Sidebar = ({
                 key={i}
                 href={link.path}
                 onClick={closeSidebar}
-                className={`flex items-center gap-4 px-3 py-2.5 transition-all duration-200 group relative ${
+                className={`flex items-center gap-4 px-3  ${link.onlyOnDesktop ? 'hidden md:flex lg:flex' : ''} py-2.5 transition-all duration-200 group relative ${
                   isActive
                     ? "text-white border-r-2 font-semibold"
                     : "text-text-secondary hover:bg-secondary hover:text-foreground"
                 }`}
               >
-                <span className="material-symbols-outlined text-2xl shrink-0">
-                  {link.icon}
-                </span>
+                {isProfile ? (
+                  <>
+                    <div className="relative w-7 h-7 md:hidden shrink-0">
+                      <Image
+                        src={user?.avatar_url || "/default-avatar.png"}
+                        alt={user?.name || "Profile"}
+                        fill
+                        sizes="28px"
+                        className="rounded-full object-cover border border-border/30"
+                        unoptimized
+                      />
+                    </div>
+
+                    <span className="material-symbols-outlined hidden md:block text-2xl shrink-0">
+                      person
+                    </span>
+                  </>
+                ) : (
+                  <span className="material-symbols-outlined text-2xl shrink-0">
+                    {link.icon}
+                  </span>
+                )}
 
                 {!isCollapsed || isSideBarOpen ? (
                   <span className="text-sm transition-opacity duration-300 whitespace-nowrap">

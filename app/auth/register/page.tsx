@@ -9,6 +9,7 @@ import { Lock, Mail, User, Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import React, { useState, ChangeEvent, FormEvent } from "react";
+import CheckMail from "../check-mail/page";
 
 // Typed Props for InputField
 interface InputFieldProps {
@@ -66,6 +67,7 @@ const SignUp = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [isSubmitted, setIsSubmitted] = useState(false);
 
   const { fetchUser } = useAuthStore();
   const router = useRouter();
@@ -87,16 +89,16 @@ const SignUp = () => {
 
       toast.success(`Hi ${name}!`, "Welcome to the Cirqle.");
 
-      router.replace("/onboarding");
+      // router.replace("/onboarding");
+      setIsSubmitted(true);
     } catch (error: any) {
       console.error("Signup Error:", error);
-
       const errorMessages: Record<string, { title: string; desc: string }> = {
         "auth/email-already-in-use": {
           title: "Invalid Email",
           desc: "This email is already in use. Try logging in instead.",
         },
-        'user_already_exists': {
+        user_already_exists: {
           title: "User Already Registered",
           desc: "Please register with a different email.",
         },
@@ -116,6 +118,14 @@ const SignUp = () => {
       setLoading(false);
     }
   };
+
+  if (isSubmitted) {
+    return (
+      <div className="min-h-screen bg-background">
+        <CheckMail email={email} onChangeEmail={() => setIsSubmitted(false)} />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen w-full flex items-center justify-center bg-background px-4 sm:px-6 lg:px-8 py-6">

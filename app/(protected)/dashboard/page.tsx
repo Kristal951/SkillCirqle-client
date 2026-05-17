@@ -204,7 +204,7 @@ export default function Dashboard() {
         </div>
       )}
 
-      <section className="relative w-full p-4 md:p-10 bg-primary rounded-md overflow-hidden">
+      {/* <section className="relative w-full p-4 md:p-10 bg-primary rounded-md overflow-hidden">
         <div className="relative z-10 flex flex-col gap-4 text-primary-foreground">
           <div>
             <h1 className="text-3xl md:text-4xl text-white font-bold">
@@ -223,6 +223,33 @@ export default function Dashboard() {
               placeholder="Find Someone to learn from ..."
             />
           </div>
+        </div>
+      </section> */}
+
+      <section className="relative w-full p-4 gap-6 flex flex-col md:flex-row lg:flex-row justify-between items-center md:p-10 bg-surface/50 border border-border rounded-md overflow-hidden">
+        <div className="flex items-center w-full gap-3">
+          <div className=" w-14 md:w-20 md:h-20 lg:w-20 lg:h-20 h-14 rounded-full flex items-center justify-center text-accent bg-accent/20 border border-accent">
+            <span
+              className="material-symbols-outlined"
+              style={{ fontSize: "2rem" }}
+            >
+              {" "}
+              swap_horiz
+            </span>
+          </div>
+          <div className="relative z-10 flex flex-col md:gap-2 gap-1 text-primary-foreground">
+            <h1 className="md:text-3xl text-xl font-bold text-text-primary">
+              Want to save credits?
+            </h1>
+            <p className="text-lg text-text-secondary">
+              Swap skills with someone then.
+            </p>
+          </div>
+        </div>
+        <div className="h-full w-full flex md:items-center md:justify-end lg:items-center lg:justify-end">
+          <button className="px-3 py-2 w-full md:w-max lg:w-max hover:bg-accent/10 border border-accent rounded text-accent">
+            Explore Swaps
+          </button>
         </div>
       </section>
 

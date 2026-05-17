@@ -10,7 +10,7 @@ export interface OnboardingState {
 
   getUserCurrentStepFromDB: () => Promise<void>;
   checkIfOnboardingCompleted: () => Promise<void>;
-  updateUserOnboardingStepInDB: (step: number) => Promise<void>;
+  updateUserOnboardingStepInDB: (step: number, update?: boolean) => Promise<void>;
 
   setHasOnboarded: (value: boolean) => void;
 
