@@ -4,19 +4,8 @@ import React from "react";
 import { LogOut, ArrowLeft } from "lucide-react";
 import { useLogoutModal } from "@/providers/LogoutContext";
 
-interface SignOutConfirmationProps {
-  onConfirmSignOut: () => void;
-  //   onCancel?: () => void;
-  isLoggingOut?: boolean;
-}
-
-export default function SignOutConfirmation({
-  onConfirmSignOut,
-  //   onCancel,
-  isLoggingOut = false,
-}: SignOutConfirmationProps) {
-  const { showLogoutModal, openLogoutModal, closeLogoutModal } =
-    useLogoutModal();
+export default function SignOutConfirmation() {
+  const { openLogoutModal } = useLogoutModal();
 
   return (
     <div className="w-full p-6 flex-1 flex-col gap-8 bg-surface/20 backdrop-blur-md border border-border/10 rounded-2xl">
@@ -41,27 +30,12 @@ export default function SignOutConfirmation({
       <div className="w-full flex flex-col sm:flex-row-reverse gap-3 pt-6 border-t border-border/15">
         <button
           type="button"
-          disabled={isLoggingOut}
           onClick={() => openLogoutModal()}
-          className={`w-full py-3 px-4 text-xs font-bold uppercase tracking-wider rounded-xl transition-all duration-200 active:scale-[0.98] shadow-md
-            ${
-              isLoggingOut
-                ? "bg-gray-500/10 text-gray-400/40 cursor-not-allowed shadow-none"
-                : "text-red-500 bg-red-500/5 border border-red-500/10 hover:border-red-500 hover:bg-red-500 hover:text-white shadow-sm shadow-red-500/5 "
-            }`}
+          className={`w-full py-3 px-4 text-xs font-bold uppercase tracking-wider rounded-xl transition-all duration-200 active:scale-[0.98]
+          text-red-500 bg-red-500/5 border border-red-500/10 hover:border-red-500 hover:bg-red-500 hover:text-white shadow-sm shadow-red-500/5 `}
         >
-          {isLoggingOut ? "Signing Out" : "Sign Out"}
+          Sign Out
         </button>
-
-        {/* <button
-          type="button"
-          disabled={isLoggingOut}
-          onClick={onCancel}
-          className="w-full py-3 px-4 text-xs font-bold uppercase tracking-wider text-text-secondary hover:text-text-primary bg-background/50 hover:bg-surface/80 border border-border/40 rounded-xl flex items-center justify-center gap-1.5 transition-all duration-200 active:scale-[0.98] disabled:opacity-30"
-        >
-          <ArrowLeft size={14} />
-          <span>Keep Session</span>
-        </button> */}
       </div>
     </div>
   );

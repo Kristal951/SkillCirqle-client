@@ -1,14 +1,16 @@
 import { useSocketStore } from "@/store/useSocketStore";
-import { useNotificationsStore } from "@/store/useNotificationsStore";
 import { getSocket } from "./socket";
 
 let initialized = false;
+let socketRef: ReturnType<typeof getSocket> | null = null;
 
 export const initSocketEvents = () => {
-  if (initialized) return;
-
   const socket = getSocket();
   if (!socket) return;
+
+  if (initialized && socketRef === socket) return;
+
+  socketRef = socket;
 
   const {
     setOnlineUsers,
@@ -20,9 +22,12 @@ export const initSocketEvents = () => {
 
   console.log("🧠 Socket events initialized");
 
-  /**
-   * ONLINE USERS
-   */
+  socket.off("online_users");
+  socket.off("user_online");
+  socket.off("user_offline");
+  socket.off("typing");
+  socket.off("stop_typing");
+
   socket.on("online_users", (users: string[]) => {
     setOnlineUsers(users);
   });

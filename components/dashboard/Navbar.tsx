@@ -1,15 +1,14 @@
 "use client";
 import { Bell, Coins, Flame, Menu, Settings } from "lucide-react";
 import React, { Dispatch, SetStateAction, useRef, useState } from "react";
-import ThemeToggle from "../ToggleThemeButton";
 import { useTokenStore } from "@/store/useTokenStore";
 import { useNotificationsStore } from "@/store/useNotificationsStore";
 import Link from "next/link";
 import { useAuthStore } from "@/store/useAuthStore";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import MenuPortal from "../MenuPortal";
 import { createPortal } from "react-dom";
+import { useLogoutModal } from "@/providers/LogoutContext";
 
 interface NavbarProps {
   setIsSideBarOpen: Dispatch<SetStateAction<boolean>>;
@@ -22,6 +21,7 @@ const Navbar = ({ setIsSideBarOpen }: NavbarProps) => {
   const unreadCount = useNotificationsStore((s) => s.unreadCount);
   const menuRef = useRef<HTMLDivElement>(null!);
   const [openMenu, setOpenMenu] = useState(false);
+  const { openLogoutModal } = useLogoutModal();
 
   return (
     <div className="md:left-64 left-0 bg-background/90 fixed right-0 backdrop-blur-md h-16 flex justify-end items-center md:justify-end lg:justify-end border-b border-border/20 px-4">
@@ -88,7 +88,13 @@ const Navbar = ({ setIsSideBarOpen }: NavbarProps) => {
 
               <div className="h-px bg-border/50 my-1 mx-1" />
 
-              <button className="flex items-center gap-3 px-3 py-2 text-sm text-red-500 hover:bg-red-500/10 rounded-lg transition-colors w-full group">
+              <button
+                onClick={() => {
+                  setOpenMenu(false);
+                  openLogoutModal();
+                }}
+                className="flex items-center gap-3 px-3 py-2 text-sm text-red-500 hover:bg-red-500/10 rounded-lg transition-colors w-full group"
+              >
                 <span className="material-symbols-outlined text-lg">
                   logout
                 </span>
