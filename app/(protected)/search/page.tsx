@@ -21,6 +21,7 @@ import Link from "next/link";
 import { useAuthStore } from "@/store/useAuthStore";
 import Spinner from "@/components/ui/Spinner";
 import { useRouter } from "next/navigation";
+import ProfileGridSkeleton, { ProfileCardSkeleton } from "@/components/search/SkeletonLoader";
 
 // --- Types ---
 type CategoryId =
@@ -55,7 +56,7 @@ const SearchPage = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<CategoryId>("All");
   const [profiles, setProfiles] = useState<User[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const supabase = getSupabaseBrowserClient();
   const { user } = useAuthStore();
   const router = useRouter();
@@ -125,13 +126,13 @@ const SearchPage = () => {
     { id: "Business", icon: <Briefcase size={18} /> },
   ];
 
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center h-screen">
-        <Spinner size={30} />
-      </div>
-    );
-  }
+  // if (loading) {
+  //   return (
+  //     <div className="flex justify-center items-center h-screen">
+  //       <Spinner size={30} />
+  //     </div>
+  //   );
+  // }
 
   const propose = (mentorId: string) => {
     router.push(`/proposals/new/${mentorId}`);
@@ -192,7 +193,7 @@ const SearchPage = () => {
 
       <main className="w-full max-w-7xl mx-auto">
         <AnimatePresence mode="popLayout">
-          {filteredProfiles.length === 0 ? (
+          {!loading && filteredProfiles.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-32 text-center">
               <div className="w-24 h-24 bg-surface rounded-[2.5rem] flex items-center justify-center border border-border mb-6 shadow-inner">
                 <Search size={40} className="text-text-secondary/20" />
@@ -212,6 +213,8 @@ const SearchPage = () => {
                 Reset Filters
               </button>
             </div>
+          ) : loading && filteredProfiles.length === 0 ? (
+            <ProfileGridSkeleton/>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-8">
               {filteredProfiles.map((mentor) => (

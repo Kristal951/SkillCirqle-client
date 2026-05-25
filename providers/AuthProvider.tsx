@@ -7,6 +7,7 @@ import { useTokenStore } from "@/store/useTokenStore";
 import { useOnboardingStore } from "@/store/useOnboardingStore";
 import Spinner from "@/components/ui/Spinner";
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
+import { usePathname } from "next/navigation";
 
 export default function AuthProvider({
   children,
@@ -16,6 +17,9 @@ export default function AuthProvider({
   const [loading, setLoading] = useState(true);
 
   const supabase = getSupabaseBrowserClient();
+  const pathname = usePathname();
+
+  const isRecoveryPage = pathname === "/auth/update-password";
 
   const setUser = useAuthStore((s) => s.setUser);
   const { setTokens, setTotal } = useTokenStore();
@@ -43,8 +47,12 @@ export default function AuthProvider({
   }, [setUser, setTokens, setTotal, setStep]);
 
   useEffect(() => {
+    let mounted = true;
+
     const { data: authListener } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        if (!mounted) return;
+
         const user = session?.user ?? null;
 
         if (event === "TOKEN_REFRESHED") return;
@@ -55,6 +63,8 @@ export default function AuthProvider({
 
         if (event === "SIGNED_OUT") {
           useAuthStore.getState().reset();
+          setLoading(false);
+          return;
         }
 
         if (!user) {
@@ -67,14 +77,26 @@ export default function AuthProvider({
         }
 
         await loadProfile();
-        setLoading(false);
+
+        if (!isRecoveryPage) {
+          setLoading(false);
+        }
       },
     );
 
     return () => {
+      mounted = false;
       authListener.subscription.unsubscribe();
     };
-  }, [supabase, loadProfile, setUser, setTokens, setTotal, setStep]);
+  }, [
+    supabase,
+    loadProfile,
+    setUser,
+    setTokens,
+    setTotal,
+    setStep,
+    isRecoveryPage,
+  ]);
 
   if (loading) {
     return (

@@ -12,7 +12,7 @@ const SkillsCard = ({
     color: string;
   }) => {
     return (
-      <div className="col-span-2 md:p-6 p-4 h-max rounded-md bg-surface">
+      <div className="col-span-2 md:p-6 p-4 h-max rounded-md bg-surface/50">
         <div className="h-full flex flex-col w-full gap-8">
           <div className="w-full flex gap-2 items-center justify-between">
             <div className="w-max h-max flex items-center gap-2">

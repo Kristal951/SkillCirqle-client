@@ -61,10 +61,13 @@ export const useAuthStore = create<AuthState>()(
         try {
           const supabase = getSupabaseBrowserClient();
           const socket = getSocket();
-
           await supabase.auth.signOut();
 
           socket?.disconnect();
+
+          await fetch("/api/auth/logout", {
+            method: "POST",
+          });
 
           set({
             user: null,
@@ -192,3 +195,6 @@ export const useAuthStore = create<AuthState>()(
     },
   ),
 );
+
+
+// https://chatgpt.com/share/6a102f94-a074-83ea-8e47-54179ec18d74 - for legal documents

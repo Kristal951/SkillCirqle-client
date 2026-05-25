@@ -216,8 +216,29 @@ const Sidebar = () => {
 
       <nav className="flex flex-col gap-2 flex-1">
         {loading ? (
-          <div className="flex-1 flex items-center justify-center">
-            <Spinner />
+          <div className="flex-1 flex flex-col gap-2 w-full aria-hidden='true'">
+            {Array.from({ length: 5 }).map((_, idx) => (
+              <div
+                key={idx}
+                className="w-full px-3 py-3 flex gap-3 rounded-xl bg-surface/10 border border-border/5 animate-pulse items-center"
+              >
+                <div className="w-12 h-12 rounded-full bg-text-secondary/10 shrink-0" />
+
+                <div className="flex-1 min-w-0 flex flex-col gap-2">
+                  <div className="flex justify-between items-center w-full">
+                    <div className="h-4 bg-text-secondary/15 rounded-md w-1/3" />
+                    <div className="h-3 bg-text-secondary/10 rounded-md w-10" />
+                  </div>
+
+                  <div className="flex justify-between items-center w-full mt-0.5">
+                    <div className="h-3.5 bg-text-secondary/10 rounded-md w-3/5" />
+                    {idx % 3 === 0 && (
+                      <div className="w-5 h-5 rounded-full bg-text-secondary/10 shrink-0" />
+                    )}
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         ) : filteredChats.length > 0 ? (
           filteredChats.map((chat) => {

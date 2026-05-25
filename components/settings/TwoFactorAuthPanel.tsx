@@ -1,7 +1,7 @@
 "use client";
 
 import { getMfaStatus } from "@/lib/getUserMfaStatus";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
 
 const TwoFactorAuthPanel = ({
@@ -14,11 +14,11 @@ const TwoFactorAuthPanel = ({
     "enabled" | "pending" | "disabled" | "loading"
   >("loading");
   const isFetchingRef = useRef(false);
+  const POLL_INTERVAL = 5000;
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
-  const fetchStatus = async () => {
-    setUserMfaStatus("loading");
+  const fetchStatus = useCallback(async () => {
     if (isFetchingRef.current) return;
-
     isFetchingRef.current = true;
 
     try {
@@ -32,16 +32,28 @@ const TwoFactorAuthPanel = ({
         setUserMfaStatus("disabled");
       }
     } catch (err) {
-      console.error(err);
+      console.error("MFA status error:", err);
       setUserMfaStatus("disabled");
     } finally {
       isFetchingRef.current = false;
     }
-  };
+  }, [supabase]);
 
   useEffect(() => {
     fetchStatus();
-  }, [setShow2faMdl]);
+
+    intervalRef.current = setInterval(() => {
+      fetchStatus();
+    }, POLL_INTERVAL);
+
+    const onFocus = () => fetchStatus();
+    window.addEventListener("focus", onFocus);
+
+    return () => {
+      if (intervalRef.current) clearInterval(intervalRef.current);
+      window.removeEventListener("focus", onFocus);
+    };
+  }, [fetchStatus]);
 
   const statusLabel = {
     enabled: {

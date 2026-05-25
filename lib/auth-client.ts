@@ -28,7 +28,17 @@ export const loginWithEmail = async (email: string, password: string) => {
   });
 
   if (error) throw error;
-  return data.user;
+
+  const factors = data.user?.factors || [];
+
+  const totpFactor = factors.find((f) => f.factor_type === "totp");
+
+  return {
+    user: data.user,
+    session: data.session,
+    requiresMFA: !!totpFactor,
+    factor: totpFactor || null,
+  };
 };
 
 export const logout = async () => {

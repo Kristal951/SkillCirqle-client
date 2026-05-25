@@ -14,5 +14,9 @@ function getEnvVariables() {
 export function getSupabaseBrowserClient() {
   const { supabaseURL, supabaseAnonKey } = getEnvVariables();
 
-  return createBrowserClient(supabaseURL, supabaseAnonKey);
+  return createBrowserClient(supabaseURL, supabaseAnonKey, {
+    auth: {
+      detectSessionInUrl: false,
+    },
+  });
 }

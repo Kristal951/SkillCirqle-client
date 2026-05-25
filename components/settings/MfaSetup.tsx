@@ -55,7 +55,7 @@ export default function TwoFactorSetup({
         </span>
 
         <div className="w-full border border-border/10 px-3 py-2 rounded-xl flex items-center justify-between gap-3">
-          <code className="text-accent font-mono text-sm tracking-widest font-bold overflow-x-auto whitespace-nowrap scrollbar-hide select-all">
+          <code className={`text-accent font-mono text-sm tracking-widest font-bold overflow-x-auto whitespace-nowrap scrollbar-hide select-all ${!secret && 'animate-pulse'}`}>
             {secret || "GENERATING..."}
           </code>
 

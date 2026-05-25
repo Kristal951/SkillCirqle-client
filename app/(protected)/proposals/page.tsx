@@ -13,6 +13,7 @@ import {
 } from "@/types/Proposal";
 import Spinner from "@/components/ui/Spinner";
 import ProposalCard from "@/components/proposals/ProposalCard";
+import { ProposalCardSkeleton } from "@/components/proposals/ProposalFeedSkeleton";
 
 type ProposalTab = "received" | "sent";
 
@@ -175,13 +176,7 @@ const ProposalsPage = () => {
         <div className="lg:col-span-2 space-y-6 order-2 lg:order-1">
           <AnimatePresence mode="wait">
             {loading ? (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="flex items-center justify-center py-20 text-text-secondary"
-              >
-                <Spinner size={30} />
-              </motion.div>
+              <ProposalCardSkeleton />
             ) : filtered.length === 0 ? (
               <motion.div
                 initial={{ opacity: 0 }}

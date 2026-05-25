@@ -3,6 +3,7 @@ import LoginWithGoogleButton from "@/components/auth/LoginWithGoogleButton";
 import Spinner from "@/components/ui/Spinner";
 import { loginWithEmail } from "@/lib/auth-client";
 import { toast } from "@/lib/toast";
+import { useMFAStore } from "@/store/useMFAStore";
 import { Mail, Lock, Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -52,6 +53,10 @@ const SignIn = () => {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const setFactor = useMFAStore((state) => state.setFactor);
+  const setRequiresMFA = useMFAStore((state) => state.setRequiresMFA);
+  const setUserId = useMFAStore((state) => state.setUserId);
+  const setUserEmail = useMFAStore((state) => state.setUserEmail);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -63,8 +68,23 @@ const SignIn = () => {
       return;
     }
     try {
-      const res = await loginWithEmail(email, password);
-      const firstName = res?.user_metadata?.username?.split(" ")[0] || "User";
+      const result = await loginWithEmail(email, password);
+
+      if (result.requiresMFA) {
+        setFactor(result.factor);
+        setUserId(result.user.id);
+        setUserEmail(result.user.email!);
+
+        setRequiresMFA(true);
+
+        router.push("/auth/mfa/verify");
+
+        return;
+      }
+      const firstName =
+        result?.user.user_metadata?.full_name?.split(" ")[0] ||
+        result?.user.user_metadata?.username ||
+        "User";
 
       toast.success(`Welcome back, ${firstName}!`, "Continue Cirqling");
 
@@ -97,10 +117,6 @@ const SignIn = () => {
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleGoogleSignIn = () => {
-    console.log("Google signin clicked");
   };
 
   return (
@@ -151,9 +167,12 @@ const SignIn = () => {
               />
 
               <div className="flex justify-end">
-                <span className="text-xs sm:text-sm text-text-secondary hover:text-white cursor-pointer transition">
+                <Link
+                  href="/auth/forgot-password"
+                  className="text-xs sm:text-sm text-text-secondary hover:text-white cursor-pointer transition"
+                >
                   Forgot password?
-                </span>
+                </Link>
               </div>
 
               <button

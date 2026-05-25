@@ -226,6 +226,33 @@ export default function Dashboard() {
         </div>
       </section> */}
 
+      <section className="relative w-full p-4 gap-6 flex flex-col md:flex-row lg:flex-row justify-between items-center md:p-10 bg-primary border border-border rounded-md overflow-hidden">
+        <div className="flex items-center w-full gap-3">
+          <div className=" w-14 md:w-20 md:h-20 lg:w-20 lg:h-20 h-14 rounded-full flex items-center justify-center text-text-primary bg-background">
+            <span
+              className="material-symbols-outlined"
+              style={{ fontSize: "3rem" }}
+            >
+              {" "}
+              swap_horiz
+            </span>
+          </div>
+          <div className="relative z-10 flex flex-col gap-1 text-primary-foreground">
+            <h1 className="md:text-3xl text-xl font-bold text-text-primary">
+             Find your skill swap
+            </h1>
+            <p className="text-lg text-text-secondary">
+              Teach what you know, learn what you don't. Zero credits needed
+            </p>
+          </div>
+        </div>
+        <div className="h-full w-full flex md:items-center md:justify-end lg:items-center lg:justify-end">
+          <button className="px-3 py-2 w-full md:w-max lg:w-max hover:bg-accent/10 border border-accent rounded text-accent">
+            Explore Swaps
+          </button>
+        </div>
+      </section>
+
       <section className="relative w-full p-4 gap-6 flex flex-col md:flex-row lg:flex-row justify-between items-center md:p-10 bg-surface/50 border border-border rounded-md overflow-hidden">
         <div className="flex items-center w-full gap-3">
           <div className=" w-14 md:w-20 md:h-20 lg:w-20 lg:h-20 h-14 rounded-full flex items-center justify-center text-accent bg-accent/20 border border-accent">

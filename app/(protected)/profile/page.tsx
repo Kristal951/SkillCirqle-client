@@ -62,14 +62,14 @@ const ProfilePage = () => {
             <div className="flex relative gap-8 w-full pt-4 justify-center lg:justify-end">
               <Link
                 href="/settings"
-                className="px-4 flex items-center justify-center gap-2 py-3 bg-primary dark:text-white rounded-md border-border border text-primary font-bold shadow-lg hover:scale-105 transition-transform"
+                className="md:px-4 px-2 flex items-center justify-center gap-2 py-2 md:py-3 bg-primary dark:text-white rounded-md border-border border text-primary font-bold shadow-lg hover:scale-105 transition-transform"
               >
                 <span className="material-symbols-outlined">settings</span>
                 Profile Settings
               </Link>
               <button
                 onClick={() => setShowShareModal(!showShareModal)}
-                className="px-4 py-3 rounded-md border gap-2 border-border flex items-center justify-center text-text-primary font-bold hover:bg-primary/10 transition-colors"
+                className="md:px-4 px-2 md:py-3 py-2 rounded-md border gap-2 border-border flex items-center justify-center text-text-primary font-bold hover:bg-primary/10 transition-colors"
               >
                 <span className="material-symbols-outlined">share</span>
                 Share
@@ -100,7 +100,7 @@ const ProfilePage = () => {
         {statCardData.map((info, i) => (
           <div
             key={i}
-            className="col-span-1 p-6 rounded-md flex items-center gap-6 hover:bg-surface-container-high transition-colors bg-surface"
+            className="col-span-1 p-6 rounded-md flex items-center gap-6 hover:bg-surface transition-colors bg-surface/50"
           >
             <div className="bg-background w-12 h-12 flex items-center justify-center rounded-xl">
               <span
@@ -126,7 +126,7 @@ const ProfilePage = () => {
             </div>
           </div>
         ))}
-        <div className="col-span-1 p-6 rounded-md flex items-center gap-6 hover:bg-surface-container-high transition-colors bg-surface">
+        <div className="col-span-1 p-6 rounded-md flex items-center gap-6 hover:bg-surface transition-colors bg-surface/50">
           <div className="bg-background w-12 h-12 flex items-center justify-center rounded-xl">
             <Coins />
           </div>
@@ -144,7 +144,7 @@ const ProfilePage = () => {
       </div>
 
       <div className="w-full px-4 md:hidden">
-        <div className=" p-4 grid grid-cols-3 rounded-md bg-surface mt-6 mb-6 place-content-center">
+        <div className=" p-4 grid grid-cols-3 rounded-md bg-surface/40 mt-6 mb-6 place-content-center">
           {statCardData.map((info, i) => (
             <div className="colo-span-1 border-r border-border" key={i}>
               <div className="flex w-full flex-col items-center justify-center">
@@ -190,7 +190,7 @@ const ProfilePage = () => {
           />
         </div>
 
-        <div className="col-span-2 md:col-span-1 lg:col-span-1 bg-surface p-4 h-90 rounded-md">
+        <div className="col-span-2 md:col-span-1 lg:col-span-1 bg-surface/50 p-4 h-90 rounded-md">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 flex items-center bg-background rounded-xl justify-center border border-border shadow-inner">
               <span className="material-symbols-outlined text-text-primary">
@@ -221,7 +221,7 @@ const ProfilePage = () => {
       </div>
 
       <div className="w-full grid lg:grid-cols-2 md:grid-cols-2 gap-8 py-8">
-        <div className="col-span-1 md:p-6 p-4 bg-surface rounded-md flex flex-col gap-6">
+        <div className="col-span-1 md:p-6 p-4 bg-surface/50 rounded-md flex flex-col gap-6">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 flex items-center bg-background rounded-xl justify-center border border-border shadow-inner">
               <span className="material-symbols-outlined text-text-primary">
@@ -314,7 +314,7 @@ const ProfilePage = () => {
           </div>
         </div>
 
-        <div className="col-span-1 md:p-6 p-4 bg-surface rounded-md flex flex-col gap-6">
+        <div className="col-span-1 md:p-6 p-4 bg-surface/50 rounded-md flex flex-col gap-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 flex items-center bg-background rounded-xl justify-center border border-border shadow-inner">

@@ -36,6 +36,7 @@ export default function TwoFactorVerify({
               ref={(el) => {
                 inputRefs.current[i] = el;
               }}
+              autoFocus={i === 0}
               className="w-12 h-14 bg-background/40 border border-border/60 rounded-xl text-center text-2xl font-black text-text-primary focus:border-primary focus:ring-4 focus:ring-primary/5 transition-all outline-none"
               maxLength={1}
               type="text"
