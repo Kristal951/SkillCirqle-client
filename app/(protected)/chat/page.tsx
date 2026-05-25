@@ -76,8 +76,6 @@ const Chat = () => {
   const typingUsers =
     useSocketStore((s) => s.typingUsers[activeChat?.id || ""]) || [];
 
-  const visibleTypingUsers = typingUsers.filter((u) => u.id !== currentUserId);
-
   const formatDateLabel = (date: Date) => {
     const now = new Date();
 

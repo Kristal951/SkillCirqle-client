@@ -7,6 +7,7 @@ import { getSocket } from "@/lib/socket";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import { useAuthStore } from "./useAuthStore";
 import { useSocketStore } from "./useSocketStore";
+import { decryptMessage } from "@/lib/decryptMessage";
 
 export type MessageStatus =
   | "sending"
@@ -243,26 +244,11 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     set({ fetchingMessages: true });
 
     try {
-      const { data: messages, error } = await supabase
-        .from("messages")
-        .select(
-          `
-    *,
-    sender:profiles(*),
+      const res = await fetch(`/api/user/messages/${conversationId}`);
 
-    reply:reply_to (
-      id,
-      content,
-      sender_id,
-      metadata
-    )
-  `,
-        )
-        .eq("conversation_id", conversationId)
-        .order("created_at", { ascending: true });
-      if (error) throw error;
+      const messages = await res.json();
 
-      const messageIds = (messages || []).map((m) => m.id);
+      const messageIds = (messages || []).map((m: Message) => m.id);
 
       const receiptMap = new Map<string, any>();
 
@@ -326,6 +312,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     reply_to,
   }) => {
     if (!content.trim()) return;
+    console.log(content)
 
     const socket = getSocket();
     const tempId = `temp-${Date.now()}`;
@@ -455,7 +442,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
         conversations: state.conversations.map((conv) => {
           if (conv.id === conversationId) {
             const isIncoming = msg.sender_id !== currentUserId;
-
+    
             return {
               ...conv,
               last_message: {
