@@ -7,7 +7,7 @@ const Footer = () => {
       link: "/legal/privacy_policy",
     },
     {
-      label: "Terms of Policy",
+      label: "Terms of Service",
       link: "/legal/terms_of_service",
     },
     {

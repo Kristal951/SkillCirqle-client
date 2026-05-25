@@ -3,7 +3,14 @@
 import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BookOpen, Cookie, FileText, Shield } from "lucide-react";
+import {
+  BookOpen,
+  Cookie,
+  FileText,
+  HelpCircle,
+  LifeBuoy,
+  Shield,
+} from "lucide-react";
 
 interface LegalLinkItem {
   link: string;
@@ -39,7 +46,7 @@ export default function LegalSidebar() {
 
   return (
     <aside className="w-64 shrink-0 hidden md:flex fixed top-0 border-r border-border h-screen self-start">
-      <div className="bg-background py-50 px-4 h-full">
+      <div className="bg-background py-50 flex flex-col gap-20 px-4 h-full">
         <nav className="flex flex-col gap-2">
           {legalLinks.map((link) => {
             const isActive = pathname === link.link;
@@ -81,6 +88,22 @@ export default function LegalSidebar() {
             );
           })}
         </nav>
+
+        <div className="w-full p-4 rounded-xl bg-surface space-y-2 text-white">
+          <h2 className="text-base font-semibold flex items-center gap-2">
+            <HelpCircle size={18} className="text-white" />
+            Need Help?
+          </h2>
+
+          <p className="text-text-secondary text-xs">
+            Do you have questions about our policies? Our legal team is here to
+            assist.
+          </p>
+
+          <button className="flex w-full items-center justify-center py-2 rounded-lg bg-background font-medium transition-colors hover:bg-background/90 text-text-primary text-sm cursor-pointer">
+            Contact Support
+          </button>
+        </div>
       </div>
     </aside>
   );

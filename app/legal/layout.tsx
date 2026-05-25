@@ -1,3 +1,4 @@
+import LegalHeader from "@/components/legal/LegalHeader";
 import LegalNavbar from "@/components/legal/Navbar";
 import Sidebar from "@/components/legal/Sidebar";
 
@@ -9,19 +10,7 @@ export default function LegalDocsLayout({
   return (
     <div className="w-full min-h-screen bg-background">
       <div className="fixed right-0 px-4 md:px-0 lg:px-0 md:py-5 lg:py-5 py-0 left-0 top-0 z-30 bg-background ">
-        <div className=" w-full md:px-8 py-6">
-          <div className="max-w-2xl flex flex-col gap-2">
-            <h1 className="text-3xl md:text-4xl font-bold">
-              Legal Documents
-            </h1>
-
-            <p className="text-sm md:text-base text-text-secondary leading-relaxed">
-              Your trust is the foundation of SkillCirqle. We are committed to
-              maintaining a secure, fair, and transparent environment for all
-              Cirqlers.
-            </p>
-          </div>
-        </div>
+       <LegalHeader/>
 
           <LegalNavbar/>
       </div>
