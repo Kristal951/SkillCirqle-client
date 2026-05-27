@@ -64,7 +64,9 @@ const VerifyMFA = () => {
         setChallengeId(challengeData.id);
       } catch (error: any) {
         setErrorMessage(
-          error?.message || "Unable to initialize MFA challenge.",
+          error?.message?.includes("has expired")
+            ? "Challenge expired, please start the login process again."
+            : error?.message || "Unable to initialize MFA challenge.",
         );
       }
     };
@@ -136,20 +138,20 @@ const VerifyMFA = () => {
   };
 
   return (
-    <div className="w-full min-h-screen bg-background flex items-center justify-center p-4">
+    <div className="w-full min-h-screen bg-background flex items-center justify-center md:p-4 lg:p-4 p-2">
       <div className="w-full max-w-md bg-surface border border-border rounded-3xl p-7 shadow-2xl flex flex-col gap-6 animate-in fade-in zoom-in-95 duration-200">
         {!success ? (
           <>
-            <div className="flex flex-col items-center text-center gap-3">
+            <div className="flex flex-col w-full items-center text-center gap-3">
               <div className="w-14 h-14 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary">
                 <ShieldCheck size={24} />
               </div>
 
-              <div className="space-y-1">
-                <h1 className="text-2xl font-black tracking-tight text-text-primary">
+              <div className="space-y-1 w-full">
+                <h1 className="md:text-2xl lg:text-2xl text-xl font-black tracking-tight text-text-primary">
                   Two-Factor Authentication
                 </h1>
-                <p className="text-sm text-text-secondary leading-relaxed">
+                <p className="md:text-sm lg:text-sm text-xs text-text-secondary leading-relaxed">
                   Enter the 6-digit code from your authenticator app to
                   continue.
                 </p>
@@ -158,7 +160,7 @@ const VerifyMFA = () => {
 
             <form onSubmit={handleVerify} className="flex flex-col gap-5">
               <div className="flex flex-col gap-2">
-                <div className="w-full flex gap-2 items-center justify-center">
+                <div className="w-full flex gap-2 items-center justify-center px-4">
                   {code.map((digit, i) => (
                     <input
                       key={i}
@@ -206,14 +208,14 @@ const VerifyMFA = () => {
                 )}
               </button>
 
-              <div className="w-full flex items-center justify-center gap-1 py-2 text-sm">
+              <div className="w-full flex flex-col md:flex-row lg:flex-row items-center justify-center gap-0.5 py-2 text-sm">
                 <span className="text-text-secondary">
                   Lost access to your authenticator?
                 </span>
 
                 <Link
                   href="/auth/mfa/backup"
-                  className="text-text-primary hover:underline font-medium"
+                  className="text-text-primary underline md:decoration-0 lg:decoration-0 md:hover:decoration-1 lg:hover:decoration-1 md:hover:underline lg:hover:underline font-medium"
                 >
                   Use backup recovery code
                 </Link>

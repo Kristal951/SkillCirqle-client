@@ -17,7 +17,18 @@ export const metadata: Metadata = {
   title: "SkillCirqle",
   description: "Teach what you know, learn what you don't.",
   icons: {
-    icon: '/favicon.svg'
+    icon: "/favicon.svg",
+  },
+  keywords: [
+    "SkillCirqle",
+    "SkillCirqle website",
+    "social learning",
+    "student collaboration",
+    "learning community",
+    "skill sharing",
+  ],
+  verification: {
+    google: "o69Wow980Wxey5Z8w21CIYc29IDAKOEbUp0W6dgzuAY",
   },
 };
 
@@ -33,7 +44,10 @@ export default function RootLayout({
           href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
           rel="stylesheet"
         />
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,200,0,0&icon_names=check_circle" />
+        <link
+          rel="stylesheet"
+          href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,200,0,0&icon_names=check_circle"
+        />
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}

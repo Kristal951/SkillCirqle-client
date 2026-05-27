@@ -68,6 +68,7 @@ const SignUp = () => {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [hasAcceptedPolicies, setHasAcceptedPolicies] = useState(false);
 
   const { fetchUser } = useAuthStore();
   const router = useRouter();
@@ -75,7 +76,7 @@ const SignUp = () => {
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    if (!name || !email || !password) {
+    if (!name || !email || !password || !hasAcceptedPolicies) {
       toast.error("Please fill in all fields");
       return;
     }
@@ -179,8 +180,38 @@ const SignUp = () => {
                 onChange={(e) => setPassword(e.target.value)}
               />
 
+              <div className="flex items-start gap-3 w-full">
+                <input
+                  type="checkbox"
+                  checked={hasAcceptedPolicies}
+                  onChange={(e) => setHasAcceptedPolicies(e.target.checked)}
+                  id="terms-checkbox"
+                  className="mt-1 h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary cursor-pointer"
+                />
+                <label
+                  htmlFor="terms-checkbox"
+                  className="text-sm text-text-secondary select-none cursor-pointer leading-tight"
+                >
+                  I read, understood, and accepted the{" "}
+                  <a
+                    href="/terms"
+                    className="font-medium text-text-primary underline underline-offset-4 hover:text-primary transition-colors"
+                  >
+                    Terms of Service
+                  </a>{" "}
+                  and{" "}
+                  <a
+                    href="/privacy"
+                    className="font-medium text-text-primary underline underline-offset-4 hover:text-primary transition-colors"
+                  >
+                    Privacy Policy
+                  </a>
+                  .
+                </label>
+              </div>
+
               <button
-                disabled={loading}
+                disabled={loading || !hasAcceptedPolicies}
                 type="submit"
                 className="w-full disabled:opacity-70 bg-primary text-white p-3 rounded-md font-medium hover:brightness-110 active:scale-[0.98] transition text-sm sm:text-base flex justify-center items-center"
               >
