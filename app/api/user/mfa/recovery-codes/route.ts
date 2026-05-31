@@ -56,3 +56,20 @@ export async function POST() {
     return Response.json({ error: "Internal server error" }, { status: 500 });
   }
 }
+
+export async function DELETE() {
+  const supabase = await createSupabaseServer();
+  const user = await getServerUser();
+  if (!user) {
+    return Response.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  try {
+    await supabase.from("mfa_recovery_codes").delete().eq("user_id", user.id);
+
+    return Response.json({ success: true });
+  } catch (error) {
+    console.error("Error deleting recovery codes:", error);
+    return Response.json({ error: "Internal server error" }, { status: 500 });
+  }
+}

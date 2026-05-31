@@ -6,6 +6,7 @@ import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
 import { changePassword } from "@/lib/changePassword";
 import { toast } from "@/lib/toast";
 import Spinner from "../ui/Spinner";
+import { useRouter } from "next/navigation";
 
 export default function PasswordModal({
   showPasswordModal,
@@ -18,6 +19,7 @@ export default function PasswordModal({
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const router = useRouter();
 
   const [showCurrent, setShowCurrent] = useState(false);
   const [showNew, setShowNew] = useState(false);
@@ -64,6 +66,8 @@ export default function PasswordModal({
     try {
       const supabase = getSupabaseBrowserClient();
 
+      const { data: factorsData } = await supabase.auth.mfa.listFactors();
+
       const { data: userData } = await supabase.auth.getUser();
 
       const email = userData.user?.email;
@@ -76,8 +80,16 @@ export default function PasswordModal({
       });
 
       if (loginError) {
-        console.log(loginError)
+        console.log(loginError);
         toast.error("Current password is incorrect");
+        return;
+      }
+
+      const hasMFA = factorsData?.totp?.some((f) => f.status === "verified");
+
+      if (hasMFA) {
+        sessionStorage.setItem("pendingPasswordChange", newPassword);
+        router.push("/auth/mfa/verify?next=/settings");
         return;
       }
 
@@ -91,7 +103,7 @@ export default function PasswordModal({
       setShowPasswordModal(false);
     } catch (err) {
       console.error(err);
-      alert("Something went wrong");
+      toast.error("Something went wrong");
     } finally {
       setLoading(false);
     }
@@ -100,7 +112,6 @@ export default function PasswordModal({
   return (
     <div
       className="fixed inset-0 z-90 flex items-center justify-center bg-black/60 backdrop-blur-md p-4 transition-all animate-in fade-in duration-300"
-      onClick={() => setShowPasswordModal(false)}
       role="dialog"
       aria-modal="true"
     >

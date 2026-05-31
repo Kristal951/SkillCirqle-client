@@ -111,6 +111,8 @@ const SignIn = () => {
           "Login failed",
           "Please check your internet connection and try again.",
         );
+      } else if(error.code === "email_not_confirmed"){
+         router.push(`/auth/verify-email?email=${encodeURIComponent(email)}`);
       } else {
         toast.error("Login failed", error.message);
       }

@@ -7,11 +7,15 @@ import { toast } from "@/lib/toast";
 import { useAuthStore } from "@/store/useAuthStore";
 import { Lock, Mail, User, Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import React, { useState, ChangeEvent, FormEvent } from "react";
-import CheckMail from "../check-mail/page";
+import { useRouter, useSearchParams } from "next/navigation";
+import React, {
+  useState,
+  ChangeEvent,
+  FormEvent,
+  useRef,
+  useEffect,
+} from "react";
 
-// Typed Props for InputField
 interface InputFieldProps {
   icon: React.ElementType;
   type: string;
@@ -20,6 +24,7 @@ interface InputFieldProps {
   isPassword?: boolean;
   value: string;
   onChange: (e: ChangeEvent<HTMLInputElement>) => void;
+  ref?: React.Ref<HTMLInputElement>;
 }
 
 const InputField = ({
@@ -29,6 +34,7 @@ const InputField = ({
   id,
   isPassword,
   value,
+  ref,
   onChange,
 }: InputFieldProps) => {
   const [show, setShow] = useState(false);
@@ -41,6 +47,7 @@ const InputField = ({
 
       <input
         id={id}
+        ref={ref}
         type={isPassword ? (show ? "text" : "password") : type}
         placeholder={placeholder}
         value={value}
@@ -63,15 +70,17 @@ const InputField = ({
 };
 
 const SignUp = () => {
+  const searchParams = useSearchParams();
   const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState(searchParams.get("email") || "");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [hasAcceptedPolicies, setHasAcceptedPolicies] = useState(false);
+  const emailInputRef = useRef<HTMLInputElement>(null);
+  const router = useRouter();
 
   const { fetchUser } = useAuthStore();
-  const router = useRouter();
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -90,10 +99,10 @@ const SignUp = () => {
 
       toast.success(`Hi ${name}!`, "Welcome to the Cirqle.");
 
-      // router.replace("/onboarding");
       setIsSubmitted(true);
     } catch (error: any) {
       console.error("Signup Error:", error);
+
       const errorMessages: Record<string, { title: string; desc: string }> = {
         "auth/email-already-in-use": {
           title: "Invalid Email",
@@ -120,13 +129,11 @@ const SignUp = () => {
     }
   };
 
-  if (isSubmitted) {
-    return (
-      <div className="min-h-screen bg-background">
-        <CheckMail email={email} />
-      </div>
-    );
-  }
+  useEffect(() => {
+    if (isSubmitted) {
+      router.push(`/auth/verify-email?email=${encodeURIComponent(email)}`);
+    }
+  }, [isSubmitted]);
 
   return (
     <div className="min-h-screen w-full flex items-center justify-center bg-background px-4 sm:px-6 lg:px-8 py-6">
@@ -164,6 +171,7 @@ const SignUp = () => {
               <InputField
                 id="email"
                 icon={Mail}
+                ref={emailInputRef}
                 type="email"
                 placeholder="Email Address"
                 value={email}

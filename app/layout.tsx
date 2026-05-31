@@ -15,7 +15,8 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "SkillCirqle",
-  description: "Teach what you know, learn what you don't.",
+  description:
+    "SkillCirqle is a social learning and skill-sharing platform where people teach what they know and learn from others.",
   icons: {
     icon: "/favicon.svg",
   },

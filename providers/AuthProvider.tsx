@@ -47,6 +47,17 @@ export default function AuthProvider({
   }, [setUser, setTokens, setTotal, setStep]);
 
   useEffect(() => {
+    const handleStorage = (e: StorageEvent) => {
+      if (e.key === "supabase_recovery_in_progress" && e.newValue === "true") {
+        supabase.auth.signOut({ scope: "local" });
+      }
+    };
+
+    window.addEventListener("storage", handleStorage);
+    return () => window.removeEventListener("storage", handleStorage);
+  }, []);
+
+  useEffect(() => {
     let mounted = true;
 
     const { data: authListener } = supabase.auth.onAuthStateChange(
@@ -59,6 +70,8 @@ export default function AuthProvider({
 
         if (event === "SIGNED_IN") {
           await fetchUser();
+          setLoading(false); 
+          return;
         }
 
         if (event === "SIGNED_OUT") {

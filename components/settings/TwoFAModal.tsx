@@ -9,6 +9,9 @@ import TwoFactorSetup from "./MfaSetup";
 import TwoFactorVerify from "./TwoFactorVerify";
 import { useAuthStore } from "@/store/useAuthStore";
 import RecoveryCodesView from "./RecoveryCodesView";
+import { useRouter } from "next/navigation";
+import CheckMail from "@/app/auth/verify-email/page";
+import VerifyMFA from "@/app/auth/mfa/verify/page";
 
 export type Step =
   | "loading"
@@ -33,10 +36,12 @@ export default function TwoFAModal({
   const [secret, setSecret] = useState<string | null>(null);
   const [factorId, setFactorId] = useState<string | null>(null);
   const [recoveryCodes, setRecoveryCodes] = useState<string[]>([]);
+  const [showMFAModal, setShowMFAModal] = useState(false);
 
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
   const initializedRef = useRef(false);
+  const router = useRouter();
 
   useEffect(() => {
     if (!open) {
@@ -195,20 +200,24 @@ export default function TwoFAModal({
 
   const disableMFA = async () => {
     if (!factorId) return;
-
     setLoading(true);
-
     try {
-      const { error } = await supabase.auth.mfa.unenroll({
-        factorId,
-      });
+      const { data: factorsData } = await supabase.auth.mfa.listFactors();
+      const hasMFA = factorsData?.totp?.some((f) => f.status === "verified");
+      console.log(hasMFA, "hassa");
 
+      if (hasMFA) {
+        console.log("pushing");
+        sessionStorage.setItem("disablingMFA", factorId);
+        // router.push("/auth/mfa/verify?next=/settings");
+        setShowMFAModal(true);
+        return;
+      }
+
+      const { error } = await supabase.auth.mfa.unenroll({ factorId });
       if (error) throw error;
 
-      await fetch("/api/user/mfa/recovery-codes", {
-        method: "DELETE",
-      });
-
+      await fetch("/api/user/mfa/recovery-codes", { method: "DELETE" });
       setRecoveryCodes([]);
       setFactorId(null);
       setStep("setup");
@@ -319,7 +328,7 @@ export default function TwoFAModal({
                 type="button"
                 onClick={disableMFA}
                 disabled={loading}
-                className="w-full max-w-sm  disabled:opacity-50 disabled:cursor-not-allowed py-3 text-xs bg-red-500/5 hover:bg-red-500 border border-red-500/20 hover:border-red-500 text-red-500 hover:text-white rounded-xl font-bold tracking-wide transition-all duration-200 active:scale-[0.98]"
+                className="w-full max-w-sm flex gap-2 items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed py-3 text-xs bg-red-500/5 hover:bg-red-500 border border-red-500/20 hover:border-red-500 text-red-500 hover:text-white rounded-xl font-bold tracking-wide transition-all duration-200 active:scale-[0.98]"
               >
                 {loading && <Spinner size={20} />}
                 Disable Two-Factor Authentication
@@ -353,6 +362,19 @@ export default function TwoFAModal({
           </button>
         )}
       </div>
+
+      {showMFAModal && (
+        <VerifyMFA
+          reason="disable_mfa"
+          next="/settings"
+          onSuccess={() => {
+            setShowMFAModal(false);
+            setFactorId(null);
+            setStep("setup");
+          }}
+          onClose={() => setShowMFAModal(false)}
+        />
+      )}
     </div>
   );
 }

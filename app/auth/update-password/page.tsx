@@ -49,34 +49,28 @@ export default function UpdatePasswordPage() {
     validSession;
 
   useEffect(() => {
-    if (initialized.current) return;
-    initialized.current = true;
+  if (initialized.current) return;
+  initialized.current = true;
 
-    const exchangeCode = async () => {
-      try {
-        const code = searchParams.get("code");
-        if (!code) {
-          setValidSession(false);
-          return;
-        }
-
-        const { error } = await supabase.auth.exchangeCodeForSession(code);
-        if (error) {
-          console.error(error);
-          setValidSession(false);
-        } else {
-          setValidSession(true);
-        }
-      } catch (error) {
-        console.error(error);
+  const checkSession = async () => {
+    try {
+      const error = searchParams.get("error");
+      if (error) {
         setValidSession(false);
-      } finally {
-        setCheckingSession(false);
+        return;
       }
-    };
 
-    exchangeCode();
-  }, [searchParams, supabase]);
+      const { data: { session } } = await supabase.auth.getSession();
+      setValidSession(!!session);
+    } catch {
+      setValidSession(false);
+    } finally {
+      setCheckingSession(false);
+    }
+  };
+
+  checkSession();
+}, []);
 
   const handleUpdatePassword = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -106,10 +100,7 @@ export default function UpdatePasswordPage() {
     return (
       <div className="w-full min-h-screen bg-background flex items-center justify-center p-4">
         <div className="flex flex-col items-center gap-4 text-center">
-          <div className="relative flex items-center justify-center w-12 h-12">
-            <div className="absolute w-full h-full border-2 border-zinc-800 rounded-full" />
-            <div className="absolute w-full h-full border-2 border-t-emerald-500 border-r-transparent border-b-transparent border-l-transparent rounded-full animate-spin" />
-          </div>
+          <Spinner size={24} />
           <div className="space-y-1">
             <p className="text-sm font-medium text-text-primary">
               Verifying security token
@@ -142,7 +133,7 @@ export default function UpdatePasswordPage() {
           </div>
 
           <button
-            onClick={() => router.push("/forgot-password")}
+            onClick={() => router.push("/auth/forgot-password")}
             className="w-full h-11 rounded-xl bg-primary/80 hover:bg-primary text-text-primary text-xs font-semibold tracking-wide flex items-center justify-center gap-2 transition-all active:scale-[0.98] shadow-lg shadow-black/20"
           >
             Request New Link

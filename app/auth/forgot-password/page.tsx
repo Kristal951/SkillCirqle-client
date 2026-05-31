@@ -1,12 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import {
-  Mail,
-  ChevronRight,
-  CheckCircle2,
-  X,
-} from "lucide-react";
+import { Mail, ChevronRight, CheckCircle2, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
 
@@ -21,6 +16,7 @@ export default function ResetPasswordPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log("Submitting email for password reset:", window.location.origin);
 
     if (!email) return;
 
@@ -29,7 +25,7 @@ export default function ResetPasswordPage() {
       setErrorMessage("");
 
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/auth/update-password`,
+        redirectTo: `${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/confirm-code?next=/auth/update-password`,
       });
 
       if (error) {
@@ -71,10 +67,7 @@ export default function ResetPasswordPage() {
               </p>
             </div>
 
-            <form
-              onSubmit={handleSubmit}
-              className="flex flex-col gap-4 mt-2"
-            >
+            <form onSubmit={handleSubmit} className="flex flex-col gap-4 mt-2">
               <div className="flex flex-col gap-2">
                 <label
                   htmlFor="email"
@@ -118,7 +111,6 @@ export default function ResetPasswordPage() {
                 ) : (
                   <>
                     Send Link
-
                     <ChevronRight
                       size={14}
                       className="transition-transform group-hover:translate-x-0.5"
@@ -141,16 +133,13 @@ export default function ResetPasswordPage() {
 
               <p className="text-xs sm:text-sm text-text-secondary/70 max-w-[320px] mx-auto leading-relaxed font-medium">
                 We emailed a secure password reset link to{" "}
-                <span className="text-text-primary font-bold">
-                  {email}
-                </span>
-                .
+                <span className="text-text-primary font-bold">{email}</span>.
               </p>
             </div>
 
             <button
               onClick={() => setIsSubmitted(false)}
-              className="text-xs text-primary font-bold hover:underline pt-2"
+              className="text-xs text-text-secondary hover:text-text-primary font-bold hover:underline pt-2"
             >
               Didn&apos;t receive email? Try again
             </button>
