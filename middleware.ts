@@ -32,7 +32,10 @@ export async function middleware(request: NextRequest) {
   } = await supabase.auth.getSession();
 
   const path = request.nextUrl.pathname;
-  const isAuthPage = path.startsWith("/auth") && !path.startsWith("/auth/mfa");
+  const isUpdatePasswordPage = path === "/auth/update-password";
+  const isAuthPage = path.startsWith("/auth") && 
+  !path.startsWith("/auth/mfa") && 
+  !isUpdatePasswordPage;
   const isVerifyEmailPage = path.startsWith("/auth/verify-email");
   const isMfaRoute = path.startsWith("/auth/mfa");
   const isProtectedRoute = ["/dashboard", "/onboarding"].some((p) =>
