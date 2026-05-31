@@ -1,3 +1,4 @@
+import Image from "next/image";
 import React from "react";
 
 const Footer = () => {
@@ -19,14 +20,25 @@ const Footer = () => {
       link: "/legal/community_guidelines",
     },
   ];
-  
+
   return (
     <footer className="w-full bg-background-base border-t border-divider py-10 px-4 sm:px-6 md:px-8">
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center md:items-start justify-between gap-8">
         <div className="flex flex-col items-center md:items-start gap-2 text-center md:text-left">
-          <h1 className="text-lg font-bold text-transparent bg-linear-to-r from-primary to-accent bg-clip-text">
-            SkillCirqle
-          </h1>
+          <div className=" w-max h-max flex items-center gap-1">
+            <Image
+              src="/SkillCirqle.webp"
+              alt="SkillCirqle"
+              width={24}
+              height={27}
+              priority
+            />
+
+            <h1 className="text-lg font-bold text-transparent bg-linear-to-r from-primary to-accent bg-clip-text">
+              SkillCirqle
+            </h1>
+          </div>
+
           <p className="text-text-secondary text-sm max-w-xs">
             © 2026 Skill Cirqle. All rights reserved.
           </p>

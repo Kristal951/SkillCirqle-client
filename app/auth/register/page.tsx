@@ -136,7 +136,17 @@ const SignUp = () => {
   }, [isSubmitted]);
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center bg-background px-4 sm:px-6 lg:px-8 py-6">
+    <div className="min-h-screen w-full relative flex items-center justify-center bg-background px-4 sm:px-6 lg:px-8 py-6">
+      <Link
+        href="/"
+        className="absolute top-6 left-4 flex items-center gap-1.5 h-9 px-3.5 rounded-md border border-text-secondary/50 bg-background-secondary text-text-secondary hover:bg-text-secondary/10 transition-all duration-200 text-sm"
+        aria-label="Back to Home"
+      >
+        <span className="material-symbols-outlined text-[18px] leading-none">
+          arrow_back
+        </span>
+        <span>Home</span>
+      </Link>
       <div className="w-full max-w-6xl grid md:bg-surface rounded-xl md:shadow-lg grid-cols-1 md:grid-cols-2 overflow-hidden">
         <div className="hidden md:block relative">
           <img

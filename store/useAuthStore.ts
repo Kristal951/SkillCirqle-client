@@ -65,7 +65,7 @@ export const useAuthStore = create<AuthState>()(
 
           socket?.disconnect();
 
-          await fetch("/api/auth/logout", {
+          await fetch("/api/auth/user/logout", {
             method: "POST",
           });
 

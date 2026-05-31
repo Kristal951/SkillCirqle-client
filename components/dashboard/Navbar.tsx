@@ -26,7 +26,13 @@ const Navbar = ({ setIsSideBarOpen }: NavbarProps) => {
   return (
     <div className="md:left-64 left-0 bg-background/90 fixed right-0 backdrop-blur-md h-16 flex justify-end items-center md:justify-end lg:justify-end border-b border-border/20 px-4">
       <div className="w-full flex items-center md:hidden lg:hidden gap-1">
-        <img src="/SkillCirqle.svg" alt="" className="w-6 h-6" />
+        <Image
+          src="/SkillCirqle.webp"
+          alt="SkillCirqle"
+          width={24}
+          height={27}
+          priority
+        />
         <h1 className="text-[16px] text-transparent font-bold tracking-tight bg-linear-to-r from-primary to-accent bg-clip-text truncate ">
           SkillCirqle
         </h1>

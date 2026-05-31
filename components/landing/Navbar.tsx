@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { Menu, X } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 
 const Navbar = () => {
   const [open, setOpen] = useState(false);
@@ -11,8 +12,16 @@ const Navbar = () => {
     <nav className="fixed top-0 left-0 w-full h-16 z-50 bg-background-base/80 backdrop-blur-md border-b border-divider">
       <div className="w-full mx-auto h-full px-4 sm:px-6 flex items-center justify-between">
         <div className="flex items-center gap-1 cursor-pointer">
-         <img src="/SkillCirqle.svg" alt="" className="w-9 h-9" />
-          <h1 className="text-xl text-transparent font-bold tracking-tight bg-linear-to-r from-primary to-accent bg-clip-text truncate">SkillCirqle</h1>
+          <Image
+            src="/SkillCirqle.webp"
+            alt="SkillCirqle"
+            width={24}
+            height={27}
+            priority
+          />
+          <h1 className="text-xl text-transparent font-bold tracking-tight bg-linear-to-r from-primary to-accent bg-clip-text truncate">
+            SkillCirqle
+          </h1>
         </div>
 
         <div className=" flex items-center md:gap-3">

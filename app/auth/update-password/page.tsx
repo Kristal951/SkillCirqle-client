@@ -49,28 +49,38 @@ export default function UpdatePasswordPage() {
     validSession;
 
   useEffect(() => {
-  if (initialized.current) return;
-  initialized.current = true;
+    if (initialized.current) return;
+    initialized.current = true;
 
-  const checkSession = async () => {
-    try {
-      const error = searchParams.get("error");
-      if (error) {
+    const checkSession = async () => {
+      try {
+        const hash = window.location.hash;
+        if (hash.includes("error=")) {
+          setValidSession(false);
+          setCheckingSession(false);
+          return;
+        }
+
+        const error = searchParams.get("error");
+        if (error) {
+          setValidSession(false);
+          setCheckingSession(false);
+          return;
+        }
+
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
+        setValidSession(!!session);
+      } catch {
         setValidSession(false);
-        return;
+      } finally {
+        setCheckingSession(false);
       }
+    };
 
-      const { data: { session } } = await supabase.auth.getSession();
-      setValidSession(!!session);
-    } catch {
-      setValidSession(false);
-    } finally {
-      setCheckingSession(false);
-    }
-  };
-
-  checkSession();
-}, []);
+    checkSession();
+  }, []);
 
   const handleUpdatePassword = async (e: React.FormEvent) => {
     e.preventDefault();
