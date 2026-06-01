@@ -1,4 +1,5 @@
 import { useOnboardingStore } from "@/store/useOnboardingStore";
+import Image from "next/image";
 import Link from "next/link";
 import React from "react";
 
@@ -11,7 +12,19 @@ const Header = () => {
 
   return (
     <div className="w-full bg-background flex justify-between items-center px-6 py-4">
-      <h1 className="text-2xl font-semibold text-white">SkillCirqle</h1>
+      <div className=" w-max h-max flex items-center gap-1">
+        <Image
+          src="/SkillCirqle.webp"
+          alt="SkillCirqle"
+          width={24}
+          height={27}
+          priority
+        />
+
+        <h1 className="text-lg font-bold text-transparent bg-linear-to-r from-primary to-accent bg-clip-text">
+          SkillCirqle
+        </h1>
+      </div>
 
       {safeStep > 0 ? (
         <div className="md:flex hidden items-center gap-4">

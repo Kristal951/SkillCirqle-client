@@ -105,6 +105,10 @@ body {
   }
 }
 
+  .icon-filled {
+    font-variation-settings: 'FILL' 1;
+  }
+
 html {
   transition:
     background-color 0.3s ease,

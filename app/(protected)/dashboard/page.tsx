@@ -161,7 +161,7 @@ export default function Dashboard() {
 
   return (
     <div className="w-full mx-auto md:px-6 py-8 flex flex-col gap-16">
-      {!isCompleted && (
+      {/* {!isCompleted && (
         <div className="w-full p-6 md:p-8 rounded-3xl border border-accent/20 bg-linear-to-br from-accent/6 to-transparent flex flex-col lg:flex-row items-center justify-between gap-8 shadow-sm">
           <div className="flex items-center gap-5">
             <div className="p-3 rounded-xl bg-accent/15 text-accent">
@@ -202,7 +202,7 @@ export default function Dashboard() {
             </button>
           </div>
         </div>
-      )}
+      )} */}
 
       {/* <section className="relative w-full p-4 md:p-10 bg-primary rounded-md overflow-hidden">
         <div className="relative z-10 flex flex-col gap-4 text-primary-foreground">

@@ -24,30 +24,31 @@ export default function OnboardingLayout({
   const router = useRouter();
   const pathname = usePathname();
 
-  useEffect(() => {
-    if (!isHydrated) return;
+  useEffect(() => {3
+    // if (!isHydrated) return;
 
-    if (!user?.id) {
-      router.replace("/auth/signin");
-      return;
-    }
+    // if (!user?.id) {
+    //   router.replace("/auth/signin");
+    //   return;
+    // }
 
     setTotalSteps(3);
-    getUserCurrentStepFromDB();
+    // getUserCurrentStepFromDB();
   }, [isHydrated, user?.id]);
 
   useEffect(() => {
-    if (!isHydrated || isLoadingStep || !user?.id || user?.has_onboarded) return;
-    if (typeof step !== "number") return;
+    // !isHydrated || isLoadingStep || !user?.id || 
+    if (user?.has_onboarded) return;
+    // if (typeof step !== "number") return;
 
-    const target = step === 0 ? "/onboarding" : `/onboarding/step-${step}`;
+    // const target = step === 0 ? "/onboarding" : `/onboarding/step-${step}`;
 
-    if (pathname !== target) {
-      const t = setTimeout(() => {
-        router.replace(target);
-      }, 50);
-      return () => clearTimeout(t);
-    }
+    // if (pathname !== target) {
+    //   const t = setTimeout(() => {
+    //     router.replace(target);
+    //   }, 50);
+    //   return () => clearTimeout(t);
+    // }
   }, [step, pathname, isHydrated, isLoadingStep, user?.id, user?.has_onboarded]);
 
   if (!isHydrated || isLoadingStep) {
@@ -63,9 +64,7 @@ export default function OnboardingLayout({
   return (
     <div className="h-screen w-full flex flex-col">
       <Header />
-      <div className="py-3 md:pt-0 w-full">
-        <MobileStepper />
-      </div>
+      
       <main className="flex-1 py-4 overflow-y-auto">{children}</main>
     </div>
   );
