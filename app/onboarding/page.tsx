@@ -5,8 +5,9 @@ import { ArrowRight, ShieldCheck, Globe, User, Coins } from "lucide-react";
 import { useOnboardingNavigation } from "@/lib/onboarding";
 import Spinner from "@/components/ui/Spinner";
 import { useOnboardingStore } from "@/store/useOnboardingStore";
-import { KeyboardEvent, useState } from "react";
+import { KeyboardEvent, MouseEvent, useState } from "react";
 import { toast } from "@/lib/toast";
+import { useRouter } from "next/navigation";
 
 const Onboarding = () => {
   const { user } = useAuthStore();
@@ -16,13 +17,14 @@ const Onboarding = () => {
     user?.name ||
     "Member";
   const firstName = displayName.split(" ")[0];
-  const { handleMoveToNextOnboardingStep, loading } = useOnboardingNavigation();
-  const { updateUserOnboardingStepInDB } = useOnboardingStore();
+  const { updateUser } = useAuthStore();
+  const router = useRouter();
 
   const [teachInput, setTeachInput] = useState("");
   const [learnInput, setLearnInput] = useState("");
   const [teachSkills, setTeachSkills] = useState<string[]>([]);
   const [learnSkills, setLearnSkills] = useState<string[]>([]);
+  const [loading, setLoading] = useState(false);
 
   const handleAddSkill = (
     value: string,
@@ -63,6 +65,47 @@ const Onboarding = () => {
     setSkills: React.Dispatch<React.SetStateAction<string[]>>,
   ) => {
     setSkills(skills.filter((_, i) => i !== index));
+  };
+
+  const handleSubmit = async (e: MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      const res = await fetch("/api/user/skills/add", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          teachSkills,
+          learnSkills,
+        }),
+      });
+
+      if (!res.ok) {
+        toast.error("Failed to complete onboarding");
+        return;
+      }
+
+      const success = await updateUser({
+        skills_to_teach: teachSkills,
+        skills_to_learn: learnSkills,
+        has_onboarded: true,
+      });
+
+      if (!success) {
+        toast.error("Failed to complete onboarding");
+        return;
+      }
+
+      router.replace("/onboarding/onboardingCompleted");
+    } catch (error) {
+      console.error(error);
+      toast.error("Something went wrong");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -159,183 +202,224 @@ const Onboarding = () => {
     //   </div>
     // </div>
     <div className="w-full h-full p-6 flex flex-col gap-10">
-  {/* Core Landing Titles */}
-  <div className="flex flex-col gap-1 mb-4 items-center justify-center">
-    <h1 className="text-4xl font-bold text-text-primary">
-      Define your curriculum
-    </h1>
-    <p className="text-text-secondary text-sm">
-      Connect your experience with your learning goals.
-    </p>
-  </div>
-
-  {/* Layout Columns Wrapper */}
-  <div className="w-full flex items-start justify-center gap-8 flex-col lg:flex-row">
-    
-    {/* CARD 1: SKILLS TO TEACH */}
-    <div className="max-w-xl w-full bg-surface/50 p-6 border border-border/50 rounded-xl">
-      <div className="w-full">
-        <div className="w-full flex items-end justify-between">
-          <div className="flex w-full flex-col gap-1">
-            <h2 className="text-xl font-bold text-text-primary">
-              What skills can you teach?
-            </h2>
-            <p className="text-text-secondary text-sm">
-              Add up to 5 skills you're proficient in.
-            </p>
-          </div>
-          <div>
-            <p className="uppercase text-xs font-semibold text-text-secondary tracking-wide">
-              {teachSkills.length}/5
-            </p>
-          </div>
-        </div>
-
-        {/* Input Bar */}
-        <div className="w-full flex flex-col mt-6">
-          <div className="w-full flex bg-surface/50 items-center rounded-xl pl-3 pr-1 py-1 border border-transparent focus-within:border-primary/50 transition-all overflow-hidden">
-            <div className="w-8 h-8 flex items-center justify-center shrink-0">
-              <span className="material-symbols-outlined text-muted text-xl">
-                psychology
-              </span>
-            </div>
-
-            <input
-              value={teachInput}
-              onChange={(e) => setTeachInput(e.target.value)}
-              onKeyDown={(e) =>
-                handleKeyDown(e, teachInput, teachSkills, setTeachSkills, setTeachInput)
-              }
-              type="text"
-              placeholder="e.g: React.js, Public Speaking...."
-              aria-label="Search teaching skills"
-              className="w-full px-3 py-2 bg-transparent outline-none text-sm placeholder:text-muted"
-            />
-
-            <button
-              disabled={!teachSkills || teachSkills.length >= 5 || !teachInput.trim()}
-              onClick={() => handleAddSkill(teachInput, teachSkills, setTeachSkills, setTeachInput)}
-              className="bg-primary text-primary-foreground text-sm font-medium px-4 py-2 rounded-lg transition-colors whitespace-nowrap hover:bg-primary/90 disabled:opacity-50 disabled:pointer-events-none disabled:cursor-not-allowed"
-            >
-              Add Skill
-            </button>
-          </div>
-
-          {/* Active Skills Stack */}
-          <div className="w-full flex flex-col gap-2.5 px-1 pt-6">
-            {teachSkills.map((skill, i) => (
-              <div
-                key={i}
-                className="flex items-center justify-between gap-4 bg-primary/10 w-full border border-primary/30 text-text-primary text-sm font-medium pl-4 pr-2 py-2.5 rounded-lg transition-all hover:border-primary/50 hover:bg-primary/15"
-              >
-                <span className="truncate">{skill}</span>
-
-                <div className="w-max flex gap-3 items-center shrink-0">
-                  <button
-                    type="button"
-                    className="text-xs flex items-center gap-1.5 bg-background border border-border hover:bg-muted/10 text-text-primary px-2.5 py-1 rounded-md font-medium transition-colors"
-                  >
-                    <span className="material-symbols-outlined icon-filled text-[14px]!">
-                      verified
-                    </span>
-                    Verify
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => removeSkill(i, teachSkills, setTeachSkills)}
-                    className="w-7 h-7 flex items-center justify-center rounded-full group hover:bg-rose-500/10 text-muted transition-colors"
-                    aria-label={`Remove ${skill}`}
-                  >
-                    <span className="material-symbols-outlined text-base group-hover:text-rose-500 transition-colors">
-                      close
-                    </span>
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
+      <div className="flex flex-col gap-1 mb-4 items-center justify-center">
+        <h1 className="text-4xl font-bold text-text-primary">
+          Define your curriculum
+        </h1>
+        <p className="text-text-secondary text-sm">
+          Connect your experience with your learning goals.
+        </p>
       </div>
-    </div>
 
-    {/* CARD 2: SKILLS TO LEARN */}
-    <div className="max-w-xl w-full bg-surface/50 p-6 border border-border/50 rounded-xl">
-      <div className="w-full">
-        <div className="w-full flex items-end justify-between">
-          <div className="flex flex-col gap-1">
-            <h2 className="text-xl font-bold text-text-primary">
-              What skills do you want to learn?
-            </h2>
-            <p className="text-text-secondary text-sm">
-              Add up to 5 skills you want to master.
-            </p>
-          </div>
-          <div>
-            <p className="uppercase text-xs font-semibold text-text-secondary tracking-wide">
-              {learnSkills.length}/5
-            </p>
-          </div>
-        </div>
-
-        {/* Input Bar */}
-        <div className="w-full flex flex-col mt-6">
-          <div className="w-full flex bg-surface/50 items-center rounded-xl pl-3 pr-1 py-1 border border-transparent focus-within:border-accent/50 transition-all overflow-hidden">
-            <div className="w-8 h-8 flex items-center justify-center shrink-0">
-              <span className="material-symbols-outlined text-muted text-xl">
-                school
-              </span>
+      <div className="w-full flex items-start justify-center gap-8 flex-col lg:flex-row">
+        <div className="max-w-xl w-full bg-surface/50 p-6 border border-border/50 rounded-xl">
+          <div className="w-full">
+            <div className="w-full flex items-end justify-between">
+              <div className="flex w-full flex-col gap-1">
+                <h2 className="text-xl font-bold text-text-primary">
+                  What skills can you teach?
+                </h2>
+                <p className="text-text-secondary text-sm">
+                  Add up to 5 skills you're proficient in.
+                </p>
+              </div>
+              <div>
+                <p className="uppercase text-xs font-semibold text-text-secondary tracking-wide">
+                  {teachSkills.length}/5
+                </p>
+              </div>
             </div>
 
-            <input
-              value={learnInput}
-              onChange={(e) => setLearnInput(e.target.value)}
-              onKeyDown={(e) =>
-                handleKeyDown(e, learnInput, learnSkills, setLearnSkills, setLearnInput)
-              }
-              type="text"
-              placeholder="e.g: Photography, Cybersecurity...."
-              aria-label="Search target learning skills"
-              className="w-full px-3 py-2 bg-transparent outline-none text-sm placeholder:text-muted"
-            />
+            <div className="w-full flex flex-col mt-6">
+              <div className="w-full flex bg-surface/50 items-center rounded-xl pl-3 pr-1 py-1 border border-transparent focus-within:border-primary/50 transition-all overflow-hidden">
+                <div className="w-8 h-8 flex items-center justify-center shrink-0">
+                  <span className="material-symbols-outlined text-muted text-xl">
+                    psychology
+                  </span>
+                </div>
 
-            <button
-              disabled={!learnSkills || learnSkills.length >= 5 || !learnInput.trim()}
-              onClick={() => handleAddSkill(learnInput, learnSkills, setLearnSkills, setLearnInput)}
-              className="bg-accent text-accent-foreground text-sm font-medium px-4 py-2 rounded-lg transition-colors whitespace-nowrap hover:bg-accent/90 disabled:opacity-50 disabled:pointer-events-none disabled:cursor-not-allowed"
-            >
-              Add Skill
-            </button>
-          </div>
-
-          {/* Target Skills Stack */}
-          <div className="w-full flex flex-col gap-2.5 px-1 pt-6">
-            {learnSkills.map((skill, i) => (
-              <div
-                key={i}
-                className="flex items-center justify-between gap-4 bg-accent/10 w-full border border-accent/30 text-text-primary text-sm font-medium pl-4 pr-2 py-2.5 rounded-lg transition-all hover:border-accent/50 hover:bg-accent/15"
-              >
-                <span className="truncate">{skill}</span>
+                <input
+                  value={teachInput}
+                  onChange={(e) => setTeachInput(e.target.value)}
+                  onKeyDown={(e) =>
+                    handleKeyDown(
+                      e,
+                      teachInput,
+                      teachSkills,
+                      setTeachSkills,
+                      setTeachInput,
+                    )
+                  }
+                  type="text"
+                  placeholder="e.g: React, Public Speaking...."
+                  aria-label="Search teaching skills"
+                  className="w-full px-3 py-2 bg-transparent outline-none text-sm placeholder:text-muted"
+                />
 
                 <button
                   type="button"
-                  onClick={() => removeSkill(i, learnSkills, setLearnSkills)}
-                  className="w-7 h-7 flex items-center justify-center rounded-full group hover:bg-rose-500/10 text-muted transition-colors"
-                  aria-label={`Remove ${skill}`}
+                  disabled={
+                    !teachSkills ||
+                    teachSkills.length >= 5 ||
+                    !teachInput.trim()
+                  }
+                  onClick={() =>
+                    handleAddSkill(
+                      teachInput,
+                      teachSkills,
+                      setTeachSkills,
+                      setTeachInput,
+                    )
+                  }
+                  className="bg-primary text-primary-foreground text-sm font-medium px-4 py-2 rounded-lg transition-colors whitespace-nowrap hover:bg-primary/90 disabled:opacity-50 disabled:pointer-events-none disabled:cursor-not-allowed"
                 >
-                  <span className="material-symbols-outlined text-base group-hover:text-rose-500 transition-colors">
-                    close
-                  </span>
+                  Add Skill
                 </button>
               </div>
-            ))}
+
+              <div className="w-full flex flex-col gap-2.5 px-1 pt-6">
+                {teachSkills.map((skill, i) => (
+                  <div
+                    key={i}
+                    className="flex items-center justify-between gap-4 bg-primary/10 w-full border border-primary/30 text-text-primary text-sm font-medium pl-4 pr-2 py-2.5 rounded-lg transition-all hover:border-primary/50 hover:bg-primary/15"
+                  >
+                    <span className="truncate">{skill}</span>
+
+                    <div className="w-max flex gap-3 items-center shrink-0">
+                      <button
+                        type="button"
+                        className="text-xs flex items-center gap-1.5 bg-background border border-border hover:bg-muted/10 text-text-primary px-2.5 py-1 rounded-md font-medium transition-colors"
+                      >
+                        <span className="material-symbols-outlined icon-filled text-[14px]!">
+                          verified
+                        </span>
+                        Verify
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() =>
+                          removeSkill(i, teachSkills, setTeachSkills)
+                        }
+                        className="w-7 h-7 flex items-center justify-center rounded-full group hover:bg-rose-500/10 text-muted transition-colors"
+                        aria-label={`Remove ${skill}`}
+                      >
+                        <span className="material-symbols-outlined text-base group-hover:text-rose-500 transition-colors">
+                          close
+                        </span>
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="max-w-xl w-full bg-surface/50 p-6 border border-border/50 rounded-xl">
+          <div className="w-full">
+            <div className="w-full flex items-end justify-between">
+              <div className="flex flex-col gap-1">
+                <h2 className="text-xl font-bold text-text-primary">
+                  What skills do you want to learn?
+                </h2>
+                <p className="text-text-secondary text-sm">
+                  Add up to 5 skills you want to master.
+                </p>
+              </div>
+              <div>
+                <p className="uppercase text-xs font-semibold text-text-secondary tracking-wide">
+                  {learnSkills.length}/5
+                </p>
+              </div>
+            </div>
+
+            <div className="w-full flex flex-col mt-6">
+              <div className="w-full flex bg-surface/50 items-center rounded-xl pl-3 pr-1 py-1 border border-transparent focus-within:border-accent/50 transition-all overflow-hidden">
+                <div className="w-8 h-8 flex items-center justify-center shrink-0">
+                  <span className="material-symbols-outlined text-muted text-xl">
+                    school
+                  </span>
+                </div>
+
+                <input
+                  value={learnInput}
+                  onChange={(e) => setLearnInput(e.target.value)}
+                  onKeyDown={(e) =>
+                    handleKeyDown(
+                      e,
+                      learnInput,
+                      learnSkills,
+                      setLearnSkills,
+                      setLearnInput,
+                    )
+                  }
+                  type="text"
+                  placeholder="e.g: Photography, Cybersecurity...."
+                  aria-label="Search target learning skills"
+                  className="w-full px-3 py-2 bg-transparent outline-none text-sm placeholder:text-muted"
+                />
+
+                <button
+                  type="button"
+                  disabled={
+                    !learnSkills ||
+                    learnSkills.length >= 5 ||
+                    !learnInput.trim()
+                  }
+                  onClick={() =>
+                    handleAddSkill(
+                      learnInput,
+                      learnSkills,
+                      setLearnSkills,
+                      setLearnInput,
+                    )
+                  }
+                  className="bg-accent text-accent-foreground text-sm font-medium px-4 py-2 rounded-lg transition-colors whitespace-nowrap hover:bg-accent/90 disabled:opacity-50 disabled:pointer-events-none disabled:cursor-not-allowed"
+                >
+                  Add Skill
+                </button>
+              </div>
+
+              <div className="w-full flex flex-col gap-2.5 px-1 pt-6">
+                {learnSkills.map((skill, i) => (
+                  <div
+                    key={i}
+                    className="flex items-center justify-between gap-4 bg-accent/10 w-full border border-accent/30 text-text-primary text-sm font-medium pl-4 pr-2 py-2.5 rounded-lg transition-all hover:border-accent/50 hover:bg-accent/15"
+                  >
+                    <span className="truncate">{skill}</span>
+
+                    <button
+                      type="button"
+                      onClick={() =>
+                        removeSkill(i, learnSkills, setLearnSkills)
+                      }
+                      className="w-7 h-7 flex items-center justify-center rounded-full group hover:bg-rose-500/10 text-muted transition-colors"
+                      aria-label={`Remove ${skill}`}
+                    >
+                      <span className="material-symbols-outlined text-base group-hover:text-rose-500 transition-colors">
+                        close
+                      </span>
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
       </div>
-    </div>
 
-  </div>
-</div>
+      <div className="w-full flex items-center justify-end mt-auto pt-4 border-t border-border/30">
+        <button
+          type="button"
+          onClick={(e) => handleSubmit(e)}
+          disabled={loading}
+          className="bg-primary disable:opacity-50 text-primary-foreground hover:bg-primary/90 px-6 py-2.5 rounded-xl font-medium text-sm transition-colors shadow-sm"
+        >
+          {loading ? <Spinner size={20} /> : "Finish"}
+        </button>
+      </div>
+    </div>
   );
 };
 

@@ -3,6 +3,7 @@ export type OnboardingRewardResponse = {
   tokens?: number;
   message?: string;
   error?: string;
+  code?: string;
 };
 
 export interface TokenState {

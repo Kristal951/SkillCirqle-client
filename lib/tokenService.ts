@@ -14,10 +14,16 @@ export async function awardTokens({
       .from("token_transactions")
       .select("id")
       .eq("user_id", userId)
-      .eq("reason", reason)
-      .maybeSingle();
+      .eq("reason", reason);
 
-    if (existing) throw new Error("ALREADY_REWARDED");
+    if (existing?.length) {
+      return {
+        success: false,
+        code: "ALREADY_REWARDED",
+        tokens: 0,
+        totalEarned:0
+      };
+    }
   }
 
   const { error } = await supabaseAdmin.from("token_transactions").insert({
@@ -35,9 +41,21 @@ export async function awardTokens({
     .eq("id", userId)
     .single();
 
+  const { error: walletError } = await supabaseAdmin
+    .from("profiles")
+    .update({
+      wallet: {
+        skillTokens: (profile?.wallet?.skillTokens ?? 0) + amount,
+        totalEarned: (profile?.wallet?.totalEarned ?? 0) + amount,
+      },
+    })
+    .eq("id", userId);
+
+  if (walletError) throw walletError;
+
   return {
-    tokens: profile?.wallet?.skillTokens ?? 0,
-    totalEarned: profile?.wallet?.totalEarned ?? 0,
+    tokens: (profile?.wallet?.skillTokens ?? 0) + amount,
+    totalEarned: (profile?.wallet?.totalEarned ?? 0) + amount,
   };
 }
 
@@ -50,22 +68,18 @@ export async function spendTokens({
   amount: number;
   reason: string;
 }) {
-  // 1. Check balance first
   const { data: profile } = await supabaseAdmin
     .from("profiles")
     .select("wallet")
     .eq("id", userId)
     .single();
 
-  // Ensure wallet exists and check against the current balance
   const currentBalance = profile?.wallet?.skillTokens ?? 0;
 
   if (currentBalance < amount) {
     throw new Error("INSUFFICIENT_TOKENS");
   }
 
-  // 2. Log spend (Trigger handles the subtraction automatically)
-  // We use -Math.abs to guarantee the number is negative in the DB
   const { error } = await supabaseAdmin.from("token_transactions").insert({
     user_id: userId,
     amount: -Math.abs(amount),

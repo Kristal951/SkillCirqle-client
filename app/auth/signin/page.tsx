@@ -4,7 +4,7 @@ import Spinner from "@/components/ui/Spinner";
 import { loginWithEmail } from "@/lib/auth-client";
 import { toast } from "@/lib/toast";
 import { useMFAStore } from "@/store/useMFAStore";
-import { Mail, Lock, Eye, EyeOff } from "lucide-react";
+import { Mail, Lock, Eye, EyeOff, X } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import React, { useState } from "react";
@@ -125,13 +125,10 @@ const SignIn = () => {
     <div className="min-h-screen w-full flex items-center justify-center bg-background px-4 sm:px-6 lg:px-8 py-6 relative">
       <Link
         href="/"
-        className="absolute top-6 left-4 flex items-center gap-1.5 h-9 px-3.5 rounded-md border border-text-secondary/50 bg-background-secondary text-text-secondary hover:bg-text-secondary/10 transition-all duration-200 text-sm"
+        className="absolute top-6 right-4 flex items-center gap-1.5 p-1 rounded-full border border-text-secondary/50 bg-background-secondary text-text-secondary hover:bg-text-secondary/10 transition-all duration-200 text-sm"
         aria-label="Back to Home"
       >
-        <span className="material-symbols-outlined text-[18px] leading-none">
-          arrow_back
-        </span>
-        <span>Home</span>
+        <X size={18}/>
       </Link>
 
       <div className="w-full max-w-6xl grid md:bg-surface rounded-xl md:shadow-lg grid-cols-1 md:grid-cols-2 overflow-hidden">

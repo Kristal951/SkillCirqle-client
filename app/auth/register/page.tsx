@@ -5,7 +5,7 @@ import Spinner from "@/components/ui/Spinner";
 import { signUpWithEmail } from "@/lib/auth-client";
 import { toast } from "@/lib/toast";
 import { useAuthStore } from "@/store/useAuthStore";
-import { Lock, Mail, User, Eye, EyeOff } from "lucide-react";
+import { Lock, Mail, User, Eye, EyeOff, X } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import React, {
@@ -139,13 +139,10 @@ const SignUp = () => {
     <div className="min-h-screen w-full relative flex items-center justify-center bg-background px-4 sm:px-6 lg:px-8 py-6">
       <Link
         href="/"
-        className="absolute top-6 left-4 flex items-center gap-1.5 h-9 px-3.5 rounded-md border border-text-secondary/50 bg-background-secondary text-text-secondary hover:bg-text-secondary/10 transition-all duration-200 text-sm"
+        className="absolute top-6 right-4 flex items-center gap-1.5 p-1 rounded-full border border-text-secondary/50 bg-background-secondary text-text-secondary hover:bg-text-secondary/10 transition-all duration-200 text-sm"
         aria-label="Back to Home"
       >
-        <span className="material-symbols-outlined text-[18px] leading-none">
-          arrow_back
-        </span>
-        <span>Home</span>
+        <X size={18} />
       </Link>
       <div className="w-full max-w-6xl grid md:bg-surface rounded-xl md:shadow-lg grid-cols-1 md:grid-cols-2 overflow-hidden">
         <div className="hidden md:block relative">
@@ -198,7 +195,7 @@ const SignUp = () => {
                 onChange={(e) => setPassword(e.target.value)}
               />
 
-              <div className="flex items-start gap-3 w-full">
+              {/* <div className="flex items-start gap-3 w-full">
                 <input
                   type="checkbox"
                   checked={hasAcceptedPolicies}
@@ -226,7 +223,7 @@ const SignUp = () => {
                   </a>
                   .
                 </label>
-              </div>
+              </div> */}
 
               <button
                 disabled={loading || !hasAcceptedPolicies}
@@ -247,15 +244,35 @@ const SignUp = () => {
 
             <LoginWithGoogleButton loading={loading} setLoading={setLoading} />
 
-            <p className="text-xs sm:text-sm text-text-surface text-center">
-              Already have an account?{" "}
-              <Link
-                href="/auth/signin"
-                className="text-primary font-medium hover:underline"
-              >
-                Login
-              </Link>
-            </p>
+            <div className="flex flex-col items-center justify-center gap-3 w-full">
+              <p className="text-xs sm:text-sm text-text-surface text-center">
+                Already have an account?{" "}
+                <Link
+                  href="/auth/signin"
+                  className="text-primary font-medium hover:underline"
+                >
+                  Login
+                </Link>
+              </p>
+
+              <p className="text-xs text-text-secondary text-center leading-tight max-w-lg">
+                By clicking "Create Account" you agree to our{" "}
+                <Link
+                  href="/terms"
+                  className="font-medium text-text-primary hover:underline underline-offset-4 transition-colors"
+                >
+                  Terms of Service
+                </Link>{" "}
+                and{" "}
+                <Link
+                  href="/privacy"
+                  className="font-medium text-text-primary hover:underline underline-offset-4 transition-colors"
+                >
+                  Privacy Policy
+                </Link>
+                .
+              </p>
+            </div>
           </div>
         </div>
       </div>

@@ -14,17 +14,14 @@ export default function OnboardingLayout({
   children: React.ReactNode;
 }) {
   const { user, isHydrated } = useAuthStore();
-  const { 
-    setTotalSteps, 
-    step, 
-    getUserCurrentStepFromDB, 
-    isLoadingStep 
-  } = useOnboardingStore();
-  
+  const { setTotalSteps, step, getUserCurrentStepFromDB, isLoadingStep } =
+    useOnboardingStore();
+
   const router = useRouter();
   const pathname = usePathname();
 
-  useEffect(() => {3
+  useEffect(() => {
+    3;
     // if (!isHydrated) return;
 
     // if (!user?.id) {
@@ -37,8 +34,10 @@ export default function OnboardingLayout({
   }, [isHydrated, user?.id]);
 
   useEffect(() => {
-    // !isHydrated || isLoadingStep || !user?.id || 
-    if (user?.has_onboarded) return;
+    // !isHydrated || isLoadingStep || !user?.id ||
+    if (user?.has_onboarded) {
+      router.replace("/onboarding/onboardingCompleted");
+    }
     // if (typeof step !== "number") return;
 
     // const target = step === 0 ? "/onboarding" : `/onboarding/step-${step}`;
@@ -49,7 +48,14 @@ export default function OnboardingLayout({
     //   }, 50);
     //   return () => clearTimeout(t);
     // }
-  }, [step, pathname, isHydrated, isLoadingStep, user?.id, user?.has_onboarded]);
+  }, [
+    step,
+    pathname,
+    isHydrated,
+    isLoadingStep,
+    user?.id,
+    user?.has_onboarded,
+  ]);
 
   if (!isHydrated || isLoadingStep) {
     return (
@@ -63,8 +69,8 @@ export default function OnboardingLayout({
 
   return (
     <div className="h-screen w-full flex flex-col">
-      <Header />
-      
+      <Header userOnboarded={user?.has_onboarded} />
+
       <main className="flex-1 py-4 overflow-y-auto">{children}</main>
     </div>
   );
