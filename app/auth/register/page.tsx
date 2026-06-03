@@ -76,7 +76,6 @@ const SignUp = () => {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
-  const [hasAcceptedPolicies, setHasAcceptedPolicies] = useState(false);
   const emailInputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
 
@@ -85,7 +84,7 @@ const SignUp = () => {
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    if (!name || !email || !password || !hasAcceptedPolicies) {
+    if (!name || !email || !password) {
       toast.error("Please fill in all fields");
       return;
     }
@@ -226,7 +225,7 @@ const SignUp = () => {
               </div> */}
 
               <button
-                disabled={loading || !hasAcceptedPolicies}
+                disabled={loading}
                 type="submit"
                 className="w-full disabled:opacity-70 bg-primary text-white p-3 rounded-md font-medium hover:brightness-110 active:scale-[0.98] transition text-sm sm:text-base flex justify-center items-center"
               >

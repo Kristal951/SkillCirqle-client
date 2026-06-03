@@ -13,7 +13,6 @@ export async function GET(request: NextRequest) {
     ? `http://${forwardedHost ?? new URL(request.url).host}`
     : origin;
 
-    console.log(baseUrl)
 
   if (code) {
     const supabase = await createSupabaseServer();

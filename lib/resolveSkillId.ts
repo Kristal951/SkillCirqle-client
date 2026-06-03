@@ -1,24 +1,25 @@
 import { supabaseAdmin } from "./supabaseAdmin";
 
 export async function resolveSkillId(skill: string) {
+  const normalizedSkill = skill.trim().replace(/\s+/g, " ");
 
   const { data: existing } = await supabaseAdmin
     .from("skills")
-    .select("*")
-    .eq("title", skill)
-    .single();
+    .select("id")
+    .eq("title", normalizedSkill)
+    .maybeSingle();
 
   if (existing) return existing.id;
 
-  const slug = skill.toLowerCase().replace(/\s+/g, "-");
+  const slug = normalizedSkill.toLowerCase().replace(/\s+/g, "-");
 
   const { data: created, error } = await supabaseAdmin
     .from("skills")
     .insert({
-      title: skill,
+      title: normalizedSkill,
       slug,
     })
-    .select()
+    .select("id")
     .single();
 
   if (error) throw error;

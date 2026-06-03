@@ -7,6 +7,8 @@ import {
   optimizeCloudinaryUrl,
   uploadToCloudinary,
 } from "@/lib/uploadToCloudinary";
+import { addUserSkillsToRequiredTables } from "@/lib/addUserSkillsToRequiredTables";
+import { toast } from "@/lib/toast";
 
 const ProfileDetailsPanel = () => {
   const { user, updateUser, isUpdatingUser } = useAuthStore();
@@ -28,6 +30,7 @@ const ProfileDetailsPanel = () => {
     learnSkills: [] as string[],
     avatar: null as string | null,
   });
+  const [loading, setLoading] = useState(false);
 
   const fallbackAvatar = `https://ui-avatars.com/api?name=${encodeURIComponent(
     name || "User",
@@ -165,8 +168,6 @@ const ProfileDetailsPanel = () => {
     return true;
   }, [avatarRemoved, hasRealAvatar]);
 
-  console.log(avatarRemoved)
-
   const discardChanges = () => {
     setName(initialState.name);
     setBio(initialState.bio);
@@ -190,7 +191,13 @@ const ProfileDetailsPanel = () => {
 
   const handleSave = async () => {
     try {
-      let avatarUrl: string | null = user?.avatar_url || fallbackAvatar;
+      const prevUser = useAuthStore.getState().user;
+
+      if (!prevUser) return;
+
+      setLoading(true);
+
+      let avatarUrl = prevUser.avatar_url || fallbackAvatar;
 
       if (avatarFile) {
         const res = await uploadToCloudinary(avatarFile);
@@ -201,13 +208,40 @@ const ProfileDetailsPanel = () => {
         avatarUrl = fallbackAvatar;
       }
 
-      await updateUser({
+      const skillsRes = await addUserSkillsToRequiredTables(
+        teachSkills,
+        learnSkills,
+      );
+
+      if (!skillsRes.success) {
+        toast.error(skillsRes.message);
+        return;
+      }
+
+      useAuthStore.setState({
+        user: {
+          ...prevUser,
+          name,
+          bio,
+          skills_to_teach: teachSkills,
+          skills_to_learn: learnSkills,
+          avatar_url: avatarUrl,
+        },
+      });
+
+      const userRes = await updateUser({
         name,
         bio,
         skills_to_teach: teachSkills,
         skills_to_learn: learnSkills,
         avatar_url: avatarUrl,
       });
+
+      if (!userRes.success) {
+        useAuthStore.setState({ user: prevUser });
+        toast.error(userRes.message || "Failed to update profile");
+        return;
+      }
 
       setInitialState({
         name,
@@ -217,9 +251,12 @@ const ProfileDetailsPanel = () => {
         avatar: avatarUrl,
       });
 
+      toast.success("Profile updated successfully");
       reset();
     } catch (err) {
       console.error(err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -247,9 +284,7 @@ const ProfileDetailsPanel = () => {
             <h3 className="text-lg font-bold text-text-primary">
               Profile Picture
             </h3>
-            <p className="text-xs text-text-secondary">
-              PNG, JPG or GIF.
-            </p>
+            <p className="text-xs text-text-secondary">PNG, JPG or GIF.</p>
           </div>
           <div className="flex flex-wrap gap-3 justify-center sm:justify-start items-center">
             <label
@@ -346,7 +381,9 @@ const ProfileDetailsPanel = () => {
       <div className="space-y-6">
         <div className="flex flex-col gap-3">
           <div className="flex gap-2 items-center text-text-secondary/80 px-1">
-            <span className="material-symbols-outlined text-primary">psychology</span>
+            <span className="material-symbols-outlined text-primary">
+              psychology
+            </span>
             <h2 className="text-xs font-bold uppercase tracking-wider">
               Skills I can teach
             </h2>
@@ -397,7 +434,9 @@ const ProfileDetailsPanel = () => {
 
         <div className="flex flex-col gap-3">
           <div className="flex gap-2 items-center text-text-secondary/80 px-1">
-            <span className="material-symbols-outlined text-accent">school</span>
+            <span className="material-symbols-outlined text-accent">
+              school
+            </span>
             <h2 className="text-xs font-bold uppercase tracking-wider">
               Skills I want to learn
             </h2>

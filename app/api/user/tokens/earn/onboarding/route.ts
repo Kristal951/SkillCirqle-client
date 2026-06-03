@@ -1,6 +1,4 @@
-
-import { getServerUser } from "@/lib/auth-server";
-import { createSupabaseServer } from "@/lib/supabaseServer";
+import { getServerUser } from "@/lib/server-auth";
 import { awardTokens } from "@/lib/tokenService";
 import { NextResponse } from "next/server";
 

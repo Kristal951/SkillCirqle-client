@@ -1,37 +1,77 @@
 "use client";
 
 import SkillCard from "@/components/dashboard/SkillCard";
-import Spinner from "@/components/ui/Spinner";
-import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
+import SkillCardSkeleton from "@/components/dashboard/SkillCardSkeletonLoader";
+import { getTrendingSkills } from "@/lib/getTrendSkills";
 import { useAuthStore } from "@/store/useAuthStore";
-import { useOnboardingStore } from "@/store/useOnboardingStore";
-import { useTokenStore } from "@/store/useTokenStore";
-import {
-  Search,
-  MapPin,
-  History,
-  ChevronRight,
-  Gift,
-  ArrowRight,
-  Trophy,
-  ChevronLeft,
-  Coins,
-  Timer,
-  Users,
-} from "lucide-react";
-import { useTheme } from "next-themes";
-import { useRouter } from "next/navigation";
+import { ArrowRight } from "lucide-react";
+import { useEffect, useState } from "react";
 
 export default function Dashboard() {
-  const router = useRouter();
-  const { step, totalSteps } = useOnboardingStore();
+  const [skillData, setSkillData] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
+  const {user} = useAuthStore()
 
-  const safeStep = step ?? 0;
+  const loadTrendingSkills = async () => {
+  setIsLoading(true);
 
-  const progressPercentage =
-    totalSteps > 0 ? Math.round((safeStep / totalSteps) * 100) : 0;
+  try {
+    const res = await fetch("/api/user/skills/trending");
 
-  const isCompleted = progressPercentage >= 100;
+    if (!res.ok) {
+      throw new Error("Failed to load trending skills");
+    }
+
+    const data = await res.json();
+
+    setSkillData(data.skills || []);
+  } catch (error) {
+    setError(
+      error instanceof Error
+        ? error.message
+        : "Failed to load trending skills"
+    );
+  } finally {
+    setIsLoading(false);
+  }
+};
+
+  const loadMatches = async () => {
+    setIsLoading(true);
+    try {
+      const res = await fetch("/api/user/skills/matches?page=1&limit=10");
+
+      if (!res.ok) {
+        throw new Error("Failed to load matches");
+      }
+
+      const data = await res.json();
+      setSkillData(data.skillCards || []); 
+      console.log(data)
+    } catch (error) {
+      console.error("Error loading skill matches:", error);
+      setError(
+        error instanceof Error ? error.message : "An unexpected error occurred",
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+ useEffect(() => {
+  if (!user) return;
+
+  const hasSkills =
+    (user.skills_to_teach?.length ?? 0) > 0 ||
+    (user.skills_to_learn?.length ?? 0) > 0;
+
+  if (hasSkills) {
+    loadMatches();
+  } else {
+    loadTrendingSkills();
+  }
+}, [user]);
 
   const dummySkillData = [
     {
@@ -63,62 +103,62 @@ export default function Dashboard() {
     { title: "Digital Photography", icon: "camera", members: 50 },
   ];
 
-  const dummyEventsData = [
-    {
-      userName: "Aisha",
-      image:
-        "https://lh3.googleusercontent.com/aida-public/AB6AXuBmjuv_nVm-lCMbnW8LyoF02GXMzcLPC7PT691u93WcgaLiEuiNr_m5ZTEDIP6wN1ubrONQ2QaQyC0uIEa91tFCmFnC5QrpiqnQvURwxxmwWKLhyTbmTx04FwJ_o7HAiqgsgjNcgXSISwR9uWe_v9uYz2pmV9QeTPkGgsixSUkvNCr3njZEDu2erLgCiLRgkfWcJ3BYM_25UQiOtsjp0ulrnpM8NiZb6XyL8dhhsMZ-qrYIWrL5tojkyVk9R6IShYjvlRj6pyhOU-jD",
-      event: "completed a skill exchange",
-      skill: "Mastered Docker Mastery",
-      timeStamp: "2h ago",
-    },
-    {
-      userName: "Carlos",
-      image:
-        "https://lh3.googleusercontent.com/aida-public/AB6AXuCnrC_hIgkD5lG0GYlvz_Gd9u5ri4SQCExCzndhqmmSXmrnviPV0alsomAD8UxXPCA72ckoR-E4BoGuhutvQMC1mbyKVmuyE80ZYs0hbeivkhW9FBCn8SwcRkNZjahkVw4aCf77c4ImCPkauIN6XfbQTmRcyQfj2ZTt2Zlg5CYNDpwBxKhC_6UvWf5pMBkd7XsUEFBCy8PGWpdHYwThevBA2KP1DcdKyo4hMi4yO31iSg9lLD67jC3x_1SgDdreKUTi8abIG6YdEDDw",
-      event: "received 5-star rating",
-      skill: "From a mentorship Session",
-      timeStamp: "5h ago",
-    },
-    {
-      userName: "John Doe",
-      image:
-        "https://lh3.googleusercontent.com/aida-public/AB6AXuBmjuv_nVm-lCMbnW8LyoF02GXMzcLPC7PT691u93WcgaLiEuiNr_m5ZTEDIP6wN1ubrONQ2QaQyC0uIEa91tFCmFnC5QrpiqnQvURwxxmwWKLhyTbmTx04FwJ_o7HAiqgsgjNcgXSISwR9uWe_v9uYz2pmV9QeTPkGgsixSUkvNCr3njZEDu2erLgCiLRgkfWcJ3BYM_25UQiOtsjp0ulrnpM8NiZb6XyL8dhhsMZ-qrYIWrL5tojkyVk9R6IShYjvlRj6pyhOU-jD",
-      event: "completed a skill exchange",
-      skill: "Mastered Docker Mastery",
-      timeStamp: "2h ago",
-    },
-  ];
+  // const dummyEventsData = [
+  //   {
+  //     userName: "Aisha",
+  //     image:
+  //       "https://lh3.googleusercontent.com/aida-public/AB6AXuBmjuv_nVm-lCMbnW8LyoF02GXMzcLPC7PT691u93WcgaLiEuiNr_m5ZTEDIP6wN1ubrONQ2QaQyC0uIEa91tFCmFnC5QrpiqnQvURwxxmwWKLhyTbmTx04FwJ_o7HAiqgsgjNcgXSISwR9uWe_v9uYz2pmV9QeTPkGgsixSUkvNCr3njZEDu2erLgCiLRgkfWcJ3BYM_25UQiOtsjp0ulrnpM8NiZb6XyL8dhhsMZ-qrYIWrL5tojkyVk9R6IShYjvlRj6pyhOU-jD",
+  //     event: "completed a skill exchange",
+  //     skill: "Mastered Docker Mastery",
+  //     timeStamp: "2h ago",
+  //   },
+  //   {
+  //     userName: "Carlos",
+  //     image:
+  //       "https://lh3.googleusercontent.com/aida-public/AB6AXuCnrC_hIgkD5lG0GYlvz_Gd9u5ri4SQCExCzndhqmmSXmrnviPV0alsomAD8UxXPCA72ckoR-E4BoGuhutvQMC1mbyKVmuyE80ZYs0hbeivkhW9FBCn8SwcRkNZjahkVw4aCf77c4ImCPkauIN6XfbQTmRcyQfj2ZTt2Zlg5CYNDpwBxKhC_6UvWf5pMBkd7XsUEFBCy8PGWpdHYwThevBA2KP1DcdKyo4hMi4yO31iSg9lLD67jC3x_1SgDdreKUTi8abIG6YdEDDw",
+  //     event: "received 5-star rating",
+  //     skill: "From a mentorship Session",
+  //     timeStamp: "5h ago",
+  //   },
+  //   {
+  //     userName: "John Doe",
+  //     image:
+  //       "https://lh3.googleusercontent.com/aida-public/AB6AXuBmjuv_nVm-lCMbnW8LyoF02GXMzcLPC7PT691u93WcgaLiEuiNr_m5ZTEDIP6wN1ubrONQ2QaQyC0uIEa91tFCmFnC5QrpiqnQvURwxxmwWKLhyTbmTx04FwJ_o7HAiqgsgjNcgXSISwR9uWe_v9uYz2pmV9QeTPkGgsixSUkvNCr3njZEDu2erLgCiLRgkfWcJ3BYM_25UQiOtsjp0ulrnpM8NiZb6XyL8dhhsMZ-qrYIWrL5tojkyVk9R6IShYjvlRj6pyhOU-jD",
+  //     event: "completed a skill exchange",
+  //     skill: "Mastered Docker Mastery",
+  //     timeStamp: "2h ago",
+  //   },
+  // ];
 
-  const dummyChallengesData = [
-    {
-      title: "30-day Coding Challenge",
-      desc: "Sharpen your coding skills with daily challenges and peer feedback.",
-      image:
-        "https://encrypted-tbn3.gstatic.com/images?q=tbn:ANd9GcTxFlB2OU2jordpneCaxfW8WNAWVIlr9m3WEoyjiWg5p4kooUORXQ-Ta5DYhrDH",
-      reward: 15,
-      daysLeft: 10,
-      numberOfParticipants: 120,
-    },
-    {
-      title: "Design a logo in 30 minutes",
-      desc: "Put your design skills to the test with a time-bound logo creation challenge.",
-      image:
-        "https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcT-FxCnZ9-D9D7Jn4meCnqNdrnMeq8uj8grZNAS7kQrCXyvoq6dJj0F3nFHojpm",
-      reward: 30,
-      daysLeft: 15,
-      numberOfParticipants: 120,
-    },
-    {
-      title: "Write a short story in 1 hour",
-      desc: "Challenge your creativity with a one-hour short story writing sprint.",
-      image:
-        "https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcRYvGl9kvwXKnmC6clmSieiKKZc_MdXPKrJ2lbB8VlFifkt8EXPDsw2O-ovEhDx",
-      reward: 20,
-      daysLeft: 5,
-      numberOfParticipants: 120,
-    },
-  ];
+  // const dummyChallengesData = [
+  //   {
+  //     title: "30-day Coding Challenge",
+  //     desc: "Sharpen your coding skills with daily challenges and peer feedback.",
+  //     image:
+  //       "https://encrypted-tbn3.gstatic.com/images?q=tbn:ANd9GcTxFlB2OU2jordpneCaxfW8WNAWVIlr9m3WEoyjiWg5p4kooUORXQ-Ta5DYhrDH",
+  //     reward: 15,
+  //     daysLeft: 10,
+  //     numberOfParticipants: 120,
+  //   },
+  //   {
+  //     title: "Design a logo in 30 minutes",
+  //     desc: "Put your design skills to the test with a time-bound logo creation challenge.",
+  //     image:
+  //       "https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcT-FxCnZ9-D9D7Jn4meCnqNdrnMeq8uj8grZNAS7kQrCXyvoq6dJj0F3nFHojpm",
+  //     reward: 30,
+  //     daysLeft: 15,
+  //     numberOfParticipants: 120,
+  //   },
+  //   {
+  //     title: "Write a short story in 1 hour",
+  //     desc: "Challenge your creativity with a one-hour short story writing sprint.",
+  //     image:
+  //       "https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcRYvGl9kvwXKnmC6clmSieiKKZc_MdXPKrJ2lbB8VlFifkt8EXPDsw2O-ovEhDx",
+  //     reward: 20,
+  //     daysLeft: 5,
+  //     numberOfParticipants: 120,
+  //   },
+  // ];
 
   const dummyCirqleData = [
     {
@@ -239,7 +279,7 @@ export default function Dashboard() {
           </div>
           <div className="relative z-10 flex flex-col gap-1 text-primary-foreground">
             <h1 className="md:text-3xl text-xl font-bold text-text-primary">
-             Find your skill swap
+              Find your skill swap
             </h1>
             <p className="text-lg text-text-secondary">
               Teach what you know, learn what you don't. Zero credits needed
@@ -299,11 +339,13 @@ export default function Dashboard() {
         </div>
 
         <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
-          {dummySkillData.map((info, i) => (
-            <div key={i} className="min-w-75 transition">
-              <SkillCard info={info} />
-            </div>
-          ))}
+          {isLoading
+            ? Array.from({ length: 4 }).map((_, i) => (
+                <SkillCardSkeleton key={i} />
+              ))
+            : skillData.map((info, index) => (
+                <SkillCard key={index} info={info} />
+              ))}
         </div>
       </section>
 

@@ -1,53 +1,83 @@
-import { useTheme } from "next-themes";
-import React from "react";
+"use client";
 
-interface info {
+import { useRouter } from "next/navigation";
+import Image from "next/image";
+import React from "react";
+import { Users2 } from "lucide-react";
+
+interface SkillInfo {
   title: string;
   image: string;
   desc: string;
   usersAmount: number;
+  avatars?: string[];
+  slug?: string;
 }
 
-const SkillCard = ({ info }: { info: info }) => {
-  const { theme } = useTheme();
+interface SkillCardProps {
+  info: SkillInfo;
+}
+
+const SkillCard = ({ info }: SkillCardProps) => {
+  const router = useRouter();
+
   return (
-    <div className={`bg-surface/50 hover:bg-surface ${theme === 'light' ? 'border border-border ' : ''} min-w-50 max-w-90 lg:min-w-75 lg:max-w-100 shrink-0 group rounded-xl overflow-hidden flex flex-col justify-between`}>
-      <div className="h-72 relative">
-        <img
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-          data-alt="Abstract code on dark screen with purple and blue syntax highlighting, glowing tech background"
+    <div className="bg-surface/50 hover:bg-surface border border-border/50 min-w-75 max-w-85 lg:w-100 shrink-0 group rounded-2xl overflow-hidden flex flex-col justify-between hover:border-border hover:shadow-[0_12px_30px_rgba(0,0,0,0.03)] dark:hover:shadow-[0_12px_30px_rgba(var(--primary-rgb),0.04)] transition-all duration-300">
+      <div className="h-52 relative overflow-hidden bg-muted">
+        <Image
           src={info.image}
+          alt={info.title}
+          fill
+          sizes="(max-w-768px) 100vw, 400px"
+          priority
+          className="object-cover group-hover:scale-[1.03] transition-transform duration-700 ease-out"
         />
-      </div>
-      <div className="p-4">
-        <h1
-          className={`${theme === "light" ? "" : "text-white"} text-xl mb-2 font-semibold`}
-        >
-          {info.title}
-        </h1>
-        <p className="text-text-secondary text-sm md:text-lg md:line-clamp-3 leading-relaxed mb-6">
-          {info.desc}
-        </p>
+        <div className="absolute inset-0 bg-linear-to-t from-surface/20 to-transparent pointer-events-none" />
       </div>
 
-      <div className="w-full flex items-center justify-between p-4">
-        <div className="flex -space-x-2">
-          <img
-            className="w-8 h-8 rounded-full border-2 border-surface-container-low"
-            data-alt="Portrait of a creative professional"
-            src="https://lh3.googleusercontent.com/aida-public/AB6AXuC53r0Ufyb764__4Q52fB4VfaGdfXJ5ilSMZPpYqoraP2mT8UeXMnxuK1TwZbqUcbzdqcj-c2PghrvOzVpAyaBSuDHX31tGZjHQL7p4Xbgu5J93icaVN_Op0ezvF7s9m2yWQ-MGlWBulP5-BG_Y9fi2vDmKHxd3Cu1-mJ-lKV9x2O_LDlxcweqI-9q6zvVF2SEf6V3C3lyWjyYxAFupZmtouDvD5bhL0Z2XFMNHGI8itZboS1aY6QhW3vBXJGbKTGwpUijjkgI-VJVb"
-          />
-          <img
-            className="w-8 h-8 rounded-full border-2 border-surface-container-low"
-            data-alt="Portrait of a smiling designer"
-            src="https://lh3.googleusercontent.com/aida-public/AB6AXuAYnqs64z-W6-C3nm4QTHCdUb2xygDU4Dyk545vAYvjfxeyjjVvuzXeLYMw20-R5_tiFawSXAUj0hw20ErplL1MNfR2j4LZWmO0HKGde1i97d45IbbrsZeBLOVP0vYTiXkJ3bJLUqHlm4IMEJXZezUSX3gW2TUOH3fBolsPIzACZk1KBsmCJSnKKiDXlo2q3AvNOleb_cFry10wmldnJJQff6baNOn8OcdPFT4Sv-YjGb9fdcRTpxiRDkU1zT0CwNhvNQbVgL-RTI3X"
-          />
-          <div className="w-8 h-8 rounded-full bg-surface flex items-center justify-center text-[10px] font-bold border-2 border-surface-container-low">
-            +{info.usersAmount}
-          </div>
+      <div className="p-5 flex-1 flex flex-col justify-between">
+        <div>
+          <h3 className="text-text-primary text-lg font-bold tracking-tight mb-2 transition-colors duration-300">
+            {info.title}
+          </h3>
+          <p className="text-text-secondary text-xs md:text-sm line-clamp-3 leading-relaxed">
+            {info.desc}
+          </p>
+        </div>
+      </div>
+
+      <div className="w-full flex items-center justify-between p-5 pt-0 mt-2">
+        <div className="flex items-center">
+          {info.avatars && info.avatars.length > 0 ? (
+            <div className="flex items-center -space-x-2 overflow-hidden transition-transform duration-300 group-hover:translate-x-0.5">
+              {info.avatars.slice(0, 3).map((url, i) => (
+                <img
+                  key={i}
+                  className="w-7 h-7 rounded-full border-2 border-surface object-cover shrink-0 ring-1 ring-border/10"
+                  src={url}
+                  alt="User avatar reference"
+                />
+              ))}
+
+              {info.usersAmount > 3 && (
+                <div className="w-7 h-7 flex items-center justify-center rounded-full bg-muted border-2 border-surface text-[9px] font-bold text-text-secondary shrink-0 select-none tracking-tighter">
+                  +{info.usersAmount - 3}
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="flex items-center gap-1.5 text-text-secondary text-xs font-medium">
+              <Users2 size={14} className="opacity-70" />
+              <span>{info.usersAmount || 0} active</span>
+            </div>
+          )}
         </div>
 
-        <button className="bg-primary/20 text-text-primary px-4 py-2 rounded-lg text-sm font-bold hover:bg-primary hover:text-white transition-all active:scale-95">
+        <button
+          type="button"
+          onClick={() => info.slug && router.push(`/skills/${info.slug}`)}
+          className="bg-primary/10 text-primary group-hover:bg-primary group-hover:text-text-primary px-4 py-2 rounded-xl text-xs font-semibold tracking-wide transition-all duration-200 active:scale-95 shadow-sm shadow-primary/5"
+        >
           View Profiles
         </button>
       </div>

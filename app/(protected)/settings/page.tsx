@@ -7,9 +7,7 @@ import LocalizationSettings from "@/components/settings/LocallizationPanel";
 import NotificationSettings from "@/components/settings/NotificationPanel";
 import TwoFactorAuthPanel from "@/components/settings/TwoFactorAuthPanel";
 import TwoFAModal from "@/components/settings/TwoFAModal";
-import { useAuthStore } from "@/store/useAuthStore";
-import { LogOut, Trash, Trash2, X } from "lucide-react";
-import React, { useEffect, useState } from "react";
+import { useState } from "react";
 import DeleteAccountPanel from "@/components/settings/DeleteAccountPanel";
 import ProfileDetailsPanel from "@/components/settings/ProfileDetailsPanel";
 import SignOutConfirmation from "@/components/settings/LogoutPanel";
@@ -18,8 +16,6 @@ import AppearancePanel from "@/components/settings/AppearancePanel";
 const SettingsPage = () => {
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [show2FaModal, setShow2FaModal] = useState(false);
-
-  const handleLogout = async () => {};
 
   return (
     <div className="w-full h-full px-3 md:px-8 md:py-6 py-4 gap-6 flex flex-col">

@@ -7,7 +7,6 @@ const Header = ({ userOnboarded }: { userOnboarded?: boolean }) => {
   const { step, totalSteps } = useOnboardingStore();
   const safeStep = step ?? 0;
   const safeTotal = totalSteps ?? 0;
-  console.log(userOnboarded);
 
   const progress = safeTotal ? (safeStep / safeTotal) * 100 : 0;
 

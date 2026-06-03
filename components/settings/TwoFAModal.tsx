@@ -204,10 +204,8 @@ export default function TwoFAModal({
     try {
       const { data: factorsData } = await supabase.auth.mfa.listFactors();
       const hasMFA = factorsData?.totp?.some((f) => f.status === "verified");
-      console.log(hasMFA, "hassa");
 
       if (hasMFA) {
-        console.log("pushing");
         sessionStorage.setItem("disablingMFA", factorId);
         // router.push("/auth/mfa/verify?next=/settings");
         setShowMFAModal(true);

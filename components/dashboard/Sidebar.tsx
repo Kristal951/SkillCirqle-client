@@ -88,7 +88,7 @@ const Sidebar = ({ isSideBarOpen, setIsSideBarOpen }: SidebarProps) => {
                 onClick={closeSidebar}
                 className={`flex items-center gap-4 px-3  ${link.onlyOnDesktop ? "hidden md:flex lg:flex" : ""} py-2.5 transition-all duration-200 group relative ${
                   isActive
-                    ? "text-white border-r-2 font-semibold"
+                    ? "text-text-primary border-r-2 font-semibold"
                     : "text-text-secondary hover:bg-secondary hover:text-foreground"
                 }`}
               >
@@ -120,7 +120,7 @@ const Sidebar = ({ isSideBarOpen, setIsSideBarOpen }: SidebarProps) => {
                     {link.title}
                   </span>
                 ) : (
-                  <div className="absolute left-0 -bottom-6 bg-primary text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-100">
+                  <div className="absolute left-0 -bottom-6 bg-primary text-text-primary text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-100">
                     {link.title}
                   </div>
                 )}

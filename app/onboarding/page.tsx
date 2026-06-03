@@ -8,6 +8,7 @@ import { useOnboardingStore } from "@/store/useOnboardingStore";
 import { KeyboardEvent, MouseEvent, useState } from "react";
 import { toast } from "@/lib/toast";
 import { useRouter } from "next/navigation";
+import { addUserSkillsToRequiredTables } from "@/lib/addUserSkillsToRequiredTables";
 
 const Onboarding = () => {
   const { user } = useAuthStore();
@@ -72,19 +73,10 @@ const Onboarding = () => {
     setLoading(true);
 
     try {
-      const res = await fetch("/api/user/skills/add", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          teachSkills,
-          learnSkills,
-        }),
-      });
+      const res = await addUserSkillsToRequiredTables(teachSkills, learnSkills);
 
-      if (!res.ok) {
-        toast.error("Failed to complete onboarding");
+      if (!res.success) {
+        toast.error(res.message);
         return;
       }
 

@@ -312,7 +312,6 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     reply_to,
   }) => {
     if (!content.trim()) return;
-    console.log(content)
 
     const socket = getSocket();
     const tempId = `temp-${Date.now()}`;

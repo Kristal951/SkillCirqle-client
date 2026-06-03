@@ -35,7 +35,9 @@ interface AuthState {
   isAuthenticated: () => boolean;
 
   uploadUserProfilePic: (file: File) => Promise<string | null>;
-  updateUser: (updates: Partial<User>) => Promise<boolean>;
+  updateUser: (
+    updates: Partial<User>,
+  ) => Promise<{ success: boolean; message?: string }>;
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -156,7 +158,12 @@ export const useAuthStore = create<AuthState>()(
       updateUser: async (updates: Partial<User>) => {
         const prevUser = get().user;
 
-        if (!prevUser) return false;
+        if (!prevUser) {
+          return {
+            success: false,
+            message: "User not found in state",
+          };
+        }
 
         set({ isUpdatingUser: true });
 
@@ -167,20 +174,31 @@ export const useAuthStore = create<AuthState>()(
             body: JSON.stringify({ updates }),
           });
 
-          if (!res.ok) throw new Error("Update failed");
+          if (!res.ok) {
+            const errorData = await res.json();
+
+            console.error("Update user failed:", errorData);
+
+            return {
+              success: false,
+              message: errorData.message || "Failed to update user",
+            };
+          }
 
           const { user } = await res.json();
-
           set({ user });
 
-          return true;
-        } catch (error) {
+          return {
+            success: true,
+            message: "Profile updated successfully",
+          };
+        } catch (error: any) {
           console.error("❌ Update user failed:", error);
 
-          // rollback
-          set({ user: prevUser });
-
-          return false;
+          return {
+            success: false,
+            message: error?.message || "Unexpected error occurred",
+          };
         } finally {
           set({ isUpdatingUser: false });
         }
@@ -195,6 +213,5 @@ export const useAuthStore = create<AuthState>()(
     },
   ),
 );
-
 
 // https://chatgpt.com/share/6a102f94-a074-83ea-8e47-54179ec18d74 - for legal documents

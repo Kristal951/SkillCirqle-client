@@ -5,12 +5,12 @@
 ========================= */
 :root {
   /* Base */
-  --color-background-base: #f5f0ff;
-  --color-border: rgba(108, 63, 197, 0.25);
+ --color-background-base: #f8fafc;
+ --color-border: rgba(108, 63, 197, 0.25);
 
   /* Text */
-  --color-text-primary: #1a1a2e;
-  --color-text-secondary: #8b95a1;
+  --color-text-primary: #0f172a;
+  --color-text-secondary: #64748b;
   --color-text-accent: #f4a261;
 
   /* Brand */
