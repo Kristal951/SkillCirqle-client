@@ -34,8 +34,8 @@ export default function AuthProvider({
 
       if (profile) {
         setUser(profile);
-        setTokens(profile?.wallet?.skillTokens ?? 0);
-        setTotal(profile?.wallet?.totalEarned ?? 0);
+        setTokens(profile?.skill_tokens ?? 0);
+        setTotal(profile?.total_earned ?? 0);
         setStep(profile?.onboarding_step ?? 1);
       } else {
         setUser(null);

@@ -158,7 +158,7 @@ export default function UserProfilePage() {
             <h2
               className={`text-3xl font-bold ${theme === "light" ? "" : "text-white"}`}
             >
-              {profile?.wallet?.skillTokens || 0}
+              {profile?.skill_tokens || 0}
             </h2>
             <h3 className="text-sm uppercase tracking-wider font-semibold">
               Credits
@@ -191,7 +191,7 @@ export default function UserProfilePage() {
               </h3>
               <p className="text-xl font-bold">
                 {" "}
-                {profile?.wallet?.skillTokens || 0}
+                {profile?.skill_tokens || 0}
               </p>
             </div>
           </div>

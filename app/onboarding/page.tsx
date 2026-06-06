@@ -33,9 +33,25 @@ const Onboarding = () => {
     setSkills: React.Dispatch<React.SetStateAction<string[]>>,
     setInput: React.Dispatch<React.SetStateAction<string>>,
   ) => {
-    const val = value.trim().replace(/,/g, "");
+    const val = value.trim().replace(/,/g, "")
 
     if (!val) return;
+    const exists = skills.some(
+      (skill) => skill.toLowerCase() === val.toLowerCase(),
+    );
+
+    if (exists) {
+      toast.info("You've already added this skill.");
+      return;
+    }
+    if (learnSkills.includes(val)) {
+      toast.info("This skill is already in your learning list.");
+      return;
+    }
+    if (teachSkills.includes(val)) {
+      toast.info("This skill is already in your teaching list.");
+      return;
+    }
 
     if (skills.includes(val)) return;
 
@@ -47,6 +63,7 @@ const Onboarding = () => {
     setSkills([...skills, val]);
     setInput("");
   };
+
   const handleKeyDown = (
     e: KeyboardEvent<HTMLInputElement>,
     value: string,

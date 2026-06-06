@@ -46,22 +46,16 @@ const LoginWithGoogleButton = ({
       onClick={handleGoogleLogin}
       disabled={loading}
       className={`w-full flex items-center justify-center gap-3 p-3 rounded-md bg-surface border border-white/5 transition text-sm sm:text-base ${
-        loading ? "opacity-70 cursor-not-allowed" : "hover:bg-white/5"
+        loading ? "opacity-60 cursor-not-allowed" : "hover:bg-white/5"
       }`}
     >
-      {!loading && (
-        <img
-          src="https://www.svgrepo.com/show/475656/google-color.svg"
-          alt="google"
-          className="w-5 h-5"
-        />
-      )}
+      <img
+        src="https://www.svgrepo.com/show/475656/google-color.svg"
+        alt="google"
+        className="w-5 h-5"
+      />
 
-      <span className="font-medium">
-        {loading ? "Connecting..." : "Continue with Google"}
-      </span>
-
-      {loading && <Spinner size={20} />}
+      <span className="font-medium">Continue with Google</span>
     </button>
   );
 };

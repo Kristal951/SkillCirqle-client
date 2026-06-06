@@ -14,24 +14,23 @@ export default function OnboardingLayout({
   children: React.ReactNode;
 }) {
   const { user, isHydrated } = useAuthStore();
-  const { setTotalSteps, step, getUserCurrentStepFromDB, isLoadingStep } =
+  const { setTotalSteps, step, isLoadingStep } =
     useOnboardingStore();
 
   const router = useRouter();
   const pathname = usePathname();
 
-  useEffect(() => {
-    3;
-    // if (!isHydrated) return;
+  // useEffect(() => {
+  //   // if (!isHydrated) return;
 
-    // if (!user?.id) {
-    //   router.replace("/auth/signin");
-    //   return;
-    // }
+  //   // if (!user?.id) {
+  //   //   router.replace("/auth/signin");
+  //   //   return;
+  //   // }
 
-    setTotalSteps(3);
-    // getUserCurrentStepFromDB();
-  }, [isHydrated, user?.id]);
+  //   setTotalSteps(3);
+  //   // getUserCurrentStepFromDB();
+  // }, [isHydrated, user?.id]);
 
   useEffect(() => {
     // !isHydrated || isLoadingStep || !user?.id ||
@@ -49,15 +48,11 @@ export default function OnboardingLayout({
     //   return () => clearTimeout(t);
     // }
   }, [
-    step,
-    pathname,
-    isHydrated,
-    isLoadingStep,
-    user?.id,
+    router,
     user?.has_onboarded,
   ]);
 
-  if (!isHydrated || isLoadingStep) {
+  if (!isHydrated) {
     return (
       <div className="h-screen flex items-center justify-center">
         <Spinner size={40} />

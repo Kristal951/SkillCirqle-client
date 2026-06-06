@@ -37,7 +37,7 @@ const SkillCard = ({ info }: SkillCardProps) => {
 
       <div className="p-5 flex-1 flex flex-col justify-between">
         <div>
-          <h3 className="text-text-primary text-lg font-bold tracking-tight mb-2 transition-colors duration-300">
+          <h3 className="text-text-primary text-lg font-bold capitalize tracking-tight mb-1 transition-colors duration-300">
             {info.title}
           </h3>
           <p className="text-text-secondary text-xs md:text-sm line-clamp-3 leading-relaxed">
@@ -50,7 +50,7 @@ const SkillCard = ({ info }: SkillCardProps) => {
         <div className="flex items-center">
           {info.avatars && info.avatars.length > 0 ? (
             <div className="flex items-center -space-x-2 overflow-hidden transition-transform duration-300 group-hover:translate-x-0.5">
-              {info.avatars.slice(0, 3).map((url, i) => (
+              {info.avatars.slice(0, 2).map((url, i) => (
                 <img
                   key={i}
                   className="w-7 h-7 rounded-full border-2 border-surface object-cover shrink-0 ring-1 ring-border/10"
@@ -59,9 +59,9 @@ const SkillCard = ({ info }: SkillCardProps) => {
                 />
               ))}
 
-              {info.usersAmount > 3 && (
-                <div className="w-7 h-7 flex items-center justify-center rounded-full bg-muted border-2 border-surface text-[9px] font-bold text-text-secondary shrink-0 select-none tracking-tighter">
-                  +{info.usersAmount - 3}
+              {info.usersAmount > 2 && (
+                <div className="w-7 h-7 flex items-center justify-center rounded-full bg-background border-2 border-surface text-[12px] font-bold text-text-primary shrink-0 select-none tracking-tighter">
+                  +{info.usersAmount - 2}
                 </div>
               )}
             </div>
@@ -76,7 +76,7 @@ const SkillCard = ({ info }: SkillCardProps) => {
         <button
           type="button"
           onClick={() => info.slug && router.push(`/skills/${info.slug}`)}
-          className="bg-primary/10 text-primary group-hover:bg-primary group-hover:text-text-primary px-4 py-2 rounded-xl text-xs font-semibold tracking-wide transition-all duration-200 active:scale-95 shadow-sm shadow-primary/5"
+          className="bg-primary/10 text-text-primary group-hover:bg-primary group-hover:text-text-primary px-4 py-2 rounded-xl text-xs font-semibold tracking-wide transition-all duration-200 active:scale-95 shadow-sm shadow-primary/5"
         >
           View Profiles
         </button>

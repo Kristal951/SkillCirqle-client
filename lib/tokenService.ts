@@ -1,4 +1,5 @@
-import { supabaseAdmin } from "./supabaseAdmin";
+import { RewardReason } from "@/app/api/user/tokens/earn/route";
+import { supabaseAdmin } from "@/lib/supabaseAdmin";
 
 export async function awardTokens({
   userId,
@@ -7,55 +8,53 @@ export async function awardTokens({
 }: {
   userId: string;
   amount: number;
-  reason: string;
+  reason: RewardReason
 }) {
-  if (reason === "onboarding_reward") {
-    const { data: existing } = await supabaseAdmin
-      .from("token_transactions")
-      .select("id")
-      .eq("user_id", userId)
-      .eq("reason", reason);
+  const claimed_day =
+    reason === "daily_reward"
+      ? new Date().toISOString().split("T")[0]
+      : null;
 
-    if (existing?.length) {
+  // Insert transaction
+  const { error } = await supabaseAdmin
+    .from("token_transactions")
+    .insert({
+      user_id: userId,
+      amount,
+      reason,
+      type: "earn",
+      claimed_day,
+    });
+
+  // Handle duplicate reward attempts
+  if (error) {
+    if (error.code === "23505") {
       return {
         success: false,
         code: "ALREADY_REWARDED",
         tokens: 0,
-        totalEarned:0
+        totalEarned: 0,
       };
     }
+
+    throw error;
   }
 
-  const { error } = await supabaseAdmin.from("token_transactions").insert({
-    user_id: userId,
-    amount,
-    reason,
-    type: "earn",
-  });
-
-  if (error) throw error;
-
-  const { data: profile } = await supabaseAdmin
+  // Trigger has already updated the profile.
+  // Fetch latest balances.
+  const { data: profile, error: profileError } = await supabaseAdmin
     .from("profiles")
-    .select("wallet")
+    .select("skill_tokens, total_earned")
     .eq("id", userId)
     .single();
 
-  const { error: walletError } = await supabaseAdmin
-    .from("profiles")
-    .update({
-      wallet: {
-        skillTokens: (profile?.wallet?.skillTokens ?? 0) + amount,
-        totalEarned: (profile?.wallet?.totalEarned ?? 0) + amount,
-      },
-    })
-    .eq("id", userId);
-
-  if (walletError) throw walletError;
+  if (profileError) {
+    throw profileError;
+  }
 
   return {
-    tokens: (profile?.wallet?.skillTokens ?? 0) + amount,
-    totalEarned: (profile?.wallet?.totalEarned ?? 0) + amount,
+    tokens: profile.skill_tokens,
+    totalEarned: profile.total_earned,
   };
 }
 
@@ -70,11 +69,11 @@ export async function spendTokens({
 }) {
   const { data: profile } = await supabaseAdmin
     .from("profiles")
-    .select("wallet")
+    .select("skill_tokens")
     .eq("id", userId)
     .single();
 
-  const currentBalance = profile?.wallet?.skillTokens ?? 0;
+  const currentBalance = profile?.skill_tokens ?? 0;
 
   if (currentBalance < amount) {
     throw new Error("INSUFFICIENT_TOKENS");

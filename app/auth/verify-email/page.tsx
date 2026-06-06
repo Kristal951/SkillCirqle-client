@@ -3,7 +3,7 @@ import Spinner from "@/components/ui/Spinner";
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
 import { toast } from "@/lib/toast";
 import { AlertCircle, ArrowRight, Mail } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import React, { useEffect, useRef, useState } from "react";
 
 const CheckMail = ({
@@ -11,14 +11,21 @@ const CheckMail = ({
 }: {
   setIsSubmitted: (isSubmitted: boolean) => void;
 }) => {
+  const searchParams = useSearchParams();
+  const emailParam = searchParams.get("email");
   const [email, setEmail] = useState("");
   const [code, setCode] = useState(["", "", "", "", "", ""]);
   const [loading, setLoading] = useState(false);
   const [resending, setResending] = useState(false);
-  const [errorMessage, setErrorMessage] = useState("");
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
   const [countdown, setCountdown] = useState(60);
   const router = useRouter();
+
+  useEffect(() => {
+    if (emailParam) {
+      setEmail(emailParam);
+    }
+  }, []);
 
   useEffect(() => {
     if (countdown <= 0) return;
@@ -66,7 +73,6 @@ const CheckMail = ({
     const supabase = getSupabaseBrowserClient();
 
     setLoading(true);
-    setErrorMessage("");
 
     try {
       const { data, error } = await supabase.auth.verifyOtp({
@@ -92,8 +98,10 @@ const CheckMail = ({
       toast.success("Email verified!", "Your account has been verified.");
       router.replace("/onboarding");
     } catch (err: any) {
-      setErrorMessage(err?.message || "Invalid or expired verification code.");
-
+      toast.error(
+        "Invalid or expired Code",
+        "Try again or request a new code.",
+      );
       setCode(["", "", "", "", "", ""]);
       inputRefs.current[0]?.focus();
     } finally {
@@ -103,7 +111,6 @@ const CheckMail = ({
 
   const handleResend = async () => {
     setResending(true);
-    setErrorMessage("");
     const supabase = getSupabaseBrowserClient();
     try {
       const { error } = await supabase.auth.resend({
@@ -117,7 +124,8 @@ const CheckMail = ({
       setCountdown(60);
       toast.success("New verification code sent");
     } catch (err: any) {
-      setErrorMessage(err?.message || "Failed to resend. Please try again.");
+      console.log(err);
+      toast.error(err?.message);
     } finally {
       setResending(false);
     }
@@ -130,23 +138,22 @@ const CheckMail = ({
   };
 
   const onChangeEmail = () => {
-    setIsSubmitted(false);
     setCode(["", "", "", "", "", ""]);
-    setErrorMessage("");
+    router.push(`/auth/register?email=${encodeURIComponent(email)}`);
   };
 
   return (
     <div className="h-screen w-full bg-background flex items-center justify-center p-4">
-      <div className="w-full max-w-105 bg-surface border border-border rounded-3xl p-8 shadow-2xl flex flex-col items-center gap-6 animate-in zoom-in-95 duration-200">
-        <div className="w-13 h-13 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary">
+      <div className="w-full max-w-105 flex flex-col items-center gap-6 animate-in zoom-in-95 duration-200">
+        {/* <div className="w-13 h-13 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary">
           <Mail size={24} />
-        </div>
+        </div> */}
 
         <div className="text-center flex flex-col gap-1.5">
-          <h2 className="text-3xl font-black tracking-tight text-text-primary">
-            Check your email
+          <h2 className="text-4xl font-bold text-text-primary">
+            Verify your email
           </h2>
-          <p className="text-sm text-text-secondary tracking-wide">
+          <p className="text-base text-text-secondary tracking-wide">
             We sent a 6-digit code to{" "}
             <span className="text-sm font-semibold text-text-primary">
               {maskEmail(email)}.
@@ -155,7 +162,7 @@ const CheckMail = ({
           </p>
         </div>
 
-        <form onSubmit={handleVerify} className="w-full flex flex-col gap-5">
+        <form onSubmit={handleVerify} className="w-full flex flex-col gap-5 mt-5">
           <div className="flex gap-2 justify-center">
             {code.map((digit, i) => (
               <input
@@ -172,26 +179,17 @@ const CheckMail = ({
                 onChange={(e) => handleOtpChange(e.target.value, i)}
                 onKeyDown={(e) => handleKeyDown(e, i)}
                 onPaste={handlePaste}
-                className="w-12 h-14 bg-background/40 border border-border/60 rounded-xl text-center text-2xl font-black text-text-primary focus:border-primary focus:scale-105
+                className="w-14 h-14 bg-surface/20 border border-border/60 rounded-xl text-center text-2xl font-black text-text-primary focus:border-primary focus:scale-105
 focus:shadow-lg
 focus:shadow-primary/10 focus:ring-4 focus:ring-primary/5 transition-all outline-none"
               />
             ))}
           </div>
 
-          <div
-            className={`overflow-hidden transition-all duration-200 ${errorMessage ? "max-h-20 opacity-100" : "max-h-0 opacity-0"}`}
-          >
-            <div className="bg-red-500/5 border border-red-500/10 rounded-2xl px-4 py-3 flex items-start gap-2 text-sm text-red-400 font-medium">
-              <AlertCircle size={16} className="shrink-0 mt-0.5" />
-              <span>{errorMessage}</span>
-            </div>
-          </div>
-
           <button
             type="submit"
             disabled={loading || code.some((d) => !d)}
-            className="w-full h-12 rounded-2xl bg-primary text-text-primary font-black text-xs uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-primary/90 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+            className="w-full h-12 rounded-2xl mt-5 bg-primary text-text-primary font-black text-xs uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-primary/90 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
           >
             {loading ? (
               <Spinner size={20} />

@@ -4,11 +4,11 @@ import Link from "next/link";
 import React from "react";
 
 const Header = ({ userOnboarded }: { userOnboarded?: boolean }) => {
-  const { step, totalSteps } = useOnboardingStore();
-  const safeStep = step ?? 0;
-  const safeTotal = totalSteps ?? 0;
+  // const { step, totalSteps } = useOnboardingStore();
+  // const safeStep = step ?? 0;
+  // const safeTotal = totalSteps ?? 0;
 
-  const progress = safeTotal ? (safeStep / safeTotal) * 100 : 0;
+  // const progress = safeTotal ? (safeStep / safeTotal) * 100 : 0;
 
   return (
     <div className="w-full bg-background flex justify-between items-center px-6 py-4">
@@ -26,7 +26,7 @@ const Header = ({ userOnboarded }: { userOnboarded?: boolean }) => {
         </h1>
       </div>
 
-      {!userOnboarded && (
+      {/* {!userOnboarded && (
         <>
           {safeStep > 0 ? (
             <div className="md:flex hidden items-center gap-4">
@@ -48,16 +48,20 @@ const Header = ({ userOnboarded }: { userOnboarded?: boolean }) => {
                 </span>
               </div>
             </div>
-          ) : (
-            <Link
-              href="/dashboard"
-              className="text-sm font-medium text-text-primary/40 hover:text-text-primary"
-            >
-              Skip for now
-            </Link>
-          )}
-        </>
+          ) : ( */}
+
+      {!userOnboarded && (
+        <Link
+          href="/dashboard"
+          className="text-sm font-medium text-text-primary/40 hover:text-text-primary"
+        >
+          Skip for now
+        </Link>
       )}
+
+      {/* )} */}
+      {/* </> */}
+      {/* )} */}
     </div>
   );
 };

@@ -10,6 +10,7 @@ export interface TokenState {
   tokens: number;
   loading: boolean;
   totalTokensEarned: number;
+  error: string | null;
 
   setTokens: (tokens: number) => void;
   setTotal: (totalTokensEarned: number) => void;

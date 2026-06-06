@@ -2,40 +2,43 @@
 
 import SkillCard from "@/components/dashboard/SkillCard";
 import SkillCardSkeleton from "@/components/dashboard/SkillCardSkeletonLoader";
-import { getTrendingSkills } from "@/lib/getTrendSkills";
 import { useAuthStore } from "@/store/useAuthStore";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Gift } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 export default function Dashboard() {
   const [skillData, setSkillData] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
-  const {user} = useAuthStore()
+  const { user } = useAuthStore();
+  const isCompleted = user?.has_onboarded
+  const router = useRouter()
 
   const loadTrendingSkills = async () => {
-  setIsLoading(true);
+    setIsLoading(true);
 
-  try {
-    const res = await fetch("/api/user/skills/trending");
+    try {
+      const res = await fetch("/api/user/skills/trending");
 
-    if (!res.ok) {
-      throw new Error("Failed to load trending skills");
+      if (!res.ok) {
+        throw new Error("Failed to load trending skills");
+      }
+
+      const data = await res.json();
+
+      setSkillData(data.skillCards || []);
+    } catch (error) {
+      console.log(error)
+      setError(
+        error instanceof Error
+          ? error.message
+          : "Failed to load trending skills",
+      );
+    } finally {
+      setIsLoading(false);
     }
-
-    const data = await res.json();
-
-    setSkillData(data.skills || []);
-  } catch (error) {
-    setError(
-      error instanceof Error
-        ? error.message
-        : "Failed to load trending skills"
-    );
-  } finally {
-    setIsLoading(false);
-  }
-};
+  };
 
   const loadMatches = async () => {
     setIsLoading(true);
@@ -47,8 +50,7 @@ export default function Dashboard() {
       }
 
       const data = await res.json();
-      setSkillData(data.skillCards || []); 
-      console.log(data)
+      setSkillData(data.skillCards || []);
     } catch (error) {
       console.error("Error loading skill matches:", error);
       setError(
@@ -59,49 +61,49 @@ export default function Dashboard() {
     }
   };
 
- useEffect(() => {
-  if (!user) return;
+  useEffect(() => {
+    if (!user) return;
 
-  const hasSkills =
-    (user.skills_to_teach?.length ?? 0) > 0 ||
-    (user.skills_to_learn?.length ?? 0) > 0;
+    const hasSkills =
+      (user.skills_to_teach?.length ?? 0) > 0 ||
+      (user.skills_to_learn?.length ?? 0) > 0;
 
-  if (hasSkills) {
-    loadMatches();
-  } else {
-    loadTrendingSkills();
-  }
-}, [user]);
+    if (hasSkills) {
+      loadMatches();
+    } else {
+      loadTrendingSkills();
+    }
+  }, [user]);
 
-  const dummySkillData = [
-    {
-      title: "AI Foundations",
-      desc: "Master the architecture of Large Language Models and prompt engineering.",
-      usersAmount: 20,
-      image:
-        "https://lh3.googleusercontent.com/aida-public/AB6AXuA9rtp8rZIDXM1BhnUNoy4gi6DrYCxK3IpsKPWdmh5idIHMuc75RbFsV5fi0ehAaB-PxGbefmg3rqtbNIS5uZzuvzApOu6q1XG5JuMu51E0yPxa3p5hgEBWjPpRsWmcDBXgC2ZszP5V3i1IoA57CLwoAZMk7le3ZSz4A9mEXThs_0RSnAGAPi0NGw1EStGClLqmFWDzYz8JOy8PPyB9-O2aaoOqAQxogIOUoGuYwlwsdLTGHpNfAXEa0e_gFSMGPnllYQ3A1sFN8zGk",
-    },
-    {
-      title: "Docker Mastery",
-      desc: "Streamline your development lifecycle by containerizing applications.",
-      usersAmount: 15,
-      image:
-        "https://lh3.googleusercontent.com/aida-public/AB6AXuDhy_Yi6uPcUNeCI_M-taS6jtv16jqeu5Izak1CzyO7t9HRniAO_mUaczmzZK9x775b8AuWtF4JiirPCbzra5Bcw82XLkiycqJlKmdf2j9rt3i8YBorXAJBz6PwxGBxmX3IqUKeOIY_3hxMdVDvN5TX8vJSLeVJpO1kugwVl5MhfClxRrG50PSc4ss0mlSNtycIUZ6fFNIX6lEUtZiXGQRdWnEXZ12bolrG5eZqylNSY2r_wuau1_GQun4_sxVoFR3q2omy0AYWnQ7U",
-    },
-    {
-      title: "Node.js Backend",
-      desc: "Master scalable backend architecture and real-time applications.",
-      usersAmount: 8,
-      image:
-        "https://lh3.googleusercontent.com/aida-public/AB6AXuCx2ndQVl97L3y-9Jje87cpXh3sXzB0sqHNwYQCy92BH4nouwJag0rEUNrYJjxmUcL51oomza-4G1yeCpb7odjGcL77XCX9nQRqwz-3OMkpxI3En500JUGAj7jOjqJ24otZzk3gnFJcjzhzKaErouT5f99k7YeAVlq-1k5e8NVGBwyIfnjGGrqnBcXS3gSsgYRkriCAmTr-EYhNx644Pn8wW4T_7DQCOBE7v8CcYATxYd236YDF8ZUmh0fjwjghTLoP6ukwQ6rfiaYK",
-    },
-  ];
+  // const dummySkillData = [
+  //   {
+  //     title: "AI Foundations",
+  //     desc: "Master the architecture of Large Language Models and prompt engineering.",
+  //     usersAmount: 20,
+  //     image:
+  //       "https://lh3.googleusercontent.com/aida-public/AB6AXuA9rtp8rZIDXM1BhnUNoy4gi6DrYCxK3IpsKPWdmh5idIHMuc75RbFsV5fi0ehAaB-PxGbefmg3rqtbNIS5uZzuvzApOu6q1XG5JuMu51E0yPxa3p5hgEBWjPpRsWmcDBXgC2ZszP5V3i1IoA57CLwoAZMk7le3ZSz4A9mEXThs_0RSnAGAPi0NGw1EStGClLqmFWDzYz8JOy8PPyB9-O2aaoOqAQxogIOUoGuYwlwsdLTGHpNfAXEa0e_gFSMGPnllYQ3A1sFN8zGk",
+  //   },
+  //   {
+  //     title: "Docker Mastery",
+  //     desc: "Streamline your development lifecycle by containerizing applications.",
+  //     usersAmount: 15,
+  //     image:
+  //       "https://lh3.googleusercontent.com/aida-public/AB6AXuDhy_Yi6uPcUNeCI_M-taS6jtv16jqeu5Izak1CzyO7t9HRniAO_mUaczmzZK9x775b8AuWtF4JiirPCbzra5Bcw82XLkiycqJlKmdf2j9rt3i8YBorXAJBz6PwxGBxmX3IqUKeOIY_3hxMdVDvN5TX8vJSLeVJpO1kugwVl5MhfClxRrG50PSc4ss0mlSNtycIUZ6fFNIX6lEUtZiXGQRdWnEXZ12bolrG5eZqylNSY2r_wuau1_GQun4_sxVoFR3q2omy0AYWnQ7U",
+  //   },
+  //   {
+  //     title: "Node.js Backend",
+  //     desc: "Master scalable backend architecture and real-time applications.",
+  //     usersAmount: 8,
+  //     image:
+  //       "https://lh3.googleusercontent.com/aida-public/AB6AXuCx2ndQVl97L3y-9Jje87cpXh3sXzB0sqHNwYQCy92BH4nouwJag0rEUNrYJjxmUcL51oomza-4G1yeCpb7odjGcL77XCX9nQRqwz-3OMkpxI3En500JUGAj7jOjqJ24otZzk3gnFJcjzhzKaErouT5f99k7YeAVlq-1k5e8NVGBwyIfnjGGrqnBcXS3gSsgYRkriCAmTr-EYhNx644Pn8wW4T_7DQCOBE7v8CcYATxYd236YDF8ZUmh0fjwjghTLoP6ukwQ6rfiaYK",
+  //   },
+  // ];
 
-  const dummyAroundYouData = [
-    { title: "Financial Strategy", icon: "data_exploration", members: 42 },
-    { title: "Product Management", icon: "architecture", members: 30 },
-    { title: "Digital Photography", icon: "camera", members: 50 },
-  ];
+  // const dummyAroundYouData = [
+  //   { title: "Financial Strategy", icon: "data_exploration", members: 42 },
+  //   { title: "Product Management", icon: "architecture", members: 30 },
+  //   { title: "Digital Photography", icon: "camera", members: 50 },
+  // ];
 
   // const dummyEventsData = [
   //   {
@@ -160,48 +162,51 @@ export default function Dashboard() {
   //   },
   // ];
 
-  const dummyCirqleData = [
-    {
-      name: "Creative Collective",
-      creditsRequired: 4,
-      image:
-        "https://lh3.googleusercontent.com/aida-public/AB6AXuAq7A_n4G39ZypzBYpFKiNYz_eQKmh4pPjdo1wojPY_vaJa2LUqkCJDeZ68VG-ipyEdofwbuv1dZBK-AohgZyqbL0-n3PfG-pYDVXRdUu9rMRgyJ00SV82X8_QaWRivjZGI50IPWEN4K0VcWj_IEFOIq5nsADSmq-mgLwlYKViLspdAgRogUL8ca3ZLpokOGtAameWB0ma4pCxoIP-YvHmXxzyVxW05RumAMoc-BfBdMJQJHnZeDxOjrf8BKruTe_8dZYKLFn7vfBT4",
-      skills: ["UI Design", "Branding"],
-      users: [
-        "https://lh3.googleusercontent.com/aida-public/AB6AXuBmjuv_nVm-lCMbnW8LyoF02GXMzcLPC7PT691u93WcgaLiEuiNr_m5ZTEDIP6wN1ubrONQ2QaQyC0uIEa91tFCmFnC5QrpiqnQvURwxxmwWKLhyTbmTx04FwJ_o7HAiqgsgjNcgXSISwR9uWe_v9uYz2pmV9QeTPkGgsixSUkvNCr3njZEDu2erLgCiLRgkfWcJ3BYM_25UQiOtsjp0ulrnpM8NiZb6XyL8dhhsMZ-qrYIWrL5tojkyVk9R6IShYjvlRj6pyhOU-jD",
-        "https://lh3.googleusercontent.com/aida-public/AB6AXuCnrC_hIgkD5lG0GYlvz_Gd9u5ri4SQCExCzndhqmmSXmrnviPV0alsomAD8UxXPCA72ckoR-E4BoGuhutvQMC1mbyKVmuyE80ZYs0hbeivkhW9FBCn8SwcRkNZjahkVw4aCf77c4ImCPkauIN6XfbQTmRcyQfj2ZTt2Zlg5CYNDpwBxKhC_6UvWf5pMBkd7XsUEFBCy8PGWpdHYwThevBA2KP1DcdKyo4hMi4yO31iSg9lLD67jC3x_1SgDdreKUTi8abIG6YdEDDw",
-        "https://lh3.googleusercontent.com/aida-public/AB6AXuBmjuv_nVm-lCMbnW8LyoF02GXMzcLPC7PT691u93WcgaLiEuiNr_m5ZTEDIP6wN1ubrONQ2QaQyC0uIEa91tFCmFnC5QrpiqnQvURwxxmwWKLhyTbmTx04FwJ_o7HAiqgsgjNcgXSISwR9uWe_v9uYz2pmV9QeTPkGgsixSUkvNCr3njZEDu2erLgCiLRgkfWcJ3BYM_25UQiOtsjp0ulrnpM8NiZb6XyL8dhhsMZ-qrYIWrL5tojkyVk9R6IShYjvlRj6pyhOU-jD",
-      ],
-    },
-    {
-      name: "Motion Graphics",
-      creditsRequired: 4,
-      image:
-        "https://lh3.googleusercontent.com/aida-public/AB6AXuDU7tn-DZ9iW3KrIrA8jixDlJzx_yx9YA8YdymGjHEVZQlndSGuL7fVpxUgOhRQHB-9Ooe7BJnyGPfs_RgMiyER5CayNRAlv8XPPiqVPdV6MvmlfUMrgQvu2hGYCGXZTg8pltxG6p9mnMAu9ySlVfcPOerho8LdB6xKGTfnnsb2bWwyfHjaYpYy_sfVBqnCt8oxH7zvqCFDyOugxNDzZ7OLjQnEIDEZSj2oLcPzWgqmZNCOiJ5KdLywUTM4chTNPpIpHMZZouspnrcP",
-      skills: ["After Effects", "Lottie"],
-      users: [
-        "https://lh3.googleusercontent.com/aida-public/AB6AXuBmjuv_nVm-lCMbnW8LyoF02GXMzcLPC7PT691u93WcgaLiEuiNr_m5ZTEDIP6wN1ubrONQ2QaQyC0uIEa91tFCmFnC5QrpiqnQvURwxxmwWKLhyTbmTx04FwJ_o7HAiqgsgjNcgXSISwR9uWe_v9uYz2pmV9QeTPkGgsixSUkvNCr3njZEDu2erLgCiLRgkfWcJ3BYM_25UQiOtsjp0ulrnpM8NiZb6XyL8dhhsMZ-qrYIWrL5tojkyVk9R6IShYjvlRj6pyhOU-jD",
-        "https://lh3.googleusercontent.com/aida-public/AB6AXuCnrC_hIgkD5lG0GYlvz_Gd9u5ri4SQCExCzndhqmmSXmrnviPV0alsomAD8UxXPCA72ckoR-E4BoGuhutvQMC1mbyKVmuyE80ZYs0hbeivkhW9FBCn8SwcRkNZjahkVw4aCf77c4ImCPkauIN6XfbQTmRcyQfj2ZTt2Zlg5CYNDpwBxKhC_6UvWf5pMBkd7XsUEFBCy8PGWpdHYwThevBA2KP1DcdKyo4hMi4yO31iSg9lLD67jC3x_1SgDdreKUTi8abIG6YdEDDw",
-        "https://lh3.googleusercontent.com/aida-public/AB6AXuBmjuv_nVm-lCMbnW8LyoF02GXMzcLPC7PT691u93WcgaLiEuiNr_m5ZTEDIP6wN1ubrONQ2QaQyC0uIEa91tFCmFnC5QrpiqnQvURwxxmwWKLhyTbmTx04FwJ_o7HAiqgsgjNcgXSISwR9uWe_v9uYz2pmV9QeTPkGgsixSUkvNCr3njZEDu2erLgCiLRgkfWcJ3BYM_25UQiOtsjp0ulrnpM8NiZb6XyL8dhhsMZ-qrYIWrL5tojkyVk9R6IShYjvlRj6pyhOU-jD",
-      ],
-    },
-    {
-      name: "Code Masters",
-      creditsRequired: 4,
-      image:
-        "https://lh3.googleusercontent.com/aida-public/AB6AXuAFeCZHRIeqbd1GHWzhbSR2Hp87wJ2jQVDeDHI-G8oSHPQCtqPSFwx7twF0YoU8ryK6LQCQbrFczdPxEnEaeY_AuOdQWySL8tkh4C8wok-fhvi61LyF_g9V8DhKdSYQgcS25S91ZRt9lClkQ3wxaiPw4X1D99CLrREFVI-W6vUM7UnnhB4DBA7k1hj0BMVEUPT6FgXEJ1qjJYYkgldD8uSgLzH00tvc5cIMlv06irBucOUzR9fEQZ2EJLfc6SSmTyaj7z-t3YUdTlMy",
-      skills: ["React", "Python"],
-      users: [
-        "https://lh3.googleusercontent.com/aida-public/AB6AXuBmjuv_nVm-lCMbnW8LyoF02GXMzcLPC7PT691u93WcgaLiEuiNr_m5ZTEDIP6wN1ubrONQ2QaQyC0uIEa91tFCmFnC5QrpiqnQvURwxxmwWKLhyTbmTx04FwJ_o7HAiqgsgjNcgXSISwR9uWe_v9uYz2pmV9QeTPkGgsixSUkvNCr3njZEDu2erLgCiLRgkfWcJ3BYM_25UQiOtsjp0ulrnpM8NiZb6XyL8dhhsMZ-qrYIWrL5tojkyVk9R6IShYjvlRj6pyhOU-jD",
-        "https://lh3.googleusercontent.com/aida-public/AB6AXuCnrC_hIgkD5lG0GYlvz_Gd9u5ri4SQCExCzndhqmmSXmrnviPV0alsomAD8UxXPCA72ckoR-E4BoGuhutvQMC1mbyKVmuyE80ZYs0hbeivkhW9FBCn8SwcRkNZjahkVw4aCf77c4ImCPkauIN6XfbQTmRcyQfj2ZTt2Zlg5CYNDpwBxKhC_6UvWf5pMBkd7XsUEFBCy8PGWpdHYwThevBA2KP1DcdKyo4hMi4yO31iSg9lLD67jC3x_1SgDdreKUTi8abIG6YdEDDw",
-        "https://lh3.googleusercontent.com/aida-public/AB6AXuBmjuv_nVm-lCMbnW8LyoF02GXMzcLPC7PT691u93WcgaLiEuiNr_m5ZTEDIP6wN1ubrONQ2QaQyC0uIEa91tFCmFnC5QrpiqnQvURwxxmwWKLhyTbmTx04FwJ_o7HAiqgsgjNcgXSISwR9uWe_v9uYz2pmV9QeTPkGgsixSUkvNCr3njZEDu2erLgCiLRgkfWcJ3BYM_25UQiOtsjp0ulrnpM8NiZb6XyL8dhhsMZ-qrYIWrL5tojkyVk9R6IShYjvlRj6pyhOU-jD",
-      ],
-    },
-  ];
+  // const dummyCirqleData = [
+  //   {
+  //     name: "Creative Collective",
+  //     creditsRequired: 4,
+  //     image:
+  //       "https://lh3.googleusercontent.com/aida-public/AB6AXuAq7A_n4G39ZypzBYpFKiNYz_eQKmh4pPjdo1wojPY_vaJa2LUqkCJDeZ68VG-ipyEdofwbuv1dZBK-AohgZyqbL0-n3PfG-pYDVXRdUu9rMRgyJ00SV82X8_QaWRivjZGI50IPWEN4K0VcWj_IEFOIq5nsADSmq-mgLwlYKViLspdAgRogUL8ca3ZLpokOGtAameWB0ma4pCxoIP-YvHmXxzyVxW05RumAMoc-BfBdMJQJHnZeDxOjrf8BKruTe_8dZYKLFn7vfBT4",
+  //     skills: ["UI Design", "Branding"],
+  //     users: [
+  //       "https://lh3.googleusercontent.com/aida-public/AB6AXuBmjuv_nVm-lCMbnW8LyoF02GXMzcLPC7PT691u93WcgaLiEuiNr_m5ZTEDIP6wN1ubrONQ2QaQyC0uIEa91tFCmFnC5QrpiqnQvURwxxmwWKLhyTbmTx04FwJ_o7HAiqgsgjNcgXSISwR9uWe_v9uYz2pmV9QeTPkGgsixSUkvNCr3njZEDu2erLgCiLRgkfWcJ3BYM_25UQiOtsjp0ulrnpM8NiZb6XyL8dhhsMZ-qrYIWrL5tojkyVk9R6IShYjvlRj6pyhOU-jD",
+  //       "https://lh3.googleusercontent.com/aida-public/AB6AXuCnrC_hIgkD5lG0GYlvz_Gd9u5ri4SQCExCzndhqmmSXmrnviPV0alsomAD8UxXPCA72ckoR-E4BoGuhutvQMC1mbyKVmuyE80ZYs0hbeivkhW9FBCn8SwcRkNZjahkVw4aCf77c4ImCPkauIN6XfbQTmRcyQfj2ZTt2Zlg5CYNDpwBxKhC_6UvWf5pMBkd7XsUEFBCy8PGWpdHYwThevBA2KP1DcdKyo4hMi4yO31iSg9lLD67jC3x_1SgDdreKUTi8abIG6YdEDDw",
+  //       "https://lh3.googleusercontent.com/aida-public/AB6AXuBmjuv_nVm-lCMbnW8LyoF02GXMzcLPC7PT691u93WcgaLiEuiNr_m5ZTEDIP6wN1ubrONQ2QaQyC0uIEa91tFCmFnC5QrpiqnQvURwxxmwWKLhyTbmTx04FwJ_o7HAiqgsgjNcgXSISwR9uWe_v9uYz2pmV9QeTPkGgsixSUkvNCr3njZEDu2erLgCiLRgkfWcJ3BYM_25UQiOtsjp0ulrnpM8NiZb6XyL8dhhsMZ-qrYIWrL5tojkyVk9R6IShYjvlRj6pyhOU-jD",
+  //     ],
+  //   },
+  //   {
+  //     name: "Motion Graphics",
+  //     creditsRequired: 4,
+  //     image:
+  //       "https://lh3.googleusercontent.com/aida-public/AB6AXuDU7tn-DZ9iW3KrIrA8jixDlJzx_yx9YA8YdymGjHEVZQlndSGuL7fVpxUgOhRQHB-9Ooe7BJnyGPfs_RgMiyER5CayNRAlv8XPPiqVPdV6MvmlfUMrgQvu2hGYCGXZTg8pltxG6p9mnMAu9ySlVfcPOerho8LdB6xKGTfnnsb2bWwyfHjaYpYy_sfVBqnCt8oxH7zvqCFDyOugxNDzZ7OLjQnEIDEZSj2oLcPzWgqmZNCOiJ5KdLywUTM4chTNPpIpHMZZouspnrcP",
+  //     skills: ["After Effects", "Lottie"],
+  //     users: [
+  //       "https://lh3.googleusercontent.com/aida-public/AB6AXuBmjuv_nVm-lCMbnW8LyoF02GXMzcLPC7PT691u93WcgaLiEuiNr_m5ZTEDIP6wN1ubrONQ2QaQyC0uIEa91tFCmFnC5QrpiqnQvURwxxmwWKLhyTbmTx04FwJ_o7HAiqgsgjNcgXSISwR9uWe_v9uYz2pmV9QeTPkGgsixSUkvNCr3njZEDu2erLgCiLRgkfWcJ3BYM_25UQiOtsjp0ulrnpM8NiZb6XyL8dhhsMZ-qrYIWrL5tojkyVk9R6IShYjvlRj6pyhOU-jD",
+  //       "https://lh3.googleusercontent.com/aida-public/AB6AXuCnrC_hIgkD5lG0GYlvz_Gd9u5ri4SQCExCzndhqmmSXmrnviPV0alsomAD8UxXPCA72ckoR-E4BoGuhutvQMC1mbyKVmuyE80ZYs0hbeivkhW9FBCn8SwcRkNZjahkVw4aCf77c4ImCPkauIN6XfbQTmRcyQfj2ZTt2Zlg5CYNDpwBxKhC_6UvWf5pMBkd7XsUEFBCy8PGWpdHYwThevBA2KP1DcdKyo4hMi4yO31iSg9lLD67jC3x_1SgDdreKUTi8abIG6YdEDDw",
+  //       "https://lh3.googleusercontent.com/aida-public/AB6AXuBmjuv_nVm-lCMbnW8LyoF02GXMzcLPC7PT691u93WcgaLiEuiNr_m5ZTEDIP6wN1ubrONQ2QaQyC0uIEa91tFCmFnC5QrpiqnQvURwxxmwWKLhyTbmTx04FwJ_o7HAiqgsgjNcgXSISwR9uWe_v9uYz2pmV9QeTPkGgsixSUkvNCr3njZEDu2erLgCiLRgkfWcJ3BYM_25UQiOtsjp0ulrnpM8NiZb6XyL8dhhsMZ-qrYIWrL5tojkyVk9R6IShYjvlRj6pyhOU-jD",
+  //     ],
+  //   },
+  //   {
+  //     name: "Code Masters",
+  //     creditsRequired: 4,
+  //     image:
+  //       "https://lh3.googleusercontent.com/aida-public/AB6AXuAFeCZHRIeqbd1GHWzhbSR2Hp87wJ2jQVDeDHI-G8oSHPQCtqPSFwx7twF0YoU8ryK6LQCQbrFczdPxEnEaeY_AuOdQWySL8tkh4C8wok-fhvi61LyF_g9V8DhKdSYQgcS25S91ZRt9lClkQ3wxaiPw4X1D99CLrREFVI-W6vUM7UnnhB4DBA7k1hj0BMVEUPT6FgXEJ1qjJYYkgldD8uSgLzH00tvc5cIMlv06irBucOUzR9fEQZ2EJLfc6SSmTyaj7z-t3YUdTlMy",
+  //     skills: ["React", "Python"],
+  //     users: [
+  //       "https://lh3.googleusercontent.com/aida-public/AB6AXuBmjuv_nVm-lCMbnW8LyoF02GXMzcLPC7PT691u93WcgaLiEuiNr_m5ZTEDIP6wN1ubrONQ2QaQyC0uIEa91tFCmFnC5QrpiqnQvURwxxmwWKLhyTbmTx04FwJ_o7HAiqgsgjNcgXSISwR9uWe_v9uYz2pmV9QeTPkGgsixSUkvNCr3njZEDu2erLgCiLRgkfWcJ3BYM_25UQiOtsjp0ulrnpM8NiZb6XyL8dhhsMZ-qrYIWrL5tojkyVk9R6IShYjvlRj6pyhOU-jD",
+  //       "https://lh3.googleusercontent.com/aida-public/AB6AXuCnrC_hIgkD5lG0GYlvz_Gd9u5ri4SQCExCzndhqmmSXmrnviPV0alsomAD8UxXPCA72ckoR-E4BoGuhutvQMC1mbyKVmuyE80ZYs0hbeivkhW9FBCn8SwcRkNZjahkVw4aCf77c4ImCPkauIN6XfbQTmRcyQfj2ZTt2Zlg5CYNDpwBxKhC_6UvWf5pMBkd7XsUEFBCy8PGWpdHYwThevBA2KP1DcdKyo4hMi4yO31iSg9lLD67jC3x_1SgDdreKUTi8abIG6YdEDDw",
+  //       "https://lh3.googleusercontent.com/aida-public/AB6AXuBmjuv_nVm-lCMbnW8LyoF02GXMzcLPC7PT691u93WcgaLiEuiNr_m5ZTEDIP6wN1ubrONQ2QaQyC0uIEa91tFCmFnC5QrpiqnQvURwxxmwWKLhyTbmTx04FwJ_o7HAiqgsgjNcgXSISwR9uWe_v9uYz2pmV9QeTPkGgsixSUkvNCr3njZEDu2erLgCiLRgkfWcJ3BYM_25UQiOtsjp0ulrnpM8NiZb6XyL8dhhsMZ-qrYIWrL5tojkyVk9R6IShYjvlRj6pyhOU-jD",
+  //     ],
+  //   },
+  // ];
+
+  // photography videography drawing english
+  // Node.js javascript react next.js
 
   return (
     <div className="w-full mx-auto md:px-6 py-8 flex flex-col gap-16">
-      {/* {!isCompleted && (
+      {!isCompleted && (
         <div className="w-full p-6 md:p-8 rounded-3xl border border-accent/20 bg-linear-to-br from-accent/6 to-transparent flex flex-col lg:flex-row items-center justify-between gap-8 shadow-sm">
           <div className="flex items-center gap-5">
             <div className="p-3 rounded-xl bg-accent/15 text-accent">
@@ -210,7 +215,7 @@ export default function Dashboard() {
 
             <div>
               <h3 className="text-lg text-foreground font-semibold">
-                Get 3 Skill Tokens
+                Get 5 SkillCredits
               </h3>
               <p className="text-sm text-text-secondary">
                 Complete your profile to unlock your rewards.
@@ -219,30 +224,17 @@ export default function Dashboard() {
           </div>
 
           <div className="w-full max-w-xs space-y-3">
-            <div className="flex justify-between text-xs text-muted-foreground">
-              <span className="text-foreground">Progress</span>
-              <span className="text-accent font-semibold">
-                {progressPercentage}%
-              </span>
-            </div>
-
-            <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
-              <div
-                className="h-full bg-accent transition-all duration-700"
-                style={{ width: `${progressPercentage}%` }}
-              />
-            </div>
 
             <button
               disabled={isCompleted}
               onClick={() => router.push("/onboarding")}
-              className="w-full py-2.5 bg-accent disabled:cursor-not-allowed disabled:bg-accent/30 text-white rounded-lg text-sm font-semibold hover:opacity-90 transition"
+              className="w-full py-2.5 bg-accent/90 disabled:cursor-not-allowed disabled:bg-accent/30 text-white rounded-lg text-sm font-semibold hover:opacity-90 transition"
             >
-              Continue Setup
+              Finish Setup
             </button>
           </div>
         </div>
-      )} */}
+      )}
 
       {/* <section className="relative w-full p-4 md:p-10 bg-primary rounded-md overflow-hidden">
         <div className="relative z-10 flex flex-col gap-4 text-primary-foreground">
@@ -322,13 +314,13 @@ export default function Dashboard() {
 
       <section className="space-y-6">
         <div className="flex justify-between">
-          <div className="w-max flex flex-col gap-2">
+          <div className="w-max flex flex-col gap-0.5">
             <p className="uppercase text-sm text-text-secondary">
               Curated for you
             </p>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center">
               <h2 className="md:text-2xl text-xl font-semibold text-foreground">
-                Suggested Skills
+                Skills to Explore
               </h2>
             </div>
           </div>

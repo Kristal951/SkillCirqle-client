@@ -134,7 +134,7 @@ const ProfilePage = () => {
             <h2
               className={`text-3xl font-bold ${theme === "light" ? "" : "text-white"}`}
             >
-              {user?.wallet?.skillTokens || 0}
+              {user?.skill_tokens || 0}
             </h2>
             <h3 className="text-sm uppercase tracking-wider font-semibold">
               Credits
@@ -167,7 +167,7 @@ const ProfilePage = () => {
               </h3>
               <p className="text-xl font-bold">
                 {" "}
-                {user?.wallet?.skillTokens || 0}
+                {user?.skill_tokens || 0}
               </p>
             </div>
           </div>

@@ -130,6 +130,7 @@ const SignUp = () => {
 
   useEffect(() => {
     if (isSubmitted) {
+
       router.push(`/auth/verify-email?email=${encodeURIComponent(email)}`);
     }
   }, [isSubmitted]);
@@ -244,28 +245,28 @@ const SignUp = () => {
             <LoginWithGoogleButton loading={loading} setLoading={setLoading} />
 
             <div className="flex flex-col items-center justify-center gap-3 w-full">
-              <p className="text-xs sm:text-sm text-text-surface text-center">
+              <p className="text-xs sm:text-sm text-text-secondary text-center">
                 Already have an account?{" "}
                 <Link
                   href="/auth/signin"
-                  className="text-primary font-medium hover:underline"
+                  className="text-text-primary font-medium underline underline-offset-4"
                 >
                   Login
                 </Link>
               </p>
 
               <p className="text-xs text-text-secondary text-center leading-tight max-w-lg">
-                By clicking "Create Account" you agree to our{" "}
+                By creating an account you agree to our{" "}
                 <Link
                   href="/terms"
-                  className="font-medium text-text-primary hover:underline underline-offset-4 transition-colors"
+                  className="font-medium text-text-primary underline underline-offset-4 transition-colors"
                 >
                   Terms of Service
                 </Link>{" "}
                 and{" "}
                 <Link
                   href="/privacy"
-                  className="font-medium text-text-primary hover:underline underline-offset-4 transition-colors"
+                  className="font-medium text-text-primary underline underline-offset-4 transition-colors"
                 >
                   Privacy Policy
                 </Link>

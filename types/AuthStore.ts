@@ -20,12 +20,8 @@ export interface User {
   rating: number;
   category: string;
   streaks: number;
-
-  wallet: {
-    skillTokens: number;
-    totalEarned: number;
-    lastDailyReward: string | null;
-  };
+  skill_tokens: number;
+  total_earned: number;
 
   user_metadata?: {
     username: string;

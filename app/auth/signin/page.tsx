@@ -204,11 +204,11 @@ const SignIn = () => {
 
             <LoginWithGoogleButton loading={loading} setLoading={setLoading} />
 
-            <p className="text-xs sm:text-sm text-text-surface text-center">
+            <p className="text-xs sm:text-sm text-text-secondary text-center">
               Don’t have an account?{" "}
               <Link
                 href="/auth/register"
-                className="text-primary font-medium cursor-pointer hover:underline"
+                className="text-text-primary font-medium cursor-pointer underline"
               >
                 Sign up
               </Link>

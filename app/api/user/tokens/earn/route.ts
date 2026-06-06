@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { awardTokens } from "@/lib/tokenService";
 import { createSupabaseServer } from "@/lib/supabaseServer";
 
+export type RewardReason = "onboarding_reward" | "daily_reward" | "post_reward";
+
 export async function POST(req: NextRequest) {
   const supabase = await createSupabaseServer();
   try {
@@ -13,10 +15,21 @@ export async function POST(req: NextRequest) {
 
     const { action } = await req.json();
 
-    const config: Record<string, { amount: number; reason: string }> = {
-      onboarding: { amount: 3, reason: "onboarding_reward" },
-      create_post: { amount: 5, reason: "post_reward" },
-      daily_login: { amount: 2, reason: "daily_reward" },
+    const config: Record<
+      string,
+      {
+        amount: number;
+        reason: RewardReason;
+      }
+    > = {
+      create_post: {
+        amount: 5,
+        reason: "post_reward",
+      },
+      daily_login: {
+        amount: 2,
+        reason: "daily_reward",
+      },
     };
 
     const reward = config[action];

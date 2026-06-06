@@ -3,74 +3,68 @@ import React, { useState, useEffect } from "react";
 import { ArrowRight, Coins, User } from "lucide-react";
 import { useAuthStore } from "@/store/useAuthStore";
 import Confetti from "react-confetti";
-import Link from "next/link";
 import { toast } from "@/lib/toast";
 import { useTokenStore } from "@/store/useTokenStore";
-
+import { useRouter } from "next/navigation";
 const OnboardingCompleted = () => {
   const { user } = useAuthStore();
-  const { awardUserOnboardingTokens } = useTokenStore();
+  const { awardUserOnboardingTokens, loading } = useTokenStore();
 
   const [displayTokens, setDisplayTokens] = useState(0);
   const [showConfetti, setShowConfetti] = useState(true);
   const targetTokens = 5;
   const hasRun = React.useRef(false);
+  const router = useRouter();
 
   useEffect(() => {
     if (!targetTokens) return;
 
-    const awardTokens = async () => {
+    let counter: NodeJS.Timeout;
+
+    const awardAndAnimate = async () => {
       try {
         const res = await awardUserOnboardingTokens();
 
-        if (res?.tokens !== 0) {
-          toast.success("🎉 +3 tokens awarded!");
+        if (res?.code === "ALREADY_REWARDED") {
+          toast.info("Already Awarded", "You've been awarded earlier.");
+          return;
         }
 
-        if (res.code === "ALREADY_REWARDED") {
-          toast.info(
-            "Already Awarded",
-            "You've been awarded your credits earlier.",
-          );
+        if (res?.tokens !== undefined) {
+          toast.success("+5 tokens awarded!");
+
+          let start = 0;
+          const end = res.tokens ?? targetTokens;
+          const duration = 1000;
+          const stepTime = 20;
+
+          const increment = end / (duration / stepTime);
+
+          counter = setInterval(() => {
+            start += increment;
+
+            if (start >= end) {
+              start = end;
+              clearInterval(counter);
+            }
+
+            setDisplayTokens(parseFloat(start.toFixed(2)));
+          }, stepTime);
         }
-      } catch (error: any) {
+      } catch (error) {
         console.log(error, "award token error");
-
-        switch (error) {
-          case "ALREADY_REWARDED":
-            toast.info("Tokens already awarded");
-            break;
-
-          default:
-            toast.error("Something went wrong");
-        }
+        toast.error("Something went wrong");
       }
     };
 
     if (!hasRun.current) {
-      awardTokens();
       hasRun.current = true;
+      awardAndAnimate();
     }
 
-    let start = 0;
-    const end = targetTokens;
-    const duration = 1000;
-    const stepTime = 20;
-
-    const increment = end / (duration / stepTime);
-
-    const counter = setInterval(() => {
-      start += increment;
-
-      if (start >= end) {
-        start = end;
-        clearInterval(counter);
-      }
-
-      setDisplayTokens(parseFloat(start.toFixed(2)));
-    }, stepTime);
-
-    return () => clearInterval(counter);
+    return () => {
+      if (counter) clearInterval(counter);
+    };
   }, [targetTokens]);
 
   useEffect(() => {
@@ -80,6 +74,10 @@ const OnboardingCompleted = () => {
 
     return () => clearTimeout(timer);
   }, []);
+
+  const handleGoToPage = (page: string) => {
+    router.push(`/${page}`);
+  };
 
   return (
     <div className="relative h-full w-full bg-background text-white flex flex-col items-center justify-center p-6 overflow-hidden">
@@ -141,21 +139,23 @@ const OnboardingCompleted = () => {
         </div>
 
         <div className="w-full flex flex-col sm:flex-row gap-4 items-center justify-center mt-4">
-          <Link
-            href="/dashboard"
-            className="w-full sm:w-auto px-6 py-3.5 bg-primary text-primary-foreground font-semibold rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-primary/20 hover:bg-primary/90 hover:shadow-primary/30 active:scale-[0.98] transition-all duration-200"
+          <button
+            disabled={loading}
+            onClick={() => handleGoToPage("dashboard")}
+            className="w-full disabled:opacity-50 disabled:cursor-not-allowed sm:w-auto px-6 py-3.5 bg-primary text-primary-foreground font-semibold rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-primary/20 hover:bg-primary/90 hover:shadow-primary/30 active:scale-[0.98] transition-all duration-200"
           >
             Go to Dashboard
             <ArrowRight className="w-4 h-4 stroke-[2.5]" />
-          </Link>
+          </button>
 
-          <Link
-            href="/profile"
-            className="w-full sm:w-auto px-6 py-3.5 bg-surface/40 hover:bg-surface/80 text-text-primary font-semibold rounded-xl border border-border/80 flex items-center justify-center gap-2 active:scale-[0.98] transition-all duration-200"
+          <button
+            disabled={loading}
+            onClick={() => handleGoToPage("profile")}
+            className="w-full disabled:opacity-50 disabled:cursor-not-allowed  sm:w-auto px-6 py-3.5 bg-surface/40 hover:bg-surface/80 text-text-primary font-semibold rounded-xl border border-border/80 flex items-center justify-center gap-2 active:scale-[0.98] transition-all duration-200"
           >
             View Profile
             <User className="w-4 h-4 stroke-[2.5]" />
-          </Link>
+          </button>
         </div>
       </div>
     </div>
