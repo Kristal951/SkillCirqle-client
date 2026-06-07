@@ -76,7 +76,7 @@ const SkillCard = ({ info }: SkillCardProps) => {
         <button
           type="button"
           onClick={() => info.slug && router.push(`/skills/${info.slug}`)}
-          className="bg-primary/10 text-text-primary group-hover:bg-primary group-hover:text-text-primary px-4 py-2 rounded-xl text-xs font-semibold tracking-wide transition-all duration-200 active:scale-95 shadow-sm shadow-primary/5"
+          className="md:bg-primary/10 lg:bg-primary/10 xl:bg-primary/10 bg-primary text-text-primary group-hover:bg-primary group-hover:text-text-primary px-4 py-2 rounded-xl text-xs font-semibold tracking-wide transition-all duration-200 active:scale-95 shadow-sm shadow-primary/5"
         >
           View Profiles
         </button>

@@ -41,7 +41,7 @@ export default function ChatShell({ children }: { children: React.ReactNode }) {
                 </span>
               </div>
               <h2 className="text-xl font-semibold">SkillCirqle Chat</h2>
-              <p className="text-muted-foreground max-w-xs mx-auto text-sm mt-2">
+              <p className="text-text-secondary max-w-xs mx-auto text-sm mt-2">
                 Select a conversation to start exchanging skills and knowledge.
               </p>
             </div>

@@ -33,9 +33,10 @@ export async function middleware(request: NextRequest) {
 
   const path = request.nextUrl.pathname;
   const isUpdatePasswordPage = path === "/auth/update-password";
-  const isAuthPage = path.startsWith("/auth") && 
-  !path.startsWith("/auth/mfa") && 
-  !isUpdatePasswordPage;
+  const isAuthPage =
+    path.startsWith("/auth") &&
+    !path.startsWith("/auth/mfa") &&
+    !isUpdatePasswordPage;
   const isVerifyEmailPage = path.startsWith("/auth/verify-email");
   const isMfaRoute = path.startsWith("/auth/mfa");
   const isProtectedRoute = ["/dashboard", "/onboarding"].some((p) =>

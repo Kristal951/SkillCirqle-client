@@ -190,7 +190,7 @@ const Sidebar = () => {
               <button
                 key={item.key}
                 onClick={() => setFilter(item.key as any)}
-                className={`px-3 py-1.5 rounded-md text-sm font-medium whitespace-nowrap transition-all border flex items-center gap-2.5 active:scale-95 ${
+                className={`px-4 py-2 rounded-2xl text-sm font-medium whitespace-nowrap transition-all border flex items-center gap-2.5 active:scale-95 ${
                   active
                     ? "bg-primary text-white border-primary shadow-md shadow-primary/20"
                     : "bg-surface border-border text-text-secondary hover:border-primary/50"

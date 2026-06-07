@@ -14,7 +14,7 @@ export async function GET(req: NextRequest) {
   const limit = Number(req.nextUrl.searchParams.get("limit") || 20);
 
   const skillData = await getUserSkillsFromTable(user.id);
-  const userSkills = skillData.success ? skillData.skills : [];
+  const userSkills = skillData?.success ? skillData?.skills : [];
 
   const result = await runSkillSuggestionEngine({
     userId: user.id,

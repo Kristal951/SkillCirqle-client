@@ -32,6 +32,7 @@ export default function RootLayout({
   const handleLogout = async () => {
     openLogoutModal();
     setLoggingOut(true);
+    console.log('clicked')
     try {
       logout();
     } catch (error) {

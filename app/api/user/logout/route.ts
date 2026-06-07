@@ -2,8 +2,6 @@ import { NextResponse } from "next/server";
 import { createSupabaseServer } from "@/lib/supabaseServer";
 
 export async function POST() {
-  const supabase = createSupabaseServer();
-
   const response = NextResponse.json({ success: true });
 
   response.cookies.set("mfa_session", "", { expires: new Date(0), path: "/" });

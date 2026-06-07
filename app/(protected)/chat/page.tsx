@@ -292,7 +292,7 @@ const Chat = () => {
             chat_bubble_off
           </span>
           <h2 className="text-2xl mt-2 text-white">No chat selected</h2>
-          <p className="text-sm">Select a conversation to start messaging</p>
+          <p className="text-sm text-text-secondary">Select a conversation to start messaging</p>
         </div>
       </div>
     );

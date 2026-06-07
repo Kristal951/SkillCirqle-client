@@ -15,6 +15,8 @@ const ProfileDetailsPanel = () => {
 
   const [teachSkills, setTeachSkills] = useState<string[]>([]);
   const [learnSkills, setLearnSkills] = useState<string[]>([]);
+  const [teachSkillInput, setTeachSkillInput] = useState("");
+  const [learnSkillInput, setLearnSkillInput] = useState("");
   const [name, setName] = useState("");
   const [bio, setBio] = useState("");
   const email = user?.email || "";
@@ -100,9 +102,20 @@ const ProfileDetailsPanel = () => {
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Max file size is 5MB");
+      return;
+    }
+    if (!file.type.startsWith("image/")) {
+      toast.error("Invalid Image File", "Please upload image files only.");
+    }
 
     setAvatarRemoved(false);
     setAvatarFile(file);
+
+    if (avatarPreview?.startsWith("blob:")) {
+      URL.revokeObjectURL(avatarPreview);
+    }
 
     const previewUrl = URL.createObjectURL(file);
     setAvatarPreview(previewUrl);
@@ -128,7 +141,7 @@ const ProfileDetailsPanel = () => {
     setTeachSkills((prev) => prev.filter((s) => s !== skill));
   };
   const addLearnSkill = (skill: string) => {
-    const value = skill.trim();
+    const value = skill.trim().replace(/\s+/g, " ");
     if (!value) return;
 
     const normalized = value.toLowerCase();
@@ -147,7 +160,7 @@ const ProfileDetailsPanel = () => {
 
   const isValid =
     name.trim().length > 0 &&
-    bio.length <= 500 &&
+    bio.trim().length <= 500 &&
     teachSkills.length <= 5 &&
     learnSkills.length <= 5;
 
@@ -160,7 +173,7 @@ const ProfileDetailsPanel = () => {
   }, [avatarRemoved, avatarPreview, fallbackAvatar, initialState.avatar]);
 
   const hasRealAvatar = !!initialState.avatar;
-  const canSave = isDirty && isValid && !isUpdatingUser;
+  const canSave = isDirty && isValid && !isUpdatingUser && !loading;
 
   const canRemoveAvatar = useMemo(() => {
     if (!hasRealAvatar) return false;
@@ -200,8 +213,13 @@ const ProfileDetailsPanel = () => {
       let avatarUrl = prevUser.avatar_url || fallbackAvatar;
 
       if (avatarFile) {
-        const res = await uploadToCloudinary(avatarFile);
-        avatarUrl = optimizeCloudinaryUrl(res.secure_url);
+        try {
+          const res = await uploadToCloudinary(avatarFile);
+          avatarUrl = optimizeCloudinaryUrl(res.secure_url);
+        } catch {
+          toast.error("Avatar upload failed");
+          return;
+        }
       }
 
       if (avatarRemoved) {
@@ -258,6 +276,55 @@ const ProfileDetailsPanel = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const normalizedTeachSkill = teachSkillInput.trim().toLowerCase();
+  const normalizedLearnSkill = learnSkillInput.trim().toLowerCase();
+
+  const teachSkillExists = teachSkills.some(
+    (skill) => skill.toLowerCase() === normalizedTeachSkill,
+  );
+  const learnSkillExists = learnSkills.some(
+    (skill) => skill.toLowerCase() === normalizedLearnSkill,
+  );
+
+  const canAddTeachSkill = normalizedTeachSkill.length > 0 && !teachSkillExists;
+  const canAddLearnSkill = normalizedLearnSkill.length > 0 && !learnSkillExists;
+
+  const handleAddTeachSkill = () => {
+    const value = teachSkillInput.trim();
+
+    if (!value) return;
+
+    const exists = teachSkills.some(
+      (skill) => skill.toLowerCase() === value.toLowerCase(),
+    );
+
+    if (exists) {
+      toast.error("Skill already added");
+      return;
+    }
+
+    addTeachSkill(value);
+    setTeachSkillInput("");
+  };
+
+  const handleAddLearnSkill = () => {
+    const value = learnSkillInput.trim();
+
+    if (!value) return;
+
+    const exists = learnSkills.some(
+      (skill) => skill.toLowerCase() === value.toLowerCase(),
+    );
+
+    if (exists) {
+      toast.error("Skill already added");
+      return;
+    }
+
+    addLearnSkill(value);
+    setLearnSkillInput("");
   };
 
   return (
@@ -415,19 +482,57 @@ const ProfileDetailsPanel = () => {
             )}
 
             {teachSkills.length < 5 && (
-              <input
-                type="text"
-                className="w-full bg-background/50 border border-border/40 rounded-xl py-2 px-3 text-xs text-text-primary placeholder:text-text-secondary/40 outline-none focus:border-border transition-all"
-                placeholder="Type skill and press Enter..."
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    const value = e.currentTarget.value.trim();
-                    if (!value) return;
-                    addTeachSkill(value);
-                    e.currentTarget.value = "";
-                  }
-                }}
-              />
+              <div className="w-full flex flex-col gap-4">
+                <div className="w-full flex gap-4">
+                  <input
+                    type="text"
+                    className="w-full bg-background/50 border border-border/40 rounded-xl py-3 px-3 text-xs text-text-primary placeholder:text-text-secondary/40 outline-none focus:border-border transition-all"
+                    placeholder="Type skill and press Enter..."
+                    value={teachSkillInput}
+                    onChange={(e) => setTeachSkillInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        handleAddTeachSkill();
+                      }
+                    }}
+                  />
+
+                  <button
+                    type="button"
+                    onClick={handleAddTeachSkill}
+                    disabled={!canAddTeachSkill}
+                    className="px-4 py-2 disabled:opacity-50 rounded-md bg-primary text-white"
+                  >
+                    Add
+                  </button>
+                </div>
+
+                {teachSkillExists && (
+                  <div className="flex items-start gap-2 bg-primary/5 border border-primary/15 text-primary dark:text-text-primary px-3 py-2 rounded-xl text-xs animate-in fade-in-50 slide-in-from-top-1 duration-200">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      className="w-3.5 h-3.5 mt-0.5 shrink-0 opacity-90"
+                    >
+                      <circle cx="12" cy="12" r="10" />
+                      <line x1="12" y1="8" x2="12" y2="12" />
+                      <line x1="12" y1="16" x2="12.01" y2="16" />
+                    </svg>
+                    <p className="leading-relaxed font-medium">
+                      <span className="font-bold break-all">
+                        “{teachSkillInput.trim()}”
+                      </span>{" "}
+                      is already added to your teaching skills.
+                    </p>
+                  </div>
+                )}
+              </div>
             )}
           </div>
         </div>
@@ -468,19 +573,57 @@ const ProfileDetailsPanel = () => {
             )}
 
             {learnSkills.length < 5 && (
-              <input
-                type="text"
-                className="w-full bg-background/50 border border-border/40 rounded-xl py-2 px-3 text-xs text-text-primary placeholder:text-text-secondary/40 outline-none focus:border-border transition-all"
-                placeholder="Type skill and press Enter..."
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    const value = e.currentTarget.value.trim();
-                    if (!value) return;
-                    addLearnSkill(value);
-                    e.currentTarget.value = "";
-                  }
-                }}
-              />
+              <div className="w-full flex flex-col gap-4">
+                <div className="w-full flex gap-4">
+                  <input
+                    type="text"
+                    className="w-full bg-background/50 border border-border/40 rounded-xl py-2 px-3 text-xs text-text-primary placeholder:text-text-secondary/40 outline-none focus:border-border transition-all"
+                    placeholder="Type skill and press Enter..."
+                    value={learnSkillInput}
+                    onChange={(e) => setLearnSkillInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        handleAddLearnSkill();
+                      }
+                    }}
+                  />
+
+                  <button
+                    type="button"
+                    onClick={handleAddLearnSkill}
+                    disabled={!canAddLearnSkill}
+                    className="px-4 py-2 disabled:opacity-50 rounded-md bg-primary text-white"
+                  >
+                    Add
+                  </button>
+                </div>
+
+                {learnSkillExists && (
+                  <div className="flex items-start gap-2 bg-accent/5 border border-accent/15 text-amber dark:text-accent px-3 py-2 rounded-xl text-xs animate-in fade-in-50 slide-in-from-top-1 duration-200">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      className="w-3.5 h-3.5 mt-0.5 shrink-0 opacity-90"
+                    >
+                      <circle cx="12" cy="12" r="10" />
+                      <line x1="12" y1="8" x2="12" y2="12" />
+                      <line x1="12" y1="16" x2="12.01" y2="16" />
+                    </svg>
+                    <p className="leading-relaxed font-medium">
+                      <span className="font-bold break-all">
+                        “{learnSkillInput.trim()}”
+                      </span>{" "}
+                      is already added to your teaching skills.
+                    </p>
+                  </div>
+                )}
+              </div>
             )}
           </div>
         </div>

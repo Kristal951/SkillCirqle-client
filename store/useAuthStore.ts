@@ -60,6 +60,7 @@ export const useAuthStore = create<AuthState>()(
         set({ isUploadingProfilePic }),
 
       logout: async () => {
+        console.log('clicked store')
         try {
           const supabase = getSupabaseBrowserClient();
           const socket = getSocket();

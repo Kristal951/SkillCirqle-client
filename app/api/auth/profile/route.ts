@@ -1,19 +1,28 @@
+import { getUser } from "@/lib/getUser";
 import { createSupabaseServer } from "@/lib/supabaseServer";
+import { getOrSetCache } from "@/utils/cacheHelper";
 
 export async function GET() {
   const supabase = await createSupabaseServer();
+  const user = await getUser(supabase)
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  let profile = null;
 
-  const { data: profile } = user
-    ? await supabase
-        .from("profiles")
-        .select("*")
-        .eq("id", user.id)
-        .single()
-    : { data: null };
+  if (user?.id) {
+    profile = await getOrSetCache(
+      `profile:${user.id}`,
+      async () => {
+        const { data } = await supabase
+          .from("profiles")
+          .select("*")
+          .eq("id", user.id)
+          .single();
+
+        return data;
+      },
+      600,
+    );
+  }
 
   return Response.json({ user, profile });
 }

@@ -2,6 +2,10 @@ import { createSupabaseServer } from "@/lib/supabaseServer";
 
 export const getUserSkillsFromTable = async (userId: string) => {
   const supabase = await createSupabaseServer();
+  if (!userId) {
+    console.log("user Id is needed");
+    return;
+  }
 
   try {
     const { error, data: mySkills } = await supabase

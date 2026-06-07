@@ -3,77 +3,61 @@
 import SkillCard from "@/components/dashboard/SkillCard";
 import SkillCardSkeleton from "@/components/dashboard/SkillCardSkeletonLoader";
 import { useAuthStore } from "@/store/useAuthStore";
+import { createFetcherWithAuth } from "@/utils/fetcher";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowRight, Gift } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo } from "react";
 
 export default function Dashboard() {
-  const [skillData, setSkillData] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState("");
   const { user } = useAuthStore();
-  const isCompleted = user?.has_onboarded
-  const router = useRouter()
+  const isCompleted = user?.has_onboarded;
+  const router = useRouter();
+  const hasSkills =
+    (user?.skills_to_teach?.length ?? 0) > 0 ||
+    (user?.skills_to_learn?.length ?? 0) > 0;
+  const fetcher = useMemo(() => createFetcherWithAuth(router), [router]);
+  const queryClient = useQueryClient();
 
-  const loadTrendingSkills = async () => {
-    setIsLoading(true);
+  const matchesQuery = useQuery({
+    queryKey: ["dashboard-matches", user?.id],
+    queryFn: () => fetcher("/api/user/skills/matches?page=1&limit=10"),
+    enabled: !!user && hasSkills,
+    staleTime: 1000 * 60 * 5,
+    gcTime: 1000 * 60 * 30,
+    retry: 1,
+  });
 
-    try {
-      const res = await fetch("/api/user/skills/trending");
+  const trendingQuery = useQuery({
+    queryKey: ["dashboard-trending"],
+    queryFn: () => fetcher("/api/user/skills/trending"),
+    enabled: !!user && !hasSkills,
+    staleTime: 1000 * 60 * 60,
+    gcTime: 1000 * 60 * 60 * 6,
+    retry: 1,
+  });
 
-      if (!res.ok) {
-        throw new Error("Failed to load trending skills");
-      }
+  const isLoading = hasSkills
+    ? matchesQuery.isLoading
+    : trendingQuery.isLoading;
 
-      const data = await res.json();
+  const error = matchesQuery.error || trendingQuery.error;
+  if (error) {
+    console.log(error);
+  }
 
-      setSkillData(data.skillCards || []);
-    } catch (error) {
-      console.log(error)
-      setError(
-        error instanceof Error
-          ? error.message
-          : "Failed to load trending skills",
-      );
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const loadMatches = async () => {
-    setIsLoading(true);
-    try {
-      const res = await fetch("/api/user/skills/matches?page=1&limit=10");
-
-      if (!res.ok) {
-        throw new Error("Failed to load matches");
-      }
-
-      const data = await res.json();
-      setSkillData(data.skillCards || []);
-    } catch (error) {
-      console.error("Error loading skill matches:", error);
-      setError(
-        error instanceof Error ? error.message : "An unexpected error occurred",
-      );
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const skillData =
+    matchesQuery.data?.skillCards ?? trendingQuery.data?.skillCards ?? [];
 
   useEffect(() => {
-    if (!user) return;
+    if (!user?.id || !hasSkills) return;
 
-    const hasSkills =
-      (user.skills_to_teach?.length ?? 0) > 0 ||
-      (user.skills_to_learn?.length ?? 0) > 0;
-
-    if (hasSkills) {
-      loadMatches();
-    } else {
-      loadTrendingSkills();
-    }
-  }, [user]);
+    queryClient.prefetchQuery({
+      queryKey: ["dashboard-matches", user.id],
+      queryFn: () => fetcher("/api/user/skills/matches?page=1&limit=10"),
+      staleTime: 1000 * 60 * 5,
+    });
+  }, [user?.id, hasSkills, queryClient]);
 
   // const dummySkillData = [
   //   {
@@ -224,7 +208,6 @@ export default function Dashboard() {
           </div>
 
           <div className="w-full max-w-xs space-y-3">
-
             <button
               disabled={isCompleted}
               onClick={() => router.push("/onboarding")}
@@ -335,7 +318,7 @@ export default function Dashboard() {
             ? Array.from({ length: 4 }).map((_, i) => (
                 <SkillCardSkeleton key={i} />
               ))
-            : skillData.map((info, index) => (
+            : skillData.map((info: any, index: any) => (
                 <SkillCard key={index} info={info} />
               ))}
         </div>
