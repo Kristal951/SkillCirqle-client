@@ -71,7 +71,7 @@ export async function POST(req: NextRequest) {
     const geo = await getGeo(req);
 
     const supabase = await createSupabaseServer();
-    const user = await getUser(supabase);
+    const user = await getUser();
 
     if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -108,7 +108,7 @@ export async function POST(req: NextRequest) {
 export async function GET(req: NextRequest) {
   try {
     const supabase = await createSupabaseServer();
-    const user = await getUser(supabase);
+    const user = await getUser();
 
     if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

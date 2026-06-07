@@ -1,15 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { awardTokens } from "@/lib/tokenService";
 import { createSupabaseServer } from "@/lib/supabaseServer";
+import { getUser } from "@/lib/getUser";
 
 export type RewardReason = "onboarding_reward" | "daily_reward" | "post_reward";
 
 export async function POST(req: NextRequest) {
   const supabase = await createSupabaseServer();
   try {
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    const user = await getUser();
+
     if (!user)
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 

@@ -62,3 +62,20 @@ export type ActiveChat = {
   is_online: boolean;
   other_user_id: string
 };
+
+export type Session = {
+  id: string;
+  session_id: string;
+  device_name: string;
+  browser: string;
+  os: string;
+  ip_address: string;
+  is_current: boolean;
+  last_active: string;
+  location: {
+    country: string;
+    city: string;
+    region: string;
+    timezone: string;
+  };
+}

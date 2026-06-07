@@ -2,7 +2,6 @@ import React from "react";
 import {
   ChevronRight,
   Star,
-  ArrowLeftRight,
   User as UserIcon,
 } from "lucide-react";
 import { User } from "@/types/AuthStore";
@@ -18,41 +17,55 @@ export const SearchCard: React.FC<MentorCardProps> = ({
   onViewProfile,
   onPropose,
 }) => {
+  if (!user) return null;
+
   return (
     <div
-      onClick={() => onViewProfile(user?.id)}
-      key={user.id}
-      className="group relative bg-surface/40 border border-border rounded-2xl p-6 hover:border-primary/40 hover:shadow-2xl hover:shadow-primary/5 transition-all cursor-pointer overflow-hidden"
+      onClick={() => onViewProfile(user.id)}
+    
+      className="group relative flex flex-col h-full min-h-95 bg-surface/40 border border-border rounded-2xl p-6 hover:border-primary/40 hover:shadow-2xl hover:shadow-primary/5 transition-all cursor-pointer overflow-hidden"
     >
-      <div className="flex justify-between items-start mb-6">
-        <div className="w-16 h-16 rounded-[1.25rem] overflow-hidden border-2 border-background shadow-lg">
-          <img
-            src={user?.avatar_url || ""}
-            alt={user.name}
-            className="w-full h-full object-cover bg-background"
+      {/* Top content wrapper */}
+      <div className="flex flex-col justify-center items-center mb-4">
+        <div className="w-28 h-28 rounded-full overflow-hidden border-2 border-background shadow-lg">
+          {user.avatar_url ? (
+            <img
+              src={user.avatar_url}
+              alt={user.name || "User avatar"}
+              className="w-full h-full object-cover bg-background"
+            />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center bg-muted text-muted-foreground">
+              <UserIcon size={40} />
+            </div>
+          )}
+        </div>
+        
+        <div className="py-2 text-center">
+          <h1 className="text-2xl font-bold text-text-primary">{user.name}</h1>
+        </div>
+
+        {user.rating !== undefined && (
+          <div className="mt-3 flex items-center gap-2">
+          <Star
+            size={16}
+            fill="currentColor"
+            className="text-yellow-500"
           />
-        </div>
-        <div className="bg-accent/10 text-accent px-2 py-1.5 rounded-lg flex items-center gap-1.5 font-display font-extrabold text-sm border border-accent/20">
-          <span
-            className="material-symbols-outlined"
-            style={{
-              fontVariationSettings: "'FILL' 1",
-              fontSize: "18px",
-            }}
-          >
-            star
+
+          <span className="font-semibold text-sm">
+            {user.rating?.toFixed(1) || "0.0"}
           </span>
-          <span className="text-[12px]">
-            {user.rating ? user.rating.toFixed(2) : "0.00"}
+
+          <span className="text-text-secondary text-sm">
+            rating
           </span>
         </div>
-        {/* <span className="px-3 py-1.5 bg-background border border-border rounded-xl text-[10px] font-black uppercase tracking-wider text-text-secondary group-hover:border-primary/20 transition-colors">
-                      {user.category}
-                    </span> */}
+        )}
       </div>
 
-      <div className="flex flex-wrap gap-2 mt-6">
-        {user?.skills_to_teach?.map((skill) => (
+      <div className="flex flex-wrap gap-2 items-center justify-center py-5">
+        {user.skills_to_teach?.map((skill) => (
           <span
             key={skill}
             className="text-[10px] font-bold px-3 py-1.5 bg-background border border-border rounded-xl text-text-primary group-hover:bg-primary/5 transition-all"
@@ -62,19 +75,23 @@ export const SearchCard: React.FC<MentorCardProps> = ({
         ))}
       </div>
 
-      <div className="flex items-center justify-between mt-8 pt-5 border-t border-border/50">
-        <div className="flex items-center gap-2 text-text-secondary">
-          <span className="material-symbols-outlined">swap_horiz</span>
-          <span className="text-xl font-bold">{user.exchanges}</span>
-          <p className="text-sm">exchanges</p>
-        </div>
+      <div className="flex items-center justify-between gap-4 pt-5 border-t border-border/50">
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onViewProfile(user.id);
+          }}
+          className="flex flex-1 items-center justify-center gap-2 bg-surface/50 text-base text-text-primary hover:bg-surface transition-all px-4 py-3 rounded-lg font-medium"
+        >
+          View Profile
+        </button>
 
         <button
           onClick={(e) => {
             e.stopPropagation();
-            onPropose(user?.id);
+            onPropose(user.id);
           }}
-          className="flex bg-primary px-4 py-3 items-center gap-1 text-text-primary rounded-xl font-black text-[10px] uppercase tracking-widest group-hover:gap-2 group-hover:text-text-primary transition-all"
+          className="flex bg-primary flex-1 px-4 py-3 justify-center items-center gap-1 text-text-primary rounded-xl text-base font-medium group-hover:gap-2 transition-all"
         >
           Propose
           <ChevronRight size={14} />

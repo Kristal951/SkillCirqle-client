@@ -1,5 +1,7 @@
+import { apiFetch } from "@/lib/apiFetch";
+
 export const getUserProfile = async () => {
-  const res = await fetch("/api/auth/profile", {
+  const res = await apiFetch("/api/auth/profile", {
     method: "GET",
     credentials: "include", 
   });

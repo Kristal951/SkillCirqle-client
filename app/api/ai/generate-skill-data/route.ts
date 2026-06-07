@@ -1,11 +1,10 @@
-
 import { generateSkillAssets } from "@/actions/generateSkillData";
 import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
   try {
     const authHeader = req.headers.get("authorization");
-    
+
     if (authHeader !== `Bearer ${process.env.WEBHOOK_SECRET}`) {
       return new NextResponse("Unauthorized", { status: 401 });
     }
@@ -14,7 +13,10 @@ export async function POST(req: Request) {
     const { id, title } = payload.record;
 
     if (!id || !title) {
-      return NextResponse.json({ error: "Missing ID or Title" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Missing ID or Title" },
+        { status: 400 },
+      );
     }
 
     const result = await generateSkillAssets(id, title);

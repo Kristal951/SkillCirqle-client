@@ -80,23 +80,28 @@ const SearchPage = () => {
     const searchLower = searchQuery.toLowerCase().trim();
     const searchTerms = extractSkills(searchQuery);
 
-    return profiles.filter((profile) => {
-      const matchesCategory =
-        selectedCategory === "All" || profile.category === selectedCategory;
+    return profiles
+      .filter(
+        (profile) =>
+          Array.isArray(profile.skills_to_teach) &&
+          profile.skills_to_teach.length > 0,
+      )
+      .filter((profile) => {
+        const matchesCategory =
+          selectedCategory === "All" || profile.category === selectedCategory;
 
-      if (!matchesCategory) return false;
+        if (!matchesCategory) return false;
 
-      if (!searchLower) return true;
+        if (!searchLower) return true;
 
-      const nameMatch = profile.name?.toLowerCase().includes(searchLower);
-      const roleMatch = profile.role?.toLowerCase().includes(searchLower);
-
-      const skillMatch = profile.skills_to_teach?.some((skill: string) =>
-        searchTerms.some((term) => skill.toLowerCase().includes(term)),
-      );
-
-      return nameMatch || roleMatch || skillMatch;
-    });
+        return (
+          profile.name?.toLowerCase().includes(searchLower) ||
+          profile.role?.toLowerCase().includes(searchLower) ||
+          profile.skills_to_teach.some((skill: string) =>
+            searchTerms.some((term) => skill.toLowerCase().includes(term)),
+          )
+        );
+      });
   }, [profiles, searchQuery, selectedCategory]);
 
   const CATEGORY_DATA = [
@@ -115,7 +120,7 @@ const SearchPage = () => {
 
   const handleViewProfile = (id: string | number) => {
     router.push(`/profile/${id}`);
-  }
+  };
 
   return (
     <div className="w-full min-h-screen flex flex-col bg-background md:py-10 gap-10 md:px-8 pb-6 px-3 selection:bg-primary selection:text-white">
@@ -171,35 +176,40 @@ const SearchPage = () => {
       </section>
 
       <main className="w-full max-w-7xl mx-auto">
-          {!loading && filteredProfiles.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-32 text-center">
-              <div className="w-24 h-24 bg-surface rounded-[2.5rem] flex items-center justify-center border border-border mb-6 shadow-inner">
-                <Search size={40} className="text-text-secondary/20" />
-              </div>
-              <h2 className="text-2xl font-bold">No matches found</h2>
-              <p className="text-text-secondary text-sm max-w-xs mt-2 leading-relaxed">
-                We couldn't find any mentors matching "{searchQuery}". Try a
-                different keyword.
-              </p>
-              <button
-                onClick={() => {
-                  setSearchQuery("");
-                  setSelectedCategory("All");
-                }}
-                className="mt-8 px-8 py-3 bg-primary text-white text-xs font-black uppercase tracking-widest rounded-2xl hover:scale-105 active:scale-95 transition-all shadow-xl shadow-primary/20"
-              >
-                Reset Filters
-              </button>
+        {!loading && filteredProfiles.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-32 text-center">
+            <div className="w-24 h-24 bg-surface rounded-[2.5rem] flex items-center justify-center border border-border mb-6 shadow-inner">
+              <Search size={40} className="text-text-secondary/20" />
             </div>
-          ) : loading && filteredProfiles.length === 0 ? (
-            <ProfileGridSkeleton/>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-8">
-              {filteredProfiles.map((mentor) => (
-               <SearchCard key={mentor?.id} user={mentor} onViewProfile={handleViewProfile} onPropose={handlePropose} />
-              ))} 
-            </div>
-          )}
+            <h2 className="text-2xl font-bold">No matches found</h2>
+            <p className="text-text-secondary text-sm max-w-xs mt-2 leading-relaxed">
+              We couldn't find any mentors matching "{searchQuery}". Try a
+              different keyword.
+            </p>
+            <button
+              onClick={() => {
+                setSearchQuery("");
+                setSelectedCategory("All");
+              }}
+              className="mt-8 px-8 py-3 bg-primary text-white text-xs font-black uppercase tracking-widest rounded-2xl hover:scale-105 active:scale-95 transition-all shadow-xl shadow-primary/20"
+            >
+              Reset Filters
+            </button>
+          </div>
+        ) : loading && filteredProfiles.length === 0 ? (
+          <ProfileGridSkeleton />
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-8">
+            {filteredProfiles.map((mentor) => (
+              <SearchCard
+                key={mentor?.id}
+                user={mentor}
+                onViewProfile={handleViewProfile}
+                onPropose={handlePropose}
+              />
+            ))}
+          </div>
+        )}
       </main>
     </div>
   );

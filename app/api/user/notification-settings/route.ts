@@ -1,13 +1,11 @@
+import { getUser } from "@/lib/getUser";
 import { createSupabaseServer } from "@/lib/supabaseServer";
 import { NextResponse } from "next/server";
 
 export async function GET() {
   try {
     const supabase = await createSupabaseServer();
-
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    const user = await getUser()
 
     if (!user) {
       return NextResponse.json({ success: false }, { status: 401 });
@@ -36,9 +34,7 @@ export async function PATCH(req: Request) {
   try {
     const supabase = await createSupabaseServer();
 
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+   const user = await getUser()
 
     if (!user) {
       return NextResponse.json({ success: false }, { status: 401 });

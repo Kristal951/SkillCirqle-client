@@ -1,10 +1,14 @@
 import { getUser } from "@/lib/getUser";
 import { createSupabaseServer } from "@/lib/supabaseServer";
 import { getOrSetCache } from "@/utils/cacheHelper";
+import { NextResponse } from "next/server";
 
 export async function GET() {
   const supabase = await createSupabaseServer();
-  const user = await getUser(supabase)
+  const user = await getUser();
+
+  if (!user)
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   let profile = null;
 
@@ -24,5 +28,5 @@ export async function GET() {
     );
   }
 
-  return Response.json({ user, profile });
+  return NextResponse.json({ user, profile });
 }

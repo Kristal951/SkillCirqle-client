@@ -4,6 +4,7 @@ import Navbar from "@/components/dashboard/Navbar";
 import Sidebar from "@/components/dashboard/Sidebar";
 import BottomBar from "@/components/ui/BottomBar";
 import Spinner from "@/components/ui/Spinner";
+import { useClearSessionCache } from "@/hooks/useSessions";
 import { LogoutModalProvider, useLogoutModal } from "@/providers/LogoutContext";
 import { useAuthStore } from "@/store/useAuthStore";
 import { useChatStore } from "@/store/useChatStore";
@@ -34,6 +35,7 @@ export default function RootLayout({
     setLoggingOut(true);
     console.log('clicked')
     try {
+      useClearSessionCache();
       logout();
     } catch (error) {
       console.error("Logout failed:", error);
