@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseServer } from "@/lib/supabaseServer";
-import { withRateLimit } from "@/lib/withRateLimiter";
 
-async function handler(req: NextRequest) {
+export async function POST(req: NextRequest) {
   try {
     const { newPassword } = await req.json();
 
@@ -29,8 +28,4 @@ async function handler(req: NextRequest) {
   } catch (err) {
     return NextResponse.json({ error: "Server error" }, { status: 500 });
   }
-}
-
-export async function POST(req: NextRequest) {
-  return withRateLimit(req, handler, "auth-password-update");
 }
