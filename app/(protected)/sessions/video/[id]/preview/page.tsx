@@ -1,11 +1,14 @@
 "use client";
 
+import {
+  CallToolbar,
+  ToolbarButtonConfig,
+} from "@/components/sessions/SessionToolBar";
 import Spinner from "@/components/ui/Spinner";
 import { useAuthStore } from "@/store/useAuthStore";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
-// --- CUSTOM DROPDOWN WITH ICONS COMPONENT ---
 interface CustomSelectProps {
   label: string;
   icon: string;
@@ -43,7 +46,9 @@ const CustomSelect = ({
 
   return (
     <div className="space-y-1 relative" ref={dropdownRef}>
-      <label className="text-xs text-text-secondary font-medium px-1">{label}</label>
+      <label className="text-xs text-text-secondary font-medium px-1">
+        {label}
+      </label>
 
       <button
         type="button"
@@ -101,7 +106,6 @@ const CustomSelect = ({
   );
 };
 
-// --- MAIN VIDEO PREVIEW COMPONENT ---
 const VideoPreview = () => {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -166,7 +170,6 @@ const VideoPreview = () => {
       setMicrophones(mics);
       setSpeakers(outputs);
 
-      // If previous device is gone, fallback instantly to the first available profile
       setSelectedCamera((prev) =>
         prev && cams.some((c) => c.deviceId === prev)
           ? prev
@@ -325,6 +328,19 @@ const VideoPreview = () => {
     setCamOn((prev) => !prev);
   };
 
+  const toolbarButtonsConfig: ToolbarButtonConfig[] = [
+    {
+      icon: micOn ? "mic" : "mic_off",
+      onClick: () => toggleMic(),
+      variant: micOn ? "standard" : "active-primary",
+    },
+    {
+      icon: camOn ? "videocam" : "videocam_off",
+      onClick: () => toggleCam(),
+      variant: camOn ? "standard" : "active-primary",
+    },
+  ];
+
   // Synchronize stream with video markup
   useEffect(() => {
     const video = videoRef.current;
@@ -379,7 +395,7 @@ const VideoPreview = () => {
         )}
 
         {!error && !loading && (
-          <div className="w-full h-full max-w-4xl max-h-135 aspect-video relative bg-surface/50 rounded-3xl overflow-hidden shadow-2xl">
+          <div className="w-full h-full max-h-135 aspect-video relative bg-surface/50 rounded-3xl overflow-hidden shadow-2xl">
             <video
               ref={videoRef}
               autoPlay
@@ -397,24 +413,7 @@ const VideoPreview = () => {
               />
             </div>
 
-            <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-4 bg-zinc-950/80 border border-white/10 backdrop-blur-xl px-4 py-2.5 rounded-full z-10">
-              <button
-                onClick={toggleMic}
-                className={`w-12 h-12 rounded-full flex items-center justify-center text-white transition-all ${micOn ? "bg-white/10 hover:bg-white/20" : "bg-red-500 hover:bg-red-600 shadow-lg shadow-red-500/20"}`}
-              >
-                <span className="material-symbols-outlined text-xl">
-                  {micOn ? "mic" : "mic_off"}
-                </span>
-              </button>
-              <button
-                onClick={toggleCam}
-                className={`w-12 h-12 rounded-full flex items-center justify-center text-white transition-all ${camOn ? "bg-white/10 hover:bg-white/20" : "bg-red-500 hover:bg-red-600 shadow-lg shadow-red-500/20"}`}
-              >
-                <span className="material-symbols-outlined text-xl">
-                  {camOn ? "videocam" : "videocam_off"}
-                </span>
-              </button>
-            </div>
+            <CallToolbar buttons={toolbarButtonsConfig} />
           </div>
         )}
       </div>
@@ -443,7 +442,9 @@ const VideoPreview = () => {
           </div> */}
 
           <div className="space-y-2">
-            <h1 className="text-xs uppercase tracking-wide text-text-secondary">Device settings</h1>
+            <h1 className="text-xs uppercase tracking-wide text-text-secondary">
+              Device settings
+            </h1>
             <CustomSelect
               label="Camera"
               icon="videocam"

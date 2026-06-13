@@ -5,8 +5,8 @@
 ========================= */
 :root {
   /* Base */
- --color-background-base: #f8fafc;
- --color-border: rgba(108, 63, 197, 0.25);
+  --color-background-base: #f8fafc;
+  --color-border: rgba(108, 63, 197, 0.25);
 
   /* Text */
   --color-text-primary: #0f172a;
@@ -105,9 +105,9 @@ body {
   }
 }
 
-  .icon-filled {
-    font-variation-settings: 'FILL' 1;
-  }
+.icon-filled {
+  font-variation-settings: "FILL" 1;
+}
 
 html {
   transition:
@@ -203,4 +203,16 @@ html {
   word-wrap: normal;
   direction: ltr;
   -webkit-font-smoothing: antialiased;
+}
+
+.prose-editor .ProseMirror {
+  outline: none;
+  padding: 1rem;
+  min-height: 200px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.prose-editor .ProseMirror p {
+  margin: 0 0 0.5rem 0;
 }

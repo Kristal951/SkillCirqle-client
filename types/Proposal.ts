@@ -1,6 +1,13 @@
 import { User } from "@supabase/supabase-js";
 
-export type ProposalStatus = "pending" | "completed" | "active" | "rejected";
+export type ProposalStatus = 
+  | "pending" 
+  | "accepted" 
+  | "declined" 
+  | "withdrawn" 
+  | "expired" 
+  | "negotiating"
+  | "completed";
 
 export type EngagementType = "learn" | "swap";
 export type SessionType = "quick" | "standard";

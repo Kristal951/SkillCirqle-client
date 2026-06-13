@@ -4,7 +4,6 @@ import { getSocket } from "@/lib/socket";
 
 export async function createProposal(data: CreateProposalInput) {
   const supabase = await getSupabaseBrowserClient();
-  console.log("1 - Starting with data", data);
 
   const durationMap = {
     quick: 20,
@@ -46,9 +45,6 @@ export async function createProposal(data: CreateProposalInput) {
     })
     .select("id")
     .single();
-
-  console.log("2 - Response received");
-  console.log(proposal);
 
   if (error) {
     console.error(error);

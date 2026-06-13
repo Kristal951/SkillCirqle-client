@@ -28,17 +28,6 @@ const ProposalCard = ({ p, statusStyles }: Props) => {
   const userId = user?.id || "";
   const router = useRouter();
 
-  // const formatConfig: Record<SessionFormat, { icon: string; label: string }> = {
-  //   "one-on-one": {
-  //     icon: "person",
-  //     label: "One-on-One",
-  //   },
-  //   group: {
-  //     icon: "groups",
-  //     label: "Group Session",
-  //   },
-  // };
-
   const typeConfig: Record<EngagementType, { icon: string; label: string }> = {
     learn: {
       icon: "psychology",
@@ -50,7 +39,6 @@ const ProposalCard = ({ p, statusStyles }: Props) => {
     },
   };
 
-  // const format = formatConfig[p.format] ?? formatConfig["one-on-one"];
   const type = typeConfig[p.type] ?? typeConfig["swap"];
 
   const formattedDate = React.useMemo(
@@ -74,16 +62,13 @@ const ProposalCard = ({ p, statusStyles }: Props) => {
       const proposalId = p?.id;
       await updateProposalStatus(
         proposalId,
-        "active" as ProposalStatus,
+        "accepted" as ProposalStatus,
         senderName,
         senderImage,
         link,
       );
     } catch (err) {
-      toast.error(
-        "Failed to accept proposal",
-        `We'll let ${firstName} know about this.`,
-      );
+      toast.error("Failed to accept proposal.", "please try again later.");
       console.error(err);
     }
   };
@@ -97,7 +82,7 @@ const ProposalCard = ({ p, statusStyles }: Props) => {
       const proposalId = p?.id;
       await updateProposalStatus(
         proposalId,
-        "rejected" as ProposalStatus,
+        "declined" as ProposalStatus,
         senderName,
         senderImage,
         link,
@@ -129,13 +114,13 @@ const ProposalCard = ({ p, statusStyles }: Props) => {
       layout
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="p-5 sm:p-6 bg-surface rounded-2xl border border-border hover:border-primary/30 transition-all shadow-sm"
+      className="p-5 sm:p-6 bg-surface/50 rounded-2xl border border-border hover:border-primary/30 transition-all shadow-sm"
     >
       <div className="flex justify-between items-start mb-6 gap-2">
         <div className="flex gap-3 sm:gap-4 items-center">
           <img
             src={p.partnerImage || "/default-avatar.png"}
-            className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl object-cover ring-2 ring-background"
+            className="w-20 h-20 rounded-full object-cover ring-2 ring-background"
             alt="avatar"
           />
 
@@ -144,18 +129,6 @@ const ProposalCard = ({ p, statusStyles }: Props) => {
               {p.partnerName}
             </h2>
             <div className="flex gap-2">
-              <div className="flex bg-primary/20 items-center px-2 py-1 border border-border justify-center rounded gap-1 text-xs text-text-primary">
-                <span
-                  className="material-symbols-outlined text-sm"
-                  style={{ fontSize: "12px" }}
-                >
-                  person
-                </span>
-                <p className="text-[9px] font-headline font-bold uppercase tracking-widest">
-                  One-on-One
-                </p>
-              </div>
-
               <div className="flex bg-accent/20 items-center px-2 py-1 border border-accent/20 justify-center rounded gap-1 text-xs text-accent">
                 <span
                   className="material-symbols-outlined text-sm"
@@ -184,7 +157,7 @@ const ProposalCard = ({ p, statusStyles }: Props) => {
         <div className="flex flex-col md:flex-row items-center gap-4">
           <div className="w-full flex-1 bg-background/50 border border-border p-4 rounded-xl">
             <p className="text-[10px] text-text-secondary uppercase font-bold tracking-widest mb-2">
-              {!p.isSender ? `${firstName} wants to learn` : "I want to learn"}
+              {!p.isSender ? ` wants to learn` : "I want to learn"}
             </p>
 
             <div className="flex items-center gap-3">
@@ -221,12 +194,12 @@ const ProposalCard = ({ p, statusStyles }: Props) => {
           )}
         </div>
 
-        <div className="py-3">
+        {/* <div className="py-3">
           <p className="text-xs text-text-secondary">{p?.message}</p>
-        </div>
+        </div> */}
       </div>
 
-      <div className="flex flex-row items-center justify-between pt-6 border-t border-border gap-4">
+      <div className="flex flex-row items-center justify-between pt-6  gap-4">
         <div className="flex justify-between w-full sm:w-auto sm:gap-6">
           <div className="flex items-center gap-2 text-text-secondary">
             <span className="material-symbols-outlined text-base text-accent">
@@ -239,34 +212,14 @@ const ProposalCard = ({ p, statusStyles }: Props) => {
         </div>
 
         {!p.isSender && p.status === "pending" && (
-          <div className="flex gap-2 w-full sm:w-auto">
+          <div className="flex gap-4 w-full sm:w-auto">
             <button
               disabled={updatingStatus}
               onClick={declineProposal}
               className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 rounded-xl border border-border hover:bg-rose-500/10 hover:text-rose-500 transition-all text-xs sm:text-sm font-bold disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <AnimatePresence mode="wait">
-                {updatingStatus ? (
-                  <motion.div
-                    key="spinner"
-                    initial={{ opacity: 0, scale: 0.8 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.8 }}
-                  >
-                    <Spinner size={16} />
-                  </motion.div>
-                ) : (
-                  <motion.div
-                    key="content"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    className="flex items-center gap-2"
-                  >
-                    <X size={14} />
-                    <span>Decline</span>
-                  </motion.div>
-                )}
-              </AnimatePresence>
+              <X size={14} />
+              <span>Decline</span>
             </button>
 
             <button
@@ -314,7 +267,7 @@ const ProposalCard = ({ p, statusStyles }: Props) => {
           </div>
         )}
 
-        {p.status === "active" && (
+        {p.status === "accepted" && (
           <div className="flex">
             <button
               onClick={handleGotoChat}

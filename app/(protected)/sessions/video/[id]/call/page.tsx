@@ -3,7 +3,12 @@ import { use, useEffect, useRef, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Script from "next/script";
 import { useAuthStore } from "@/store/useAuthStore";
-import { CallToolbar, ToolbarButtonConfig } from "@/components/sessions/SessionToolBar";
+import {
+  CallToolbar,
+  ToolbarButtonConfig,
+} from "@/components/sessions/SessionToolBar";
+import Whiteboard from "@/components/sessions/WhiteBoard";
+import Notes from "@/components/sessions/Notes";
 
 declare global {
   interface Window {
@@ -23,6 +28,8 @@ const CallPage = ({ params }: { params: Promise<{ id: string }> }) => {
   const [camOn, setCamOn] = useState(true);
   const [isSharing, setIsSharing] = useState(false);
   const [isJitsiLoaded, setIsJitsiLoaded] = useState(false);
+  const [showWhiteBoard, setShowWhiteBoard] = useState(false);
+  const [showNotesPanel, setShowNotesPanel] = useState(false);
 
   const roomName = decodeURIComponent(id).replace(/\s+/g, "-");
 
@@ -61,10 +68,18 @@ const CallPage = ({ params }: { params: Promise<{ id: string }> }) => {
 
       apiRef.current = api;
 
-      api.on("audioMuteStatusChanged", ({ muted }: { muted: boolean }) => setMicOn(!muted));
-      api.on("videoMuteStatusChanged", ({ muted }: { muted: boolean }) => setCamOn(!muted));
-      api.on("screenSharingStatusChanged", ({ on }: { on: boolean }) => setIsSharing(on));
-      api.on("readyToClose", () => router.push(`/sessions/video/${id}/preview`));
+      api.on("audioMuteStatusChanged", ({ muted }: { muted: boolean }) =>
+        setMicOn(!muted),
+      );
+      api.on("videoMuteStatusChanged", ({ muted }: { muted: boolean }) =>
+        setCamOn(!muted),
+      );
+      api.on("screenSharingStatusChanged", ({ on }: { on: boolean }) =>
+        setIsSharing(on),
+      );
+      api.on("readyToClose", () =>
+        router.push(`/sessions/video/${id}/preview`),
+      );
     } catch (err) {
       console.error("Jitsi init error:", err);
     }
@@ -102,6 +117,16 @@ const CallPage = ({ params }: { params: Promise<{ id: string }> }) => {
       variant: "standard",
     },
     {
+      icon: "draw",
+      onClick: () => setShowWhiteBoard((prev) => !prev),
+      variant: showWhiteBoard ? "active-primary" : "standard",
+    },
+    {
+      icon: "notes",
+      onClick: () => setShowNotesPanel((prev) => !prev),
+      variant: showNotesPanel ? "active-primary" : "standard",
+    },
+    {
       icon: "back_hand",
       onClick: () => apiRef.current?.executeCommand("toggleRaiseHand"),
       variant: "standard",
@@ -125,6 +150,18 @@ const CallPage = ({ params }: { params: Promise<{ id: string }> }) => {
       <div className="h-full w-full relative bg-background overflow-hidden">
         <div ref={jitsiRef} className="w-full h-full" />
         <CallToolbar buttons={toolbarButtonsConfig} />
+
+        {showWhiteBoard && (
+          <div className="w-full h-full border-l absolute top-0 right-0 left-0 border-border">
+            <Whiteboard sessionId={id} />
+          </div>
+        )}
+
+        {showNotesPanel && (
+          <div className="w-full h-full border-l absolute top-0 right-0 left-0 border-border">
+            <Notes sessionId={id} />
+          </div>
+        )}
       </div>
     </>
   );

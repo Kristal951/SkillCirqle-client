@@ -2,30 +2,28 @@
 
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowRightLeft, Check, X, Info } from "lucide-react";
 import { useProposalStore } from "@/store/useProposalStore";
 import { useAuthStore } from "@/store/useAuthStore";
 import { EngagementType, Proposal, ProposalStatus } from "@/types/Proposal";
-import Spinner from "@/components/ui/Spinner";
 import ProposalCard from "@/components/proposals/ProposalCard";
 import { ProposalCardSkeleton } from "@/components/proposals/ProposalFeedSkeleton";
+import Sidebar from "@/components/proposals/Sidebar";
+import { Info } from "lucide-react";
 
 type ProposalTab = "received" | "sent";
 
 export type ProposalView = {
   id: string;
-
   partnerName: string;
   partnerImage: string;
-
   iTeach: string;
   iLearn: string;
   isSender: boolean;
   format: string;
   type: EngagementType;
-
-  theyTeach: string;
-  theyLearn: string;
+  goal: string;
+  expectedSessions: number;
+  sessionDuration: number;
   skillToTeachIcon: string;
   skillToLearnIcon: string;
   senderID: string;
@@ -37,10 +35,13 @@ export type ProposalView = {
 };
 
 const statusStyles: Record<ProposalStatus, string> = {
-  pending: "bg-amber-500/10 text-amber-500 border-amber-500/20",
-  active: "bg-blue-500/10 text-blue-500 border-blue-500/20",
-  completed: "bg-emerald-500/10 text-emerald-500 border-emerald-500/20",
-  rejected: "bg-rose-500/10 text-rose-500 border-rose-500/20",
+  pending: "bg-yellow-500/10 text-yellow-500 border-yellow-500/20",
+  accepted: "bg-green-500/10 text-green-500 border-green-500/20",
+  declined: "bg-rose-500/10 text-rose-500 border-rose-500/20",
+  withdrawn: "bg-zinc-500/10 text-zinc-500 border-zinc-500/20",
+  expired: "bg-orange-500/10 text-orange-500 border-orange-500/20",
+  negotiating: "bg-blue-500/10 text-blue-500 border-blue-500/20",
+  completed: "bg-green-500/10 text-green-500 border-green-500/20"
 };
 
 const ProposalsPage = () => {
@@ -73,10 +74,13 @@ const ProposalsPage = () => {
         return acc;
       },
       {
-        active: 0,
         pending: 0,
-        completed: 0,
-        rejected: 0,
+        accepted: 0,
+        declined: 0,
+        withdrawn: 0,
+        expired: 0,
+        negotiating: 0,
+        completed: 0
       } as Record<ProposalStatus, number>,
     );
   };
@@ -86,33 +90,27 @@ const ProposalsPage = () => {
   const mapProposal = (p: any): ProposalView => {
     const isSender = p.sender.id === userId;
     const status = p.status as ProposalStatus;
-
-    const me = isSender ? p.sender : p.receiver;
     const them = isSender ? p.receiver : p.sender;
 
     return {
       id: p.id,
-
       partnerName: them?.name || "Unknown",
       partnerImage: them?.avatar_url || "",
       format: p.session_format,
       type: p.engagement_type,
-
-      iTeach: p.teach_skill,
-      iLearn: p.learn_skill,
       isSender,
       senderID: p.sender.id,
       receiverID: p.receiver.id,
-
-      theyTeach: isSender ? p.learn_skill : p.teach_skill,
-      theyLearn: isSender ? p.teach_skill : p.learn_skill,
+      message: p.message,
+      goal: p.goal,
+      expectedSessions: p.expected_number_of_sessions,
+      sessionDuration: p.session_duration_minutes,
+      dateCreated: new Date(p.created_at).getTime(),
+      status,
+      iLearn: isSender ? p.learn_skill?.title : p.teach_skill?.title,
+      iTeach: isSender ? p.teach_skill?.title : p.learn_skill?.title,
       skillToTeachIcon: "school",
       skillToLearnIcon: "psychology",
-      message: p.message,
-
-      dateCreated: new Date(p.created_at).getTime(),
-
-      status,
     };
   };
 
@@ -123,7 +121,7 @@ const ProposalsPage = () => {
   );
 
   return (
-    <div className="w-full h-full flex flex-col px-4 sm:px-8 py-6 sm:py-10 max-w-7xl mx-auto">
+    <div className="w-full h-full flex flex-col px-8 py-10 max-w-8xl mx-auto">
       <header className="flex flex-col lg:flex-row lg:justify-between lg:items-end gap-6">
         <div className="text-center lg:text-left">
           <h1 className="text-3xl sm:text-4xl font-bold tracking-tight">
@@ -167,7 +165,7 @@ const ProposalsPage = () => {
         </div>
       </header>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-8 sm:mt-12">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-10 mt-8 ">
         <div className="lg:col-span-2 space-y-6 order-2 lg:order-1">
           <AnimatePresence mode="wait">
             {loading ? (
@@ -196,57 +194,7 @@ const ProposalsPage = () => {
           </AnimatePresence>
         </div>
 
-        <aside className="lg:col-span-1 space-y-6 order-1 lg:order-2">
-          <div className="bg-surface rounded-3xl p-6 border border-border">
-            <h3 className="font-bold mb-4 text-lg">Activity Summary</h3>
-            <div className="grid grid-cols-2 lg:grid-cols-1 gap-3">
-              {[
-                {
-                  label: "Active",
-                  value: counts.active,
-                  color: "text-blue-500",
-                },
-                {
-                  label: "Pending",
-                  value: counts.pending,
-                  color: "text-amber-500",
-                },
-                {
-                  label: "Completed",
-                  value: counts.completed,
-                  color: "text-emerald-500",
-                },
-                {
-                  label: "Rejected",
-                  value: counts.rejected,
-                  color: "text-red-500",
-                },
-              ].map((stat, i) => (
-                <div
-                  key={i}
-                  className="flex justify-between items-center p-3 bg-background rounded-xl border border-border"
-                >
-                  <span className="text-xs text-text-secondary font-medium">
-                    {stat.label}
-                  </span>
-                  <span className={`font-bold text-sm ${stat.color}`}>
-                    {stat.value}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="hidden sm:block bg-primary/5 rounded-3xl p-6 border border-primary/10">
-            <h3 className="font-bold text-primary mb-2 flex items-center gap-2">
-              <Info size={16} /> Pro-Tip
-            </h3>
-            <p className="text-xs text-text-secondary leading-relaxed">
-              Proposals expire after 48 hours. Quick responses increase your
-              matching score!
-            </p>
-          </div>
-        </aside>
+        <Sidebar counts={counts} />
       </div>
     </div>
   );

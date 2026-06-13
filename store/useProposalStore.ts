@@ -101,7 +101,7 @@ export const useProposalStore = create<ProposalStore>((set, get) => ({
 
       if (socket) {
         const action =
-          status === "active"
+          status === "accepted"
             ? "Accepted"
             : status === "completed"
               ? "Completed"

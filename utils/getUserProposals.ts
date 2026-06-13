@@ -9,25 +9,34 @@ export async function getUserProposals(userId: string) {
     .from("proposals")
     .select(
       `
-  id,
-  message,
-  status,
-  engagement_type,
-  session_format,
-  teach_skill,
-  learn_skill,
-  created_at,
-  sender:sender_id (
     id,
-    name,
-    avatar_url
+    message,
+    status,
+    engagement_type,
+    session_format,
+    goal,
+    expected_number_of_sessions,
+    session_duration_minutes,
+    created_at,
+    sender:sender_id (
+      id,
+      name,
+      avatar_url
+    ),
+    receiver:receiver_id (
+      id,
+      name,
+      avatar_url
+    ),
+   teach_skill:skills!proposals_teach_skill_id_fkey (
+    id,
+    title
   ),
-  receiver:receiver_id (
+  learn_skill:skills!proposals_learn_skill_id_fkey (
     id,
-    name,
-    avatar_url
+    title
   )
-`,
+  `,
     )
     .or(`sender_id.eq.${userId},receiver_id.eq.${userId}`)
     .order("created_at", { ascending: false });
@@ -36,5 +45,6 @@ export async function getUserProposals(userId: string) {
     throw new Error(error.message);
   }
 
+  console.log(data)
   return data;
 }
