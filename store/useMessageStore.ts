@@ -56,7 +56,7 @@ export const useMessageActionsStore = create<MessageActionsState>(
         });
         toast.info("Message deleted");
       } catch (error) {
-        console.log(error);
+        console.error(error);
       }
     },
   }),

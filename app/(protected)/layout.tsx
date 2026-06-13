@@ -1,11 +1,12 @@
 "use client";
+
 import MediaViewer from "@/components/chat/MediaViewer";
 import Navbar from "@/components/dashboard/Navbar";
 import Sidebar from "@/components/dashboard/Sidebar";
 import BottomBar from "@/components/ui/BottomBar";
 import Spinner from "@/components/ui/Spinner";
 import { useClearSessionCache } from "@/hooks/useSessions";
-import { LogoutModalProvider, useLogoutModal } from "@/providers/LogoutContext";
+import { useLogoutModal } from "@/providers/LogoutContext";
 import { useAuthStore } from "@/store/useAuthStore";
 import { useChatStore } from "@/store/useChatStore";
 import { usePathname } from "next/navigation";
@@ -19,6 +20,8 @@ export default function RootLayout({
   const [isSideBarOpen, setIsSideBarOpen] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
   const [isInChatPage, setIsInChatPage] = useState(false);
+  const [isInSessionPage, setIsInSessionPage] = useState(false);
+
   const { activeChat } = useChatStore();
   const pathname = usePathname();
   const { logout } = useAuthStore();
@@ -28,24 +31,34 @@ export default function RootLayout({
 
   useEffect(() => {
     setIsInChatPage(pathname.startsWith("/chat"));
-  });
+  }, [pathname]);
+  useEffect(() => {
+    setIsInSessionPage(pathname.startsWith("/session"));
+  }, [pathname]);
+
+  const clearSessionCache = useClearSessionCache();
+
+  const handleOpenLogout = () => {
+    openLogoutModal();
+  };
 
   const handleLogout = async () => {
-    openLogoutModal();
     setLoggingOut(true);
-    console.log('clicked')
+
     try {
-      useClearSessionCache();
-      logout();
+      clearSessionCache();
+      await logout();
     } catch (error) {
       console.error("Logout failed:", error);
+    } finally {
       setLoggingOut(false);
+      closeLogoutModal();
     }
   };
 
   return (
     <div className="flex relative flex-col h-screen">
-      <Navbar setIsSideBarOpen={setIsSideBarOpen} />
+      {!isInSessionPage && <Navbar setIsSideBarOpen={setIsSideBarOpen} />}
 
       <div className="flex flex-1 overflow-hidden">
         <Sidebar
@@ -54,18 +67,16 @@ export default function RootLayout({
         />
 
         <main
-          className={`flex-1 overflow-y-auto mt-17.5 ${isInChatPage && activeChat ? "mb-0" : "mb-13 md:mb-0"}`}
+          className={`flex-1 overflow-y-auto ${isInSessionPage ? 'mt-0' : 'mt-17.5'} ${
+            isInChatPage && activeChat  ? "mb-0" : "mb-13 md:mb-0"
+          }`}
         >
           {children}
         </main>
-
-        {/* <div className="md:hidden lg:hidden absolute bottom-2 right-2">
-          <ThemeToggle />
-        </div> */}
       </div>
 
       {loggingOut && (
-        <div className="fixed inset-0 z-100 bg-black/70 flex items-center justify-center">
+        <div className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center">
           <Spinner size={48} />
         </div>
       )}
@@ -73,7 +84,7 @@ export default function RootLayout({
       <MediaViewer />
 
       {showLogoutModal && (
-        <div className="fixed inset-0 z-100 bg-black/70 flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center p-4">
           <div className="bg-surface rounded-xl shadow-2xl max-w-sm w-full p-6 space-y-4">
             <div className="text-center">
               <h3 className="text-2xl font-bold text-primary">
@@ -87,8 +98,8 @@ export default function RootLayout({
 
             <div className="flex flex-col sm:flex-row gap-3 py-4">
               <button
-                onClick={() => closeLogoutModal()}
-                className="flex-1 px-4 py-2 b rounded-lg bg-text-primary text-primary font-medium transition-colors"
+                onClick={closeLogoutModal}
+                className="flex-1 px-4 py-2 rounded-lg bg-text-primary text-primary font-medium transition-colors"
               >
                 Cancel
               </button>

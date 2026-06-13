@@ -52,7 +52,7 @@ const OnboardingCompleted = () => {
           }, stepTime);
         }
       } catch (error) {
-        console.log(error, "award token error");
+        console.error(error, "award token error");
         toast.error("Something went wrong");
       }
     };

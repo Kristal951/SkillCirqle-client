@@ -65,7 +65,6 @@ export async function PATCH(req: NextRequest) {
       console.error("Supabase update error:", error);
       throw error;
     }
-    // console.log(data);
 
     return NextResponse.json({ success: true, user: data });
   } catch (error: any) {

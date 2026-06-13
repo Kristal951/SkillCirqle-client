@@ -3,7 +3,24 @@
 import { User } from "@/types/AuthStore";
 import { createContext, useContext } from "react";
 
-const UserProfileContext = createContext<{ user: User | null }>({
+type UserSkill = {
+  skill_id: string;
+  skills: {
+    id: string;
+    title: string;
+  };
+};
+
+type UserProfile = {
+  id: string;
+  name: string;
+  avatar_url: string;
+  bio: string;
+  skills_to_teach: string[];
+  user_skills: UserSkill[];
+};
+
+const UserProfileContext = createContext<{ user: any }>({
   user: null,
 });
 
@@ -11,7 +28,7 @@ export const UserProfileProvider = ({
   user,
   children,
 }: {
-  user: User;
+  user: any;
   children: React.ReactNode;
 }) => {
   return (

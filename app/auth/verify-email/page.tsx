@@ -124,7 +124,7 @@ const CheckMail = ({
       setCountdown(60);
       toast.success("New verification code sent");
     } catch (err: any) {
-      console.log(err);
+      console.error(err);
       toast.error(err?.message);
     } finally {
       setResending(false);

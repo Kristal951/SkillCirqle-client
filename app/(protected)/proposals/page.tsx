@@ -5,12 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ArrowRightLeft, Check, X, Info } from "lucide-react";
 import { useProposalStore } from "@/store/useProposalStore";
 import { useAuthStore } from "@/store/useAuthStore";
-import {
-  EngagementType,
-  Proposal,
-  ProposalStatus,
-  SessionFormat,
-} from "@/types/Proposal";
+import { EngagementType, Proposal, ProposalStatus } from "@/types/Proposal";
 import Spinner from "@/components/ui/Spinner";
 import ProposalCard from "@/components/proposals/ProposalCard";
 import { ProposalCardSkeleton } from "@/components/proposals/ProposalFeedSkeleton";
@@ -26,7 +21,7 @@ export type ProposalView = {
   iTeach: string;
   iLearn: string;
   isSender: boolean;
-  format: SessionFormat;
+  format: string;
   type: EngagementType;
 
   theyTeach: string;

@@ -2,12 +2,7 @@
 
 import React from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import {
-  EngagementType,
-  Proposal,
-  ProposalStatus,
-  SessionFormat,
-} from "@/types/Proposal";
+import { EngagementType, Proposal, ProposalStatus } from "@/types/Proposal";
 import { Check, X } from "lucide-react";
 import { ProposalView } from "@/app/(protected)/proposals/page";
 import { useProposalStore } from "@/store/useProposalStore";
@@ -33,16 +28,16 @@ const ProposalCard = ({ p, statusStyles }: Props) => {
   const userId = user?.id || "";
   const router = useRouter();
 
-  const formatConfig: Record<SessionFormat, { icon: string; label: string }> = {
-    "one-on-one": {
-      icon: "person",
-      label: "One-on-One",
-    },
-    group: {
-      icon: "groups",
-      label: "Group Session",
-    },
-  };
+  // const formatConfig: Record<SessionFormat, { icon: string; label: string }> = {
+  //   "one-on-one": {
+  //     icon: "person",
+  //     label: "One-on-One",
+  //   },
+  //   group: {
+  //     icon: "groups",
+  //     label: "Group Session",
+  //   },
+  // };
 
   const typeConfig: Record<EngagementType, { icon: string; label: string }> = {
     learn: {
@@ -55,7 +50,7 @@ const ProposalCard = ({ p, statusStyles }: Props) => {
     },
   };
 
-  const format = formatConfig[p.format] ?? formatConfig["one-on-one"];
+  // const format = formatConfig[p.format] ?? formatConfig["one-on-one"];
   const type = typeConfig[p.type] ?? typeConfig["swap"];
 
   const formattedDate = React.useMemo(
@@ -154,10 +149,10 @@ const ProposalCard = ({ p, statusStyles }: Props) => {
                   className="material-symbols-outlined text-sm"
                   style={{ fontSize: "12px" }}
                 >
-                  {format?.icon}
+                  person
                 </span>
                 <p className="text-[9px] font-headline font-bold uppercase tracking-widest">
-                  {format?.label}
+                  One-on-One
                 </p>
               </div>
 

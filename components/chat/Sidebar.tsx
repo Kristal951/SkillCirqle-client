@@ -12,21 +12,25 @@ import { getSocket } from "@/lib/socket";
 import { formatLastSeenShort } from "@/utils/formatTime";
 
 const Sidebar = () => {
-  const { activeChat, setActiveChat } = useChatStore();
+  const {
+    conversations: chats,
+    setConversations,
+    lastSeen: lastSeenMap,
+    setLastSeen,
+    activeChat,
+    setActiveChat,
+  } = useChatStore();
   const { user } = useAuthStore();
-
-  const chats = useChatStore((s) => s.conversations);
-  const setConversations = useChatStore((s) => s.setConversations);
-  const lastSeenMap = useChatStore((s) => s.lastSeen);
-  const setLastSeen = useChatStore((s) => s.setLastSeen);
-  const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState("");
-  const [filter, setFilter] = useState<"all" | "unread" | "online">("all");
 
   const onlineUsers = useSocketStore((s) => s.onlineUsers);
   const typingUsers = useSocketStore((s) => s.typingUsers);
 
+  const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState("");
+  const [filter, setFilter] = useState<"all" | "unread" | "online">("all");
   const supabase = getSupabaseBrowserClient();
+  const userIdsRef = useRef<string[]>([]);
+  const [debouncedSearch, setDebouncedSearch] = useState(search);
 
   const fetchChats = async (silent = false, userId?: string) => {
     const id = userId || user?.id;
@@ -38,7 +42,8 @@ const Sidebar = () => {
       .from("dm_conversations")
       .select("*")
       .order("last_message_at", { ascending: false })
-      .eq("me_id", id);
+      .eq("me_id", id)
+      .range(0, 30);
 
     if (!error) setConversations(data || []);
 
@@ -51,8 +56,16 @@ const Sidebar = () => {
     fetchChats(false, user?.id);
   }, [user?.id, supabase]);
 
-  const userIds = useMemo(() => {
-    return chats
+  useEffect(() => {
+    const t = setTimeout(() => {
+      setDebouncedSearch(search);
+    }, 200);
+
+    return () => clearTimeout(t);
+  }, [search]);
+
+  useEffect(() => {
+    userIdsRef.current = chats
       .map(
         (chat) =>
           chat.participants?.find((id: string) => id !== user?.id) ||
@@ -62,20 +75,24 @@ const Sidebar = () => {
   }, [chats, user?.id]);
 
   useEffect(() => {
-    if (!userIds.length) return;
+    if (!user?.id || !userIdsRef.current.length) return;
 
     const socket = getSocket();
 
-    socket?.emit("get_last_seen_bulk", { userIds }, (data: any[]) => {
-      if (!Array.isArray(data)) return;
+    socket?.emit(
+      "get_last_seen_bulk",
+      { userIds: userIdsRef.current },
+      (data: any[]) => {
+        if (!Array.isArray(data)) return;
 
-      data.forEach((item) => {
-        if (item?.userId && item?.lastSeen) {
-          setLastSeen(item.userId, Number(item.lastSeen));
-        }
-      });
-    });
-  }, [userIds]);
+        data.forEach((item) => {
+          if (item?.userId && item?.lastSeen) {
+            setLastSeen(item.userId, Number(item.lastSeen));
+          }
+        });
+      },
+    );
+  }, [chats, user?.id]);
 
   const handleOpenChat = (chatId: string) => {
     const socket = getSocket();
@@ -106,7 +123,7 @@ const Sidebar = () => {
   };
 
   const filteredChats = useMemo(() => {
-    const query = search.toLowerCase().trim();
+    const query = debouncedSearch.toLowerCase().trim();
 
     let result = chats;
 
@@ -142,6 +159,26 @@ const Sidebar = () => {
     return result;
   }, [search, chats, filter, onlineUsers, user?.id]);
 
+  const counts = useMemo(() => {
+    let unread = 0;
+    let online = 0;
+
+    for (const c of chats) {
+      if ((c.unread_count || 0) > 0) unread++;
+
+      const id =
+        c.participants?.find((p: string) => p !== user?.id) || c.other_user_id;
+
+      if (onlineUsers?.has?.(id)) online++;
+    }
+
+    return {
+      all: chats.length,
+      unread,
+      online,
+    };
+  }, [chats, onlineUsers, user?.id]);
+
   return (
     <aside className="h-screen w-full md:w-84 md:border-r border-border bg-background fixed overflow-y-auto px-4 py-6 flex flex-col gap-6 z-10">
       <div className="flex flex-col gap-3 border-b border-border pb-6">
@@ -167,22 +204,17 @@ const Sidebar = () => {
             {
               key: "all",
               label: "All",
-              count: chats.length,
+              count: counts.all,
             },
             {
               key: "unread",
               label: "Unread",
-              count: chats.filter((c) => (c.unread_count || 0) > 0).length,
+              count: counts.unread,
             },
             {
               key: "online",
               label: "Online",
-              count: chats.filter((c) => {
-                const id =
-                  c.participants?.find((p: string) => p !== user?.id) ||
-                  c.other_user_id;
-                return onlineUsers?.has?.(id);
-              }).length,
+              count: counts.online,
             },
           ].map((item) => {
             const active = filter === item.key;
@@ -270,6 +302,10 @@ const Sidebar = () => {
                       src={chat.avatar_url || "/default-avatar.png"}
                       alt={chat.name}
                       className="w-full h-full object-cover"
+                      loading="lazy"
+                      decoding="async"
+                      width={48}
+                      height={48}
                     />
                   </div>
 

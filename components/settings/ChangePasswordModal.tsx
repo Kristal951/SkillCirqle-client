@@ -80,7 +80,7 @@ export default function PasswordModal({
       });
 
       if (loginError) {
-        console.log(loginError);
+        console.error(loginError);
         toast.error("Current password is incorrect");
         return;
       }

@@ -1,4 +1,6 @@
 import { UserProfileProvider } from "@/hooks/UserProfileContext";
+import { createSupabaseServer } from "@/lib/supabaseServer";
+import { getOrSetCache } from "@/utils/cacheHelper";
 
 export default async function NewProposalLayout({
   children,
@@ -9,15 +11,56 @@ export default async function NewProposalLayout({
 }) {
   const { id } = await params;
 
-  const res = await fetch(
-    `${process.env.NEXT_PUBLIC_BASE_URL}/api/user/profile/${id}`,
-    { cache: "no-store" }
-  );
+  if (!id) {
+    return (
+      <UserProfileProvider user={null}>
+        <main className="flex-1 overflow-y-auto">{children}</main>
+      </UserProfileProvider>
+    );
+  }
 
-  const { user } = await res.json();
+  const supabase = await createSupabaseServer();
+  let profile = null;
+
+  try {
+    profile = await getOrSetCache(
+      `profile:${id}:with-skills`,
+      async () => {
+        const { data, error } = await supabase
+          .from("profiles")
+          .select(
+            `
+            id,
+            name,
+            avatar_url,
+            user_skills (
+              skill_id,
+              type,
+              skills (
+                id,
+                title
+              )
+            )
+          `,
+          )
+          .eq("id", id)
+          .eq("user_skills.type", "teach")
+          .maybeSingle();
+
+        if (error) {
+          console.error(error);
+          throw error;
+        }
+        return data;
+      },
+      600,
+    );
+  } catch (error) {
+    console.error("Failed to load profile for proposal layout:", error);
+  }
 
   return (
-    <UserProfileProvider user={user}>
+    <UserProfileProvider user={profile}>
       <main className="flex-1 overflow-y-auto">{children}</main>
     </UserProfileProvider>
   );

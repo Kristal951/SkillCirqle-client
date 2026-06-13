@@ -43,7 +43,7 @@ export default function Dashboard() {
 
   const error = matchesQuery.error || trendingQuery.error;
   if (error) {
-    console.log(error);
+    console.error(error);
   }
 
   const skillData =

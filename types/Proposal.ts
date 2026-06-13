@@ -3,7 +3,7 @@ import { User } from "@supabase/supabase-js";
 export type ProposalStatus = "pending" | "completed" | "active" | "rejected";
 
 export type EngagementType = "learn" | "swap";
-export type SessionFormat = "one-on-one" | "group";
+export type SessionType = "quick" | "standard";
 
 export type Proposal = {
   id: string;
@@ -19,7 +19,7 @@ export type Proposal = {
   message: string;
 
   engagement_type: EngagementType;
-  session_format: SessionFormat;
+  session_format: SessionType;
 
   status: ProposalStatus;
 
@@ -29,18 +29,19 @@ export type Proposal = {
 export type CreateProposalInput = {
   senderId: string;
   receiverId: string;
-  senderName: string;
-  senderImage: string;
-
-  teachSkill: string;
-  learnSkill?: string;
-
+  senderName?: string;
+  senderImage?: string;
+  teachSkillId?: string;
+  teachSkillName?: string;
+  learnSkillId: string;
+  learnSkillName?: string;
+  session_format: string;
   message: string;
-
-  engagementType: EngagementType;
-  sessionFormat: SessionFormat;
-  proposalMsg: string;
-  link: string;
+  goal?: string;
+  engagementType: "learn" | "swap";
+  sessionDurationType: "quick" | "standard";
+  expectedSessions: number;
+  link?: string;
 };
 
 export type ProposalStore = {
@@ -56,7 +57,7 @@ export type ProposalStore = {
     status: ProposalStatus,
     senderName: string,
     senderImage: string,
-    link: string
+    link: string,
   ) => Promise<null>;
   getProposalById: (id: string) => Proposal | undefined;
   clearProposals: () => void;

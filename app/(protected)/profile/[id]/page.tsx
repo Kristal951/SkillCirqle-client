@@ -42,7 +42,7 @@ export default function UserProfilePage() {
     try {
       await getOrCreateConversation(userA, userB);
     } catch (error) {
-      console.log(error);
+      console.error(error);
     } finally {
       setCreatingConv(false);
     }

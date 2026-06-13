@@ -19,13 +19,11 @@ export const useTokenStore = create<TokenState>((set, get) => ({
     set({ loading: true, error: null });
 
     try {
-      console.log('calling tok api')
       const res = await apiFetch("/api/user/tokens/earn/onboarding", {
         method: "POST",
       });
 
       const data = await res.json();
-      console.log(data, 'store data')
 
       if (data?.success) {
         set({

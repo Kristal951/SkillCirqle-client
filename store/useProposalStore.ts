@@ -5,7 +5,7 @@ import { getUserProposals } from "@/utils/getUserProposals";
 import { getSocket } from "@/lib/socket";
 
 export const getErrorMessage = (err: unknown): string => {
-  console.log(err);
+  console.error(err);
   if (err instanceof Error) return err.message;
   return "Something went wrong";
 };
@@ -124,7 +124,7 @@ export const useProposalStore = create<ProposalStore>((set, get) => ({
             },
           });
         } catch (error) {
-          console.log(error, "notif error");
+          console.error(error, "notif error");
         }
       }
 

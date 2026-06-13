@@ -28,7 +28,7 @@ export async function createSupabaseServer() {
             cookieStore.set(name, value, options),
           );
         } catch (error) {
-          console.log(error, "supabase server client error");
+          console.error(error, "supabase server client error");
         }
       },
     },

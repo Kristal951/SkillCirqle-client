@@ -19,7 +19,6 @@ import { useLogoutModal } from "@/providers/LogoutContext";
 import { useAuthStore } from "@/store/useAuthStore";
 
 interface VerifyMFAProps {
-  // Modal mode — pass these
   reason?: string;
   next?: string;
   onSuccess?: () => void;

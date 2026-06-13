@@ -10,6 +10,9 @@ import { useEffect, useState } from "react";
 const Header = () => {
   const { activeChat, setActiveChat } = useChatStore();
   const [tick, setTick] = useState(0);
+  
+  // --- NEW: Loading state to prevent double-clicks while API resolves ---
+  const [isInitializing, setIsInitializing] = useState(false);
 
   const onlineUsers = useSocketStore((s) => s.onlineUsers);
   const typingUsers = useSocketStore((s) => s.typingUsers);
@@ -19,35 +22,55 @@ const Header = () => {
   if (!activeChat) return null;
 
   const otherUserId = activeChat.other_user_id;
-
   const isOnline = onlineUsers.has(otherUserId);
-
   const typingList = typingUsers?.[activeChat.id] || [];
 
- const isTyping = otherUserId
-  ? typingList.some((user) => user.id === otherUserId)
-  : false;
-  
-  const lastSeenMap = useChatStore((s) => s.lastSeen);
+  const isTyping = otherUserId
+    ? typingList.some((user) => user.id === otherUserId)
+    : false;
 
+  const lastSeenMap = useChatStore((s) => s.lastSeen);
   const lastSeen = lastSeenMap[otherUserId];
 
   const startSession = async (type: "audio" | "video") => {
-    const roomId = `${activeChat.id}-${Date.now()}`;
-    router.push(`/sessions/video/${roomId}`);
+    if (isInitializing) return;
+    
+    try {
+      setIsInitializing(true);
+      const response = await fetch("/api/sessions/create", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          chatId: activeChat.id,
+          callType: type,
+          recipientId: otherUserId,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to create call session record");
+      }
+
+      const data = await response.json();
+      router.push(`/sessions/video/${data.roomId}`);
+    } catch (err) {
+      console.error("Could not provision live session hardware link:", err);
+      // Optional: Trigger a toast notification to the user here
+    } finally {
+      setIsInitializing(false);
+    }
   };
 
   const getStatus = () => {
     if (isOnline) return "online";
-
     if (!lastSeen) return "offline";
 
     const diff = Date.now() - Number(lastSeen);
-
     const THRESHOLD = 30 * 1000;
 
     if (diff < THRESHOLD) return "offline";
-
     return "last_seen";
   };
 
@@ -65,6 +88,7 @@ const Header = () => {
         <button
           onClick={() => setActiveChat(null)}
           className="md:hidden p-1 -ml-1 hover:bg-surface rounded-full transition"
+          disabled={isInitializing}
         >
           <ChevronLeft className="w-6 h-6" />
         </button>
@@ -94,9 +118,9 @@ const Header = () => {
             ) : getStatus() === "online" ? (
               <span className="text-green-500">Online</span>
             ) : getStatus() === "offline" ? (
-              <span className="text-gray-400">Offline</span>
+              <span className="text-text-secondary">Offline</span>
             ) : (
-              <span className="text-gray-400">
+              <span className="text-text-secondary">
                 {lastSeen
                   ? `Last seen ${formatLastSeenShort(lastSeen)} ago`
                   : "Offline"}
@@ -109,14 +133,16 @@ const Header = () => {
       <div className="flex gap-1 md:gap-2 items-center">
         <button
           onClick={() => startSession("video")}
-          className="p-2 rounded-lg hover:bg-surface transition"
+          disabled={isInitializing}
+          className={`p-2 rounded-lg hover:bg-surface transition ${isInitializing ? "opacity-40 cursor-not-allowed" : ""}`}
         >
           <Video className="w-5 h-5 text-text-secondary" />
         </button>
 
         <button
           onClick={() => startSession("audio")}
-          className="p-2 rounded-lg hover:bg-surface transition"
+          disabled={isInitializing}
+          className={`p-2 rounded-lg hover:bg-surface transition ${isInitializing ? "opacity-40 cursor-not-allowed" : ""}`}
         >
           <Phone className="w-5 h-5 text-text-secondary" />
         </button>

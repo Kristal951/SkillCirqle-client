@@ -12,15 +12,30 @@ export async function GET(
   }
 
   const supabase = await createSupabaseServer();
-  let user = null;
+  let profile = null;
 
   try {
-    user = await getOrSetCache(
-      `profile:${id}`,
+    profile = await getOrSetCache(
+      `profile:${id}:with-skills`,
       async () => {
         const { data, error } = await supabase
           .from("profiles")
-          .select("*")
+          .select(
+            `
+            id,
+            name,
+            avatar_url,
+            bio,
+            user_skills (
+              skill_id,
+              type,
+              skills (
+                id,
+                title
+              )
+            )
+          `,
+          )
           .eq("id", id)
           .maybeSingle();
 
@@ -37,9 +52,9 @@ export async function GET(
     );
   }
 
-  if (!user) {
+  if (!profile) {
     return Response.json({ error: "User not found" }, { status: 404 });
   }
 
-  return Response.json({ user });
+  return Response.json({ profile });
 }

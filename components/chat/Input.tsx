@@ -461,7 +461,7 @@ const Input = () => {
         setEditingMessage(null);
         toast.info("Message Edited.");
       } catch (error) {
-        console.log(error);
+        console.error(error);
       }
 
       return;

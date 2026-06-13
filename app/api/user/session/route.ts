@@ -89,7 +89,7 @@ export async function POST(req: NextRequest) {
     });
 
     if (error) {
-      console.log(error);
+      console.error(error);
 
       return NextResponse.json(
         { error: "RPC failed", details: error },
@@ -122,7 +122,7 @@ export async function GET(req: NextRequest) {
       .order("last_active", { ascending: false });
 
     if (error) {
-      console.log(error);
+      console.error(error);
       return NextResponse.json(
         { error: "Failed to fetch sessions" },
         { status: 500 },

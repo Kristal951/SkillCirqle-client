@@ -3,22 +3,30 @@ import { CreateProposalInput } from "@/types/Proposal";
 import { getSocket } from "@/lib/socket";
 
 export async function createProposal(data: CreateProposalInput) {
-  const supabase = getSupabaseBrowserClient();
+  const supabase = await getSupabaseBrowserClient();
+  console.log("1 - Starting with data", data);
+
+  const durationMap = {
+    quick: 20,
+    standard: 60,
+  };
 
   if (!data.senderId || !data.receiverId) {
+    console.log("no id");
     throw new Error("Invalid users.");
   }
 
-  const { data: existing } = await supabase
-    .from("proposals")
-    .select("id")
-    .eq("sender_id", data.senderId)
-    .eq("receiver_id", data.receiverId)
-    .eq("status", "pending")
-    .maybeSingle();
+  if (
+    data.engagementType === "swap" &&
+    (!data.teachSkillId || !data.learnSkillId)
+  ) {
+    console.log("no id and is swap");
+    throw new Error("Swap proposals require both skills.");
+  }
 
-  if (existing) {
-    throw new Error("You already have a pending proposal with this user.");
+  if (data.senderId === data.receiverId) {
+    console.log("sender issue");
+    throw new Error("You cannot send a proposal to yourself.");
   }
 
   const { data: proposal, error } = await supabase
@@ -26,41 +34,61 @@ export async function createProposal(data: CreateProposalInput) {
     .insert({
       sender_id: data.senderId,
       receiver_id: data.receiverId,
-      teach_skill: data.teachSkill,
-      learn_skill: data.learnSkill || null,
+      teach_skill_id: data.teachSkillId ?? null,
+      learn_skill_id: data.learnSkillId ?? null,
       message: data.message,
       engagement_type: data.engagementType,
-      session_format: data.sessionFormat,
+      session_format: "one-on-one",
       status: "pending",
+      goal: data.goal,
+      expected_number_of_sessions: data.expectedSessions,
+      session_duration_minutes: durationMap[data.sessionDurationType] ?? 60,
     })
-    .select()
+    .select("id")
     .single();
 
+  console.log("2 - Response received");
+  console.log(proposal);
+
   if (error) {
+    console.error(error);
+    if (error.code === "23505") {
+      throw new Error("You already have a pending proposal with this user.");
+    }
     throw new Error(error.message);
   }
 
-  const socket = getSocket();
-
-  if (socket) {
-    try {
-      socket.emit("notification:send", {
-        userId: data.receiverId,
-        type: "proposal_received",
-        title: "New Skill Proposal",
-        body: `${data.senderName || "Someone"} sent you a proposal.`,
-        data: {
-          proposalId: proposal.id,
-          senderImage: data.senderImage,
-          senderName: data.senderName,
-          proposalMsg: data.message,
-          link: data.link,
-        },
-      });
-    } catch (error) {
-      console.log(error, "notif error");
-    }
+  if (!proposal) {
+    throw new Error("Failed to create proposal.");
   }
 
+  void sendProposalNotification(proposal.id, data);
+
   return proposal;
+}
+
+function sendProposalNotification(
+  proposalId: string,
+  data: CreateProposalInput,
+) {
+  const socket = getSocket();
+  if (!socket) return;
+
+  try {
+    socket.emit("notification:send", {
+      userId: data.receiverId,
+      type: "proposal_received",
+      title: "New Skill Proposal",
+      body: `${data.senderName || "Someone"} sent you a proposal.`,
+      data: {
+        proposalId,
+        senderImage: data.senderImage,
+        senderName: data.senderName,
+        proposalMsg: data.message,
+        link: data.link,
+      },
+    });
+  } catch (err) {
+    console.error("Notification emit failed:", err);
+  }
 }
