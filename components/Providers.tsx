@@ -9,6 +9,8 @@ import SocketProvider from "@/providers/SocketProvider";
 import NotificationProvider from "@/providers/NotificationProvider";
 import { LogoutModalProvider } from "@/providers/LogoutContext";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import OneSignalProvider from "@/providers/oneSignal";
+import OneSignalLoginSync from "@/providers/OneSignalLoginSync";
 
 export default function Providers({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(
@@ -32,6 +34,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
           <NotificationProvider>
             <LogoutModalProvider>
               <QueryClientProvider client={queryClient}>
+                <OneSignalLoginSync />
                 {children}
               </QueryClientProvider>
             </LogoutModalProvider>

@@ -1,36 +1,65 @@
 import { useAuthStore } from "@/store/useAuthStore";
 
 export const apiFetch = async (url: string, options?: RequestInit) => {
-  const isFormData = options?.body instanceof FormData;
+  const controller = new AbortController();
 
-  const res = await fetch(url, {
-    ...options,
-    headers: {
-      ...(isFormData ? {} : { "Content-Type": "application/json" }),
-      ...options?.headers,
-    },
-    credentials: "include",
-  });
+  const timeout = setTimeout(() => {
+    controller.abort();
+  }, 10000);
 
-  if (res.status === 401) {
-    await useAuthStore.getState().logout();
+  try {
+    const isFormData = options?.body instanceof FormData;
 
-    const error = new Error("UNAUTHORIZED");
-    (error as any).status = 401;
+    const res = await fetch(
+      url,
 
-    throw error;
+      {
+        ...options,
+
+        signal: controller.signal,
+
+        headers: {
+          ...(isFormData
+            ? {}
+            : {
+                "Content-Type": "application/json",
+              }),
+
+          ...options?.headers,
+        },
+
+        credentials: "include",
+      },
+    );
+
+    if (res.status === 401) {
+      try {
+        await useAuthStore.getState().logout();
+      } catch (e) {
+        console.error(e);
+      }
+
+      const error = new Error("UNAUTHORIZED");
+
+      (error as any).status = 401;
+
+      throw error;
+    }
+
+    if (!res.ok) {
+      let message = `Error ${res.status}`;
+
+      try {
+        const data = await res.json();
+
+        message = data.message ?? message;
+      } catch {}
+
+      throw new Error(message);
+    }
+
+    return res;
+  } finally {
+    clearTimeout(timeout);
   }
-
-  if (!res.ok) {
-    let errorMessage = `Error: ${res.status}`;
-
-    try {
-      const data = await res.json();
-      errorMessage = data.message || errorMessage;
-    } catch {}
-
-    throw new Error(errorMessage);
-  }
-
-  return res;
 };

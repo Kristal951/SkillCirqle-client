@@ -45,6 +45,7 @@
     "react-confetti": "^6.4.0",
     "react-dom": "19.2.3",
     "react-easy-crop": "^5.5.7",
+    "react-onesignal": "^3.5.5",
     "react-swipeable": "^7.0.2",
     "replicate": "^1.4.0",
     "server-only": "^0.0.1",

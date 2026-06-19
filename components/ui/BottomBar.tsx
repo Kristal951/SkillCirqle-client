@@ -1,44 +1,57 @@
 import { useAuthStore } from "@/store/useAuthStore";
 import { useChatStore } from "@/store/useChatStore";
 import { NavLinks } from "@/utils/Navbar";
-import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 const BottomBar = () => {
   const pathname = usePathname();
   const { activeChat } = useChatStore();
-  const { user } = useAuthStore();
 
   if (pathname.startsWith("/chat") && activeChat) {
     return null;
   }
 
   return (
-    <div className="w-full md:hidden fixed left-0 right-0 bottom-0 h-16 flex items-center justify-around bg-background border-t border-border z-50">
-      {NavLinks.map((link, i) => {
-        const isActive =
-          pathname === link.path ||
-          (link.path !== "/" && pathname.startsWith(link.path));
+    <div className="w-full md:hidden fixed left-0 right-0 bottom-0 h-16 bg-[#0B0813] border-t border-white/10 z-50 px-2">
+      <div className="flex items-center justify-around h-full max-w-md mx-auto">
+        {NavLinks.map((link, i) => {
+          if (link.onlyOnDesktop) return null;
 
-        return (
-          <Link
-            key={i}
-            href={link.path}
-            className={` flex-col items-center ${link.onlyOnDesktop ? "hidden" : "flex"} justify-center flex-1 h-full transition-all duration-200 ${
-              isActive
-                ? "text-primary"
-                : "text-text-secondary hover:text-foreground"
-            }`}
-          >
-            <span className="material-symbols-outlined text-2xl shrink-0">
-              {link.icon}
-            </span>
+          const isActive =
+            pathname === link.path ||
+            (link.path !== "/" && pathname.startsWith(link.path));
 
-            <span className="text-[10px] mt-1 font-medium">{link.title}</span>
-          </Link>
-        );
-      })}
+          return (
+            <Link
+              key={i}
+              href={link.path}
+              className={`flex flex-col items-center justify-center flex-1 h-full transition-colors duration-200 ${
+                isActive ? "text-text-primary" : "text-text-secondary"
+              }`}
+            >
+                <span
+                  className="material-symbols-outlined text-4xl select-none transition-all duration-200"
+                  style={{
+                    fontVariationSettings: isActive 
+                      ? "'FILL' 1, 'wght' 400" 
+                      : "'FILL' 0, 'wght' 400",
+                  }}
+                >
+                  {link.icon}
+                </span>
+
+              <span
+                className={`text-[11px] mt-1 tracking-wide transition-colors ${
+                  isActive ? "text-text-primary font-semibold" : "text-text-secondary font-medium"
+                }`}
+              >
+                {link.title}
+              </span>
+            </Link>
+          );
+        })}
+      </div>
     </div>
   );
 };

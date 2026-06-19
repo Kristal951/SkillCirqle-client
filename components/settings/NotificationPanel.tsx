@@ -2,8 +2,10 @@
 import React, { useEffect, useState } from "react";
 import { Bell, Mail, MessageSquare, Zap, ShieldCheck } from "lucide-react";
 import Spinner from "../ui/Spinner";
+import OneSignal from "@/lib/oneSignal";
 
 type Settings = {
+  in_app: boolean;
   email_alerts: boolean;
   push_notifications: boolean;
 };
@@ -20,8 +22,9 @@ type NotificationToggleProps = {
 
 const NotificationSettings = () => {
   const [settings, setSettings] = useState<Settings>({
-    email_alerts: true,
-    push_notifications: false,
+    in_app: true,
+    email_alerts: false,
+    push_notifications: true,
   });
   const [saving, setSaving] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -31,21 +34,38 @@ const NotificationSettings = () => {
 
     const previous = settings;
 
-    const updated = {
-      ...settings,
-      [key]: !settings[key],
-    };
-
-    setSettings(updated);
-
     try {
+      let nextValue = !settings[key];
+
+      if (key === "push_notifications") {
+        const granted = await OneSignal.Notifications.requestPermission();
+        if (!granted) {
+          nextValue = false;
+          await OneSignal.User.PushSubscription.optOut();
+          setSettings({
+            ...settings,
+            push_notifications: false,
+          });
+          return;
+        }
+
+        await OneSignal.User.PushSubscription.optIn();
+      }
+
+      const updated = {
+        ...settings,
+        [key]: nextValue,
+      };
+
+      setSettings(updated);
+
       const res = await fetch("/api/user/notification-settings", {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          [key]: updated[key],
+          [key]: nextValue,
         }),
       });
 
@@ -56,7 +76,6 @@ const NotificationSettings = () => {
       }
     } catch (err) {
       console.error(err);
-
       setSettings(previous);
     } finally {
       setSaving(null);
@@ -137,22 +156,30 @@ const NotificationSettings = () => {
 
         <div className="grid gap-4">
           <NotificationToggle
-            icon={Zap}
-            title="Push Notifications"
-            description="Receive instant app updates."
-            active={settings.push_notifications}
-            onToggle={() => updateSetting("push_notifications")}
-            saving={saving === "push_notifications"}
+            icon={Bell}
+            title="In-app Notifications"
+            description="Show notifications inside SkillCirqle."
+            active={settings.in_app}
+            onToggle={() => updateSetting("in_app")}
+            saving={saving === "in_app_notifications"}
           />
 
           <NotificationToggle
             icon={Mail}
             title="Email Alerts"
-            description="Receive updates via email."
+            description="Receive important updates via email."
             active={settings.email_alerts}
             onToggle={() => updateSetting("email_alerts")}
-            saving={saving === "email_alerts"}
-            disabled
+            saving={saving === "email_notifications"}
+          />
+
+          <NotificationToggle
+            icon={Zap}
+            title="Push Notifications"
+            description="Receive browser push notifications."
+            active={settings.push_notifications}
+            onToggle={() => updateSetting("push_notifications")}
+            saving={saving === "push_notifications"}
           />
 
           {/* <NotificationToggle
@@ -186,15 +213,11 @@ const NotificationToggle = ({
   saving,
 }: NotificationToggleProps) => (
   <div
-    className={`flex items-center justify-between p-4 rounded-xl transition-all border ${
-      active
-        ? "bg-background/80 border-primary/20"
-        : "bg-transparent border-transparent"
-    }`}
+    className={`flex items-center justify-between p-4 rounded-xl transition-all`}
   >
     <div className="flex gap-4 items-center">
       <div
-        className={`p-2 rounded-lg ${active ? "text-primary" : "text-text-secondary"} bg-surface shadow-sm`}
+        className={`p-2 rounded-lg ${active ? "text-text-primary bg-background" : "text-text-secondary bg-surface"} shadow-sm`}
       >
         <Icon size={20} />
       </div>
@@ -215,7 +238,7 @@ const NotificationToggle = ({
     >
       {saving ? (
         <div className="h-full w-full flex items-center">
-          <Spinner size={15}/>
+          <Spinner size={15} />
         </div>
       ) : (
         <span

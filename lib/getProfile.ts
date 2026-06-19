@@ -1,13 +1,19 @@
-// lib/getProfile.ts
-import { SupabaseClient } from "@supabase/supabase-js";
+import { getSupabaseBrowserClient } from "./supabaseClient";
 
-export async function getProfile(supabase: SupabaseClient, userId: string) {
+
+export async function getProfile( userId: string) {
+  const supabase = getSupabaseBrowserClient()
+  console.log(userId)
   const { data, error } = await supabase
     .from("profiles")
     .select("*")
     .eq("id", userId)
-    .single();
+    .maybeSingle();
 
-  if (error) return null;
+    console.log(data, 'pro')
+
+  if (error) {
+    console.log(error)
+  }
   return data;
 }

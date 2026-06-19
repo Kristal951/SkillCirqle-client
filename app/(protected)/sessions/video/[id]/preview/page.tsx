@@ -5,8 +5,10 @@ import {
   ToolbarButtonConfig,
 } from "@/components/sessions/SessionToolBar";
 import Spinner from "@/components/ui/Spinner";
+import { useSessionData } from "@/hooks/useSessionDataHook";
 import { useAuthStore } from "@/store/useAuthStore";
-import { useParams, useRouter } from "next/navigation";
+import Image from "next/image";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
 interface CustomSelectProps {
@@ -109,6 +111,7 @@ const CustomSelect = ({
 const VideoPreview = () => {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
+  const searchParams = useSearchParams();
 
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
@@ -129,24 +132,29 @@ const VideoPreview = () => {
   const [selectedMicrophone, setSelectedMicrophone] = useState("");
   const [selectedSpeaker, setSelectedSpeaker] = useState("");
 
+  const rawId = params?.id || params?.room_name;
+  const sessionId = typeof rawId === "string" ? rawId : null;
+
+  const {
+    sessionData,
+    loading: sessionLoading,
+    markSessionActive,
+  } = useSessionData(sessionId, user?.id);
+  const isStillLoading = sessionLoading || !user;
+  const otherParticipant = sessionData?.isHost
+    ? sessionData.guest
+    : sessionData?.host;
+  const currentParticipant = sessionData?.isHost
+    ? sessionData.host
+    : sessionData?.guest;
+
   const getAvatarUrl = (name?: string) =>
     `https://ui-avatars.com/api/?name=${encodeURIComponent(name || "User")}&background=4f46e5&color=fff&bold=true&size=256`;
 
-  const roomParam = params?.id || params?.room_name || "default-session";
-  const roomName =
-    typeof roomParam === "string"
-      ? decodeURIComponent(roomParam).replace(/\s+/g, "-")
-      : "default-session";
-
-  const mentorDetails = { name: "Alex Chen", image: "" };
   const avatarSrc = user?.avatar_url?.trim()
     ? user.avatar_url
     : getAvatarUrl(user?.name);
-  const mentorImage = mentorDetails?.image?.trim()
-    ? mentorDetails.image
-    : getAvatarUrl(mentorDetails?.name);
 
-  // Stop tracks safely
   const stopAllTracks = () => {
     if (streamRef.current) {
       streamRef.current.getTracks().forEach((track) => track.stop());
@@ -157,7 +165,6 @@ const VideoPreview = () => {
     }
   };
 
-  // 1. Populates device lists and updates selection states dynamically if hardware disappears
   const loadDevices = async () => {
     try {
       const devices = await navigator.mediaDevices.enumerateDevices();
@@ -190,19 +197,17 @@ const VideoPreview = () => {
     }
   };
 
-  // 2. Initial Setup: Requests permissions generic style, then kicks off enumeration
   const initializeMedia = async () => {
     try {
       setLoading(true);
       setError("");
       setPermissionError(null);
 
-      // Simple generic handshake just to clear system permission gates
       const initialStream = await navigator.mediaDevices.getUserMedia({
         video: true,
         audio: true,
       });
-      initialStream.getTracks().forEach((t) => t.stop()); // Burn initial temporary stream immediately
+      initialStream.getTracks().forEach((t) => t.stop());
 
       await loadDevices();
     } catch (err: any) {
@@ -221,7 +226,6 @@ const VideoPreview = () => {
     }
   };
 
-  // 3. REACTIVE STREAM ENGINE: Fires dynamically when hardware choices evolve or change via USB hot-plug
   useEffect(() => {
     if (!selectedCamera && !selectedMicrophone) return;
 
@@ -249,7 +253,6 @@ const VideoPreview = () => {
           return;
         }
 
-        // Keep explicit track mutation flags synced
         newStream.getAudioTracks().forEach((t) => (t.enabled = micOn));
         newStream.getVideoTracks().forEach((t) => (t.enabled = camOn));
 
@@ -278,7 +281,12 @@ const VideoPreview = () => {
     };
   }, [selectedCamera, selectedMicrophone]);
 
-  // Handle hot-plug event loops automatically
+  useEffect(() => {
+    if (!sessionId) {
+      router.replace("/dashboard");
+    }
+  }, [sessionId]);
+
   useEffect(() => {
     initializeMedia();
 
@@ -299,7 +307,6 @@ const VideoPreview = () => {
     };
   }, []);
 
-  // Update hardware speaker routing on the fly
   const changeSpeaker = async (speakerId: string) => {
     if (videoRef.current && "setSinkId" in videoRef.current) {
       try {
@@ -311,7 +318,6 @@ const VideoPreview = () => {
     }
   };
 
-  // Toggle Mute Actions
   const toggleMic = () => {
     if (streamRef.current)
       streamRef.current
@@ -341,7 +347,6 @@ const VideoPreview = () => {
     },
   ];
 
-  // Synchronize stream with video markup
   useEffect(() => {
     const video = videoRef.current;
     if (!video || !stream) return;
@@ -355,10 +360,11 @@ const VideoPreview = () => {
     stopAllTracks();
     router.back();
   };
-  const handleJoin = () => {
+  const handleJoin = async () => {
     stopAllTracks();
+    await markSessionActive();
     router.push(
-      `/sessions/video/${roomName}/call?mic=${micOn}&cam=${camOn}&cameraId=${selectedCamera}&microphoneId=${selectedMicrophone}&speakerId=${selectedSpeaker}`,
+      `/sessions/video/${sessionId}/call?mic=${micOn}&cam=${camOn}&cameraId=${selectedCamera}&microphoneId=${selectedMicrophone}&speakerId=${selectedSpeaker}`,
     );
   };
 
@@ -418,94 +424,152 @@ const VideoPreview = () => {
         )}
       </div>
 
-      <div className="col-span-1 bg-surface/50 border-l border-border/50 flex flex-col backdrop-blur-sm">
-        <div className="p-4 border-b border-white/5 flex items-center justify-between">
-          <h1 className="text-2xl font-semibold text-text-primary">
+      <div className="col-span-1 bg-surface/50 border-l border-border/50 flex flex-col backdrop-blur-sm h-full min-w-0">
+        <div className="p-4 border-b border-white/5 flex items-center justify-between shrink-0 bg-surface/20">
+          <h1 className="text-xl font-semibold text-text-primary">
             Session Preview
           </h1>
           <button
             onClick={handleExit}
-            className="text-zinc-500 hover:text-white transition"
+            className="text-text-secondary hover:text-white transition p-1 rounded-lg hover:bg-white/5"
+            type="button"
           >
-            <span className="material-symbols-outlined text-xl">close</span>
+            <span className="material-symbols-outlined text-xl block">
+              close
+            </span>
           </button>
         </div>
 
-        <div className="flex-1 p-6 space-y-5 text-zinc-300 overflow-y-auto">
-          {/* <div>
-            <span className="text-[10px] tracking-wider uppercase text-primary font-bold">
-              Active Channel
+        <div className="flex-1 p-6 space-y-8 text-zinc-300 overflow-y-auto min-h-0">
+          <div className="space-y-1">
+            <span className="text-[10px] tracking-wider uppercase font-bold text-text-secondary/60 block">
+              Session Title
             </span>
-            <h1 className="text-xl font-bold text-white capitalize mt-0.5 break-words">
-              {roomName.replace(/-/g, " ")}
-            </h1>
-          </div> */}
-
-          <div className="space-y-2">
-            <h1 className="text-xs uppercase tracking-wide text-text-secondary">
-              Device settings
-            </h1>
-            <CustomSelect
-              label="Camera"
-              icon="videocam"
-              value={selectedCamera}
-              options={cameras}
-              fallbackLabel="Camera"
-              onChange={setSelectedCamera}
-            />
-            <CustomSelect
-              label="Microphone"
-              icon="mic"
-              value={selectedMicrophone}
-              options={microphones}
-              fallbackLabel="Microphone"
-              onChange={setSelectedMicrophone}
-            />
-            <CustomSelect
-              label="Speaker Output"
-              icon="volume_up"
-              value={selectedSpeaker}
-              options={speakers}
-              fallbackLabel="Speaker"
-              onChange={changeSpeaker}
-            />
+            <h2 className="text-lg font-bold text-text-primary capitalize wrap-break-word leading-snug">
+              {sessionData?.title || "Untitled Session"}
+            </h2>
           </div>
 
-          {/* <div className="flex items-center gap-3 p-3.5 bg-zinc-900 rounded-2xl border border-white/5">
-            <img
-              src={mentorImage}
-              alt="Host"
-              className="w-11 h-11 rounded-xl object-cover border border-white/10"
-            />
-            <div>
-              <p className="text-[10px] uppercase font-bold tracking-wider text-zinc-500">
-                Assigned Host
-              </p>
-              <p className="text-zinc-200 text-sm font-semibold">
-                {mentorDetails.name}
-              </p>
-            </div>
-          </div> */}
+          <div className="w-full space-y-2">
+            <span className="text-[10px] tracking-wider uppercase font-bold text-text-secondary/60 block">
+              Session Participants
+            </span>
 
-          {/* <div className="flex items-center gap-2.5 text-xs bg-white/5 py-2.5 px-4 rounded-xl border border-white/5 w-fit">
-            <span
-              className={`w-2 h-2 rounded-full ${devicesReady ? "bg-emerald-500 shadow-md shadow-emerald-500/40" : "bg-red-500 animate-ping"}`}
-            />
-            <p className="font-medium text-zinc-400">
-              {devicesReady
-                ? "Hardware Link Secure"
-                : "Awaiting System Feed..."}
-            </p>
-          </div> */}
+            {sessionLoading ? (
+              <div className="space-y-2">
+                {[1, 2].map((i) => (
+                  <div
+                    key={i}
+                    className="flex items-center gap-3 p-3.5 bg-surface rounded-2xl border border-border/50 animate-pulse"
+                  >
+                    <div className="w-11 h-11 rounded-xl bg-text-primary/10 shrink-0" />
+                    <div className="flex-1 flex flex-col gap-2">
+                      <div className="h-2.5 w-16 rounded-full bg-text-primary/10" />
+                      <div className="h-3.5 w-28 rounded-full bg-text-primary/10" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              sessionData?.host &&
+              sessionData?.guest && (
+                <div className="space-y-2">
+                  {[sessionData.host, sessionData.guest].map((participant) => {
+                    const avatarSrc =
+                      participant.avatar_url || getAvatarUrl(participant.name);
+
+                    return (
+                      <div
+                        key={participant.id}
+                        className="flex items-center justify-between gap-3 p-3.5 bg-surface rounded-xl border border-border/50 hover:border-text-primary/10 transition-colors duration-200"
+                      >
+                        <div className="flex items-center gap-3 min-w-0 flex-1">
+                          <div className="w-11 h-11 rounded-xl overflow-hidden relative border border-text-primary/5 bg-text-primary/5 shrink-0">
+                            <Image
+                              src={avatarSrc}
+                              alt={participant.name}
+                              fill
+                              sizes="44px"
+                              className="object-cover"
+                              unoptimized
+                            />
+                          </div>
+
+                          <div className="min-w-0 flex-1">
+                            <p className="text-[10px] uppercase font-bold tracking-wider text-text-secondary leading-none mb-1.5">
+                              {participant.isHost ? "You" : "Partner"}
+                            </p>
+                            <p className="text-text-primary text-sm font-semibold truncate leading-tight">
+                              {participant.name}
+                            </p>
+                          </div>
+                        </div>
+
+                        {participant.isCurrentUser && !participant.isHost && (
+                          <span className="text-[10px] font-bold uppercase tracking-wider text-text-secondary/60 bg-text-primary/5 px-2.5 py-1 rounded-md border border-text-primary/5 shrink-0">
+                            You
+                          </span>
+                        )}
+
+                        {participant.isHost && (
+                          <span className="text-[10px] font-bold uppercase tracking-wider text-accent  py-1 shrink-0">
+                            Host
+                          </span>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              )
+            )}
+          </div>
+
+          <div className="space-y-2">
+            <h3 className="text-[10px] font-bold uppercase tracking-wider text-text-secondary/60 block">
+              Device settings
+            </h3>
+
+            <div className="space-y-2">
+              <CustomSelect
+                label="Camera"
+                icon="videocam"
+                value={selectedCamera}
+                options={cameras}
+                fallbackLabel="Camera"
+                onChange={setSelectedCamera}
+              />
+              <CustomSelect
+                label="Microphone"
+                icon="mic"
+                value={selectedMicrophone}
+                options={microphones}
+                fallbackLabel="Microphone"
+                onChange={setSelectedMicrophone}
+              />
+              <CustomSelect
+                label="Speaker Output"
+                icon="volume_up"
+                value={selectedSpeaker}
+                options={speakers}
+                fallbackLabel="Speaker"
+                onChange={changeSpeaker}
+              />
+            </div>
+          </div>
         </div>
 
-        <div className="p-6 border-t border-border/5 bg-background/50">
+        <div className="p-6 border-t border-border/5 bg-background/50 shrink-0">
           <button
             onClick={handleJoin}
             disabled={!devicesReady || loading || !!error || !stream}
-            className="w-full bg-primary hover:bg-primary/90 disabled:opacity-40 text-white py-3.5 rounded-xl font-medium tracking-wide transition shadow-xl"
+            className="w-full bg-primary hover:bg-primary/90 disabled:opacity-40 disabled:hover:bg-primary text-white py-3.5 rounded-xl font-medium tracking-wide transition shadow-xl active:scale-[0.99]"
+            type="button"
           >
-            {!devicesReady ? "Configuring ..." : "Start Session"}
+            {!devicesReady
+              ? "Configuring…"
+              : sessionData?.isHost
+                ? "Start Session"
+                : "Join Session"}
           </button>
         </div>
       </div>

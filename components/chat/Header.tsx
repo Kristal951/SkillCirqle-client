@@ -10,8 +10,7 @@ import { useEffect, useState } from "react";
 const Header = () => {
   const { activeChat, setActiveChat } = useChatStore();
   const [tick, setTick] = useState(0);
-  
-  // --- NEW: Loading state to prevent double-clicks while API resolves ---
+
   const [isInitializing, setIsInitializing] = useState(false);
 
   const onlineUsers = useSocketStore((s) => s.onlineUsers);

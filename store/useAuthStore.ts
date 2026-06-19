@@ -6,7 +6,6 @@ import {
   optimizeCloudinaryUrl,
   uploadToCloudinary,
 } from "@/lib/uploadToCloudinary";
-import { getProfile } from "@/lib/getProfile";
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
 import { getSocket } from "@/lib/socket";
 import { useTokenStore } from "./useTokenStore";
@@ -104,38 +103,44 @@ export const useAuthStore = create<AuthState>()(
       isAuthenticated: () => !!get().user,
 
       fetchUser: async () => {
-        const supabase = getSupabaseBrowserClient();
-        const { data } = await supabase.auth.getSession();
+        try {
+          const parser = new UAParser();
+          const result = parser.getResult();
+          let sessionId = sessionStorage.getItem("device_session_id");
+          if (!sessionId) {
+            sessionId = crypto.randomUUID();
+            sessionStorage.setItem("device_session_id", sessionId);
+          }
+          try {
+            await apiFetch("/api/user/session", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                session_id: sessionId,
+                device_name: result.device.model ?? "Desktop",
+                browser: result.browser.name,
+                os: result.os.name,
+                user_agent: navigator.userAgent,
+              }),
+            });
+          } catch (e) {
+            console.error("Session API failed", e);
+          }
 
-        if (!data.session) return set({ authReady: true });
+          const res = await apiFetch("/api/auth/profile");
+          const parsedRes = await res.json();
+          const { profile } = parsedRes;
 
-        const parser = new UAParser();
-        const result = parser.getResult();
-
-        let sessionId = sessionStorage.getItem("device_session_id");
-
-        if (!sessionId) {
-          sessionId = crypto.randomUUID();
-          sessionStorage.setItem("device_session_id", sessionId);
+          set({
+            user: profile,
+            authReady: true,
+          });
+        } catch (err) {
+          console.error("fetchUser", err);
+          set({ authReady: true, user: null });
         }
-
-        await apiFetch("/api/user/session", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            session_id: sessionId,
-            device_name: result.device.model || "Desktop",
-            browser: result.browser.name,
-            os: result.os.name,
-            user_agent: navigator.userAgent,
-          }),
-        });
-
-        const user = await getProfile(supabase, data.session.user.id);
-
-        set({ user, authReady: true });
       },
 
       uploadUserProfilePic: async (file: File) => {

@@ -58,7 +58,7 @@ const Navbar = ({ setIsSideBarOpen }: NavbarProps) => {
           )}
         </Link>
 
-        <div ref={menuRef}>
+        {/* <div ref={menuRef}>
           <button
             onClick={() => setOpenMenu((p) => !p)}
             className="relative w-10 h-10 md:hidden shrink-0"
@@ -72,7 +72,7 @@ const Navbar = ({ setIsSideBarOpen }: NavbarProps) => {
               unoptimized
             />
           </button>
-        </div>
+        </div> */}
       </div>
 
       {openMenu &&
