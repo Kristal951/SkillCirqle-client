@@ -13,6 +13,7 @@ import { ListSkeleton } from "@/components/workspace/resources/ListSkeleton";
 import { EmptyState } from "@/components/workspace/resources/EmptyState";
 import { logActivity } from "@/lib/activity";
 import { normalizeProfile } from "@/utils/normalizeProfile";
+import { Plus } from "lucide-react"; // Using Lucide icon for clean modern FAB presentation
 
 type ResourceType = "file" | "link" | "note";
 type ViewMode = "grid" | "list";
@@ -68,7 +69,7 @@ export default function ResourcesPage() {
       .eq("workspace_id", workspaceId)
       .order("created_at", { ascending: false });
 
-      const normalized = (data ?? []).map(normalizeProfile)
+    const normalized = (data ?? []).map(normalizeProfile);
     setResources(normalized as Resource[]);
     setLoading(false);
   }
@@ -114,7 +115,7 @@ export default function ResourcesPage() {
   function getTrackColor(trackId: string | null) {
     if (!trackId) return "gray";
     const idx = skillTracks.findIndex((t) => t.id === trackId);
-    return idx === 0 ? "emerald" : "violet";
+    return idx === 0 ? "primary" : "accent";
   }
 
   function getTrackName(trackId: string | null) {
@@ -128,7 +129,7 @@ export default function ResourcesPage() {
 
   return (
     <>
-      <div className="w-full">
+      <div className="w-full pb-24 md:pb-6 relative">
         <div className="flex items-center justify-between mb-5">
           <div>
             <h1 className="text-2xl font-bold text-text-primary">Resources</h1>
@@ -138,7 +139,7 @@ export default function ResourcesPage() {
           </div>
           <button
             onClick={() => setShowModal(true)}
-            className="flex items-center gap-1.5 bg-primary hover:bg-primary/90 text-white text-sm px-4 py-2.5 rounded-xl font-medium transition-colors shadow-sm shadow-primary/10"
+            className="hidden md:flex items-center gap-1.5 bg-primary hover:bg-primary/90 text-text-primary text-sm px-4 py-2.5 rounded-xl font-medium transition-colors shadow-sm shadow-primary/10"
           >
             <span className="material-symbols-outlined text-[18px]">add</span>
             Add resource
@@ -157,7 +158,7 @@ export default function ResourcesPage() {
             >
               All
             </button>
-            {skillTracks.map((track, i) => {
+            {skillTracks.map((track) => {
               const isActive = activeTrack === track.id;
 
               return (
@@ -181,7 +182,7 @@ export default function ResourcesPage() {
               onClick={() => setViewMode("grid")}
               className={`flex items-center justify-center w-8 h-8 rounded-lg transition-colors ${
                 viewMode === "grid"
-                  ? "bg-primary/10 text-primary"
+                  ? "bg-primary/10 text-text-primary"
                   : "text-text-secondary hover:bg-text-primary/5"
               }`}
               aria-label="Grid view"
@@ -194,7 +195,7 @@ export default function ResourcesPage() {
               onClick={() => setViewMode("list")}
               className={`flex items-center justify-center w-8 h-8 rounded-lg transition-colors ${
                 viewMode === "list"
-                  ? "bg-primary/10 text-primary"
+                  ? "bg-primary/10 text-text-primary"
                   : "text-text-secondary hover:bg-text-primary/5"
               }`}
               aria-label="List view"
@@ -206,43 +207,55 @@ export default function ResourcesPage() {
           </div>
         </div>
 
-        {loading ? (
-          viewMode === "grid" ? (
-            <GridSkeleton />
+        <div className="w-full mt-10">
+          {loading ? (
+            viewMode === "grid" ? (
+              <GridSkeleton />
+            ) : (
+              <ListSkeleton />
+            )
+          ) : filtered.length === 0 ? (
+            <EmptyState onAdd={() => setShowModal(true)} />
+          ) : viewMode === "grid" ? (
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+              {filtered.map((r) => (
+                <ResourceCard
+                  key={r.id}
+                  resource={r}
+                  color={getTrackColor(r.skill_track_id)}
+                  trackName={getTrackName(r.skill_track_id)}
+                  isOwner={r.uploaded_by === user?.id}
+                  onOpen={() => r.storage_path && getSignedUrl(r.storage_path)}
+                  onDelete={() => handleDelete(r)}
+                />
+              ))}
+            </div>
           ) : (
-            <ListSkeleton />
-          )
-        ) : filtered.length === 0 ? (
-          <EmptyState onAdd={() => setShowModal(true)} />
-        ) : viewMode === "grid" ? (
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-            {filtered.map((r) => (
-              <ResourceCard
-                key={r.id}
-                resource={r}
-                color={getTrackColor(r.skill_track_id)}
-                trackName={getTrackName(r.skill_track_id)}
-                isOwner={r.uploaded_by === user?.id}
-                onOpen={() => r.storage_path && getSignedUrl(r.storage_path)}
-                onDelete={() => handleDelete(r)}
-              />
-            ))}
-          </div>
-        ) : (
-          <div className="bg-surface/50 rounded-2xl border border-text-primary/5 divide-y divide-text-primary/5">
-            {filtered.map((r) => (
-              <ResourceRow
-                key={r.id}
-                resource={r}
-                color={getTrackColor(r.skill_track_id)}
-                trackName={getTrackName(r.skill_track_id)}
-                isOwner={r.uploaded_by === user?.id}
-                onOpen={() => r.storage_path && getSignedUrl(r.storage_path)}
-                onDelete={() => handleDelete(r)}
-              />
-            ))}
-          </div>
-        )}
+            <div className="bg-surface/50 rounded-2xl flex flex-col gap-2 border border-text-primary/5 divide-y divide-text-primary/5">
+              {filtered.map((r) => (
+                <ResourceRow
+                  key={r.id}
+                  resource={r}
+                  color={getTrackColor(r.skill_track_id)}
+                  trackName={getTrackName(r.skill_track_id)}
+                  isOwner={r.uploaded_by === user?.id}
+                  onOpen={() => r.storage_path && getSignedUrl(r.storage_path)}
+                  onDelete={() => handleDelete(r)}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+
+        <div className="md:hidden fixed bottom-20 right-6 z-40">
+          <button
+            onClick={() => setShowModal(true)}
+            aria-label="Add new resource"
+            className="bg-primary hover:bg-primary/90 text-text-primary p-4 rounded-full shadow-xl transition-all duration-200 active:scale-95 hover:scale-105 flex items-center justify-center border border-white/10"
+          >
+            <Plus className="w-6 h-6 stroke-[2.5]" />
+          </button>
+        </div>
       </div>
 
       {showModal && (

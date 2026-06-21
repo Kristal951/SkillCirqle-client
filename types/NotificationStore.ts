@@ -2,7 +2,11 @@ export type NotificationType =
   | "proposal_received"
   | "proposal_updated"
   | "message"
-  | "system";
+  | "system"
+  | "session_scheduled"
+  | "session_rescheduled"
+  | "session_missed"
+  | "session_rejected";
 
 export type Notification = {
   id: string;
@@ -32,5 +36,5 @@ export type NotificationsState = {
 
   listenToNotifications: () => void;
   cleanup: () => void;
-  setDeleting: (id: string, value: boolean)=> void
+  setDeleting: (id: string, value: boolean) => void;
 };

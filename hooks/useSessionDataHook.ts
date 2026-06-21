@@ -18,6 +18,7 @@ interface SessionData {
   host: Participant | null;
   guest: Participant | null;
   isHost: boolean;
+  status: string;
 }
 
 export function useSessionData(
@@ -39,7 +40,7 @@ export function useSessionData(
         .from("skill_sessions")
         .select(
           `
-          title, host_id, guest_id, type,
+          title, host_id, guest_id, type, status,
           host:profiles!skill_sessions_host_id_fkey ( id, name, avatar_url ),
           guest:profiles!skill_sessions_guest_id_fkey ( id, name, avatar_url )
         `,
@@ -98,6 +99,7 @@ export function useSessionData(
         host,
         guest,
         isHost: data.host_id === userId,
+        status: data.status
       });
       setLoading(false);
     }

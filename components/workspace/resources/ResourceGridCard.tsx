@@ -1,6 +1,7 @@
 "use client";
 import React from "react";
 import Image from "next/image";
+import { ExternalLink, Trash2 } from "lucide-react";
 
 type ResourceType = "file" | "link" | "note";
 
@@ -33,7 +34,8 @@ function fileIcon(mime: string | null) {
   if (mime.startsWith("video/")) return "movie";
   if (mime.includes("pdf")) return "picture_as_pdf";
   if (mime.includes("sheet") || mime.includes("excel")) return "table_chart";
-  if (mime.includes("presentation") || mime.includes("powerpoint")) return "slideshow";
+  if (mime.includes("presentation") || mime.includes("powerpoint"))
+    return "slideshow";
   if (mime.includes("zip")) return "folder_zip";
   return "description";
 }
@@ -71,50 +73,53 @@ export function ResourceCard({
     <div className="group relative flex flex-col justify-between p-4 rounded-2xl bg-surface/50 border border-text-primary/5 hover:border-text-primary/10 hover:bg-surface/80 hover:shadow-xl hover:shadow-primary/5 transition-all duration-300 min-h-40">
       <div className="flex items-start justify-between w-full">
         <div
-          className={`w-10 h-10 rounded-xl flex items-center justify-center border shrink-0
+          className={`w-9 h-9 rounded-xl flex items-center justify-center border shrink-0
           ${
             r.type === "link"
               ? "bg-blue-500/10 text-blue-400 border-blue-500/20"
               : r.type === "note"
                 ? "bg-amber-500/10 text-amber-400 border-amber-500/20"
-                : color === "emerald"
+                : r.type === "file"
                   ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
-                  : color === "violet"
-                    ? "bg-violet-500/10 text-violet-400 border-violet-500/20"
-                    : "bg-text-primary/5 text-text-secondary border-text-primary/10"
+                  : "bg-text-primary/5 text-text-secondary border-text-primary/10"
           }`}
         >
-          <span className="material-symbols-outlined text-[20px]">{icon}</span>
+          <span className="material-symbols-outlined text-base">{icon}</span>
         </div>
 
         {isOwner && (
           <button
             type="button"
             onClick={onDelete}
-            className="opacity-0 group-hover:opacity-100 w-8 h-8 rounded-lg flex items-center justify-center text-text-secondary/40 hover:text-red-400 hover:bg-red-500/10 transition-all duration-200"
+            className="p-1.5 rounded-lg flex items-center justify-center text-red-400/70 hover:text-red-400 hover:bg-red-500/10 md:opacity-0 md:group-hover:opacity-100 md:focus-within:opacity-100 md:text-text-secondary/40 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-red-400/40"
             aria-label="Delete resource"
           >
-            <span className="material-symbols-outlined text-[18px]">delete</span>
+            <Trash2 className="w-4 h-4" />
           </button>
         )}
       </div>
 
       <div className="min-w-0 my-3 flex-1">
-        <p className="text-sm font-semibold text-text-primary truncate" title={title ?? ""}>
+        <p
+          className="text-sm font-semibold text-text-primary truncate"
+          title={title ?? ""}
+        >
           {title || "Untitled Resource"}
         </p>
-        
+
         <div className="flex items-center gap-2 mt-1 text-xs text-text-secondary flex-wrap">
           {r.type === "file" && r.file_size && (
             <span className="opacity-60">{formatBytes(r.file_size)}</span>
           )}
-          
+
           {r.type === "file" && r.file_size && trackName && (
             <span className="opacity-20">|</span>
           )}
 
           {trackName && (
-            <span className={`font-medium ${color === "emerald" ? "text-emerald-400" : "text-violet-400"}`}>
+            <span
+              className={`font-medium ${color === "primary" ? "text-primary" : "text-accent"}`}
+            >
               {trackName}
             </span>
           )}
@@ -138,19 +143,17 @@ export function ResourceCard({
               </div>
             )}
           </div>
-          <p className="text-xs text-text-secondary truncate font-medium">
-            {r.profiles?.name || "Shared User"}
-          </p>
         </div>
 
-        {(r.type === "file" || r.type === "link") ? (
+        {r.type === "file" || r.type === "link" ? (
           <button
             type="button"
-            onClick={r.type === "link" ? () => window.open(r.url!, "_blank") : onOpen}
+            onClick={
+              r.type === "link" ? () => window.open(r.url!, "_blank") : onOpen
+            }
             className="text-xs text-accent font-semibold hover:text-accent/80 transition-colors shrink-0 flex items-center gap-0.5"
           >
-            <span>{r.type === "link" ? "Visit link" : "Open file"}</span>
-            <span className="material-symbols-outlined text-xs">arrow_outward</span>
+            <ExternalLink className="w-4 h-4" />
           </button>
         ) : (
           <span className="text-[10px] uppercase font-bold tracking-wider text-text-secondary/40 shrink-0">
@@ -158,7 +161,6 @@ export function ResourceCard({
           </span>
         )}
       </div>
-
     </div>
   );
 }

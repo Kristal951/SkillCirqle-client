@@ -11,7 +11,6 @@ export async function createProposal(data: CreateProposalInput) {
   };
 
   if (!data.senderId || !data.receiverId) {
-    console.log("no id");
     throw new Error("Invalid users.");
   }
 
@@ -19,12 +18,10 @@ export async function createProposal(data: CreateProposalInput) {
     data.engagementType === "swap" &&
     (!data.teachSkillId || !data.learnSkillId)
   ) {
-    console.log("no id and is swap");
     throw new Error("Swap proposals require both skills.");
   }
 
   if (data.senderId === data.receiverId) {
-    console.log("sender issue");
     throw new Error("You cannot send a proposal to yourself.");
   }
 

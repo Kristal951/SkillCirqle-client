@@ -25,6 +25,7 @@ export const useProposalStore = create<ProposalStore>((set, get) => ({
         ...p,
         sender: Array.isArray(p.sender) ? p.sender[0] : p.sender,
         receiver: Array.isArray(p.receiver) ? p.receiver[0] : p.receiver,
+        workspace: Array.isArray(p.proposal_workspaces) ? p.proposal_workspaces[0] : p.proposal_workspaces
       }));
 
       set({ proposals: formatted || [], loading: false });

@@ -49,11 +49,6 @@ const NotificationsPage = () => {
     [notifications],
   );
 
-  const readCount = useMemo(
-    () => notifications.filter((n) => n.is_read).length,
-    [notifications],
-  );
-
   const proposalsCount = useMemo(
     () => notifications.filter((n) => n.type.includes("proposal")).length,
     [notifications],

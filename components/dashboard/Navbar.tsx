@@ -9,6 +9,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { createPortal } from "react-dom";
 import { useLogoutModal } from "@/providers/LogoutContext";
+import NotificationDrawer from "../notifications/NotificationDrawer";
 
 interface NavbarProps {
   setIsSideBarOpen: Dispatch<SetStateAction<boolean>>;
@@ -22,6 +23,7 @@ const Navbar = ({ setIsSideBarOpen }: NavbarProps) => {
   const menuRef = useRef<HTMLDivElement>(null!);
   const [openMenu, setOpenMenu] = useState(false);
   const { openLogoutModal } = useLogoutModal();
+  const [openNotificationDrawer, setOpenNotificationDrawer] = useState(false)
 
   return (
     <div className="md:left-64 left-0 bg-background/90 fixed right-0 backdrop-blur-md h-16 flex justify-end items-center md:justify-end lg:justify-end border-b border-border/20 px-4">
@@ -48,15 +50,16 @@ const Navbar = ({ setIsSideBarOpen }: NavbarProps) => {
           <p className="text-sm font-medium text-accent">{tokens ?? 0}</p>
         </div>
 
-        <Link
-          href="/notifications"
+        <button
+          // href="/notifications"
+          onClick={()=> setOpenNotificationDrawer((prev)=> !prev)}
           className="relative cursor-pointer p-2 hover:bg-text-secondary/20 rounded-full"
         >
           <Bell />
           {unreadCount > 0 && (
             <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full" />
           )}
-        </Link>
+        </button>
 
         {/* <div ref={menuRef}>
           <button
@@ -110,6 +113,10 @@ const Navbar = ({ setIsSideBarOpen }: NavbarProps) => {
           </div>,
           document.body,
         )}
+
+        {
+          openNotificationDrawer && <NotificationDrawer isOpen={openNotificationDrawer} setIsOpen={setOpenNotificationDrawer}/>
+        }
     </div>
   );
 };

@@ -160,7 +160,7 @@ export function AddResourceModal({
       <div className="absolute inset-0" onClick={onClose} />
 
       <div
-        className="relative w-full max-w-md rounded-2xl bg-surface/50 backdrop-blur-md border border-border shadow-xl"
+        className="relative w-full max-w-md rounded-2xl bg-surface backdrop-blur-md border border-border shadow-xl"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between border-b border-text-primary/5 px-6 py-4">

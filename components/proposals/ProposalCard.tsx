@@ -8,11 +8,8 @@ import { ProposalView } from "@/app/(protected)/proposals/page";
 import { useProposalStore } from "@/store/useProposalStore";
 import Spinner from "../ui/Spinner";
 import { toast } from "@/lib/toast";
-import { getOrCreateConversation } from "@/utils/getOrCreateConversation";
 import { useAuthStore } from "@/store/useAuthStore";
-import { getConversationById } from "@/utils/getConversationDetails";
 import { formatDistanceToNow } from "date-fns";
-import { useChatStore } from "@/store/useChatStore";
 import { useRouter } from "next/navigation";
 
 type Props = {
@@ -24,8 +21,6 @@ type Props = {
 const ProposalCard = ({ p, statusStyles }: Props) => {
   const { updateProposalStatus, updatingStatus } = useProposalStore();
   const { user } = useAuthStore();
-  const { setActiveChat } = useChatStore();
-  const userId = user?.id || "";
   const router = useRouter();
 
   const typeConfig: Record<EngagementType, { icon: string; label: string }> = {
@@ -93,20 +88,12 @@ const ProposalCard = ({ p, statusStyles }: Props) => {
     }
   };
 
-  const handleGotoChat = async () => {
-    try {
-      const userA = p.senderID;
-      const userB = p.receiverID;
-
-      const convID = await getOrCreateConversation(userA, userB);
-
-      const conv = await getConversationById(convID, userId);
-      setActiveChat(conv);
-      router.push(`/chat/`);
-    } catch (err) {
-      console.error(err);
-      toast.error("Failed to open chat");
+  const handleGotoWorkspace = () => {
+    if (!p.workspaceId) {
+      toast.error("Workspace not found", "please try again in a moment.");
+      return;
     }
+    router.push(`/workspace/${p.workspaceId}`);
   };
 
   return (
@@ -270,16 +257,13 @@ const ProposalCard = ({ p, statusStyles }: Props) => {
         {p.status === "accepted" && (
           <div className="flex">
             <button
-              onClick={handleGotoChat}
+              onClick={handleGotoWorkspace}
               className="w-max bg-primary text-text-primary font-headline font-bold text-xs py-3 px-4 rounded-lg flex items-center justify-center gap-2 cursor-pointer"
             >
-              <span
-                className="material-symbols-outlined text-base"
-                data-icon="hourglass_empty"
-              >
-                chat
+              <span className="material-symbols-outlined text-base">
+                workspaces
               </span>
-              <p>{` Message ${firstName}`}</p>
+              <p>Go to Workspace</p>
             </button>
           </div>
         )}

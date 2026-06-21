@@ -195,9 +195,9 @@ export default function WorkspaceOverview() {
         })}
       </div> */}
 
-      <div className="w-full grid grid-cols-2 gap-6">
-        <div className="col-span-1 p-8 bg-surface/50"></div>
-        <div className="col-span-1 p-6 rounded-lg bg-surface/50">
+      <div className="w-full grid grid-cols-2 gap-6 mt-15">
+        <div className="col-span-2 md:col-span-1 p-8 bg-surface/50"></div>
+        <div className="col-span-2 md:col-span-1 p-6 rounded-lg bg-surface/50">
           <p className="text-sm font-bold text-text-primary uppercase tracking-wider mb-4">
             Recent activities
           </p>
@@ -210,15 +210,18 @@ export default function WorkspaceOverview() {
           <h2 className="text-xl font-semibold text-text-primary">
             Upcoming sessions
           </h2>
-          <button
-            onClick={() => router.push(`/workspace/${id}/sessions`)}
-            className="text-xs text-accent hover:underline"
-          >
-            View all
-          </button>
+
+          {upcomingSessions.length > 1 && (
+            <button
+              onClick={() => router.push(`/workspace/${id}/sessions`)}
+              className="text-xs text-accent hover:underline"
+            >
+              View all
+            </button>
+          )}
         </div>
         {upcomingSessions.length === 0 ? (
-          <div className="flex flex-col items-center justify-center text-center max-w-xl mx-auto w-full mt-6">
+          <div className="flex flex-col items-center justify-center text-center max-w-xl mx-auto w-full mt-10">
             <span
               className="material-symbols-outlined text-text-secondary mb-4 select-none"
               style={{ fontSize: "4rem" }}

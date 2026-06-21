@@ -29,7 +29,7 @@ export type ProposalView = {
   senderID: string;
   receiverID: string;
   message: string;
-
+  workspaceId?: string | null;
   status: ProposalStatus;
   dateCreated: number;
 };
@@ -107,6 +107,7 @@ const ProposalsPage = () => {
       sessionDuration: p.session_duration_minutes,
       dateCreated: new Date(p.created_at).getTime(),
       status,
+      workspaceId: p.workspace?.id ?? null,
       iLearn: isSender ? p.learn_skill?.title : p.teach_skill?.title,
       iTeach: isSender ? p.teach_skill?.title : p.learn_skill?.title,
       skillToTeachIcon: "school",
@@ -121,7 +122,7 @@ const ProposalsPage = () => {
   );
 
   return (
-    <div className="w-full h-full flex flex-col px-8 py-10 max-w-8xl mx-auto">
+    <div className="w-full h-full flex flex-col px-4 py-6 md:px-8 md:py-10 max-w-8xl">
       <header className="flex flex-col lg:flex-row lg:justify-between lg:items-end gap-6">
         <div className="text-center lg:text-left">
           <h1 className="text-3xl sm:text-4xl font-bold tracking-tight">
@@ -165,8 +166,8 @@ const ProposalsPage = () => {
         </div>
       </header>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-10 mt-8 ">
-        <div className="lg:col-span-2 space-y-6 order-2 lg:order-1">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-10 mt-8">
+        <div className="lg:col-span-2 space-y-6 order-2 lg:order-1 mb-10 md:mb-0">
           <AnimatePresence mode="wait">
             {loading ? (
               <ProposalCardSkeleton />

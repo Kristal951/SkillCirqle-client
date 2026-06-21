@@ -148,6 +148,12 @@ const VideoPreview = () => {
     ? sessionData.host
     : sessionData?.guest;
 
+  // Host can always start; guests must wait until the host has actually
+  // started the session (sessionData.status flips to "ACTIVE").
+  const isHost = !!sessionData?.isHost;
+  const sessionActive = sessionData?.status === "ACTIVE";
+  const canJoin = isHost || sessionActive;
+
   const getAvatarUrl = (name?: string) =>
     `https://ui-avatars.com/api/?name=${encodeURIComponent(name || "User")}&background=4f46e5&color=fff&bold=true&size=256`;
 
@@ -360,12 +366,25 @@ const VideoPreview = () => {
     stopAllTracks();
     router.back();
   };
+
   const handleJoin = async () => {
+    // Guard: a guest should never be able to join before the host has
+    // started the session, even if this somehow gets called directly
+    // (e.g. a stale click queued before state updated).
+    if (!canJoin) return;
+
     stopAllTracks();
     await markSessionActive();
     router.push(
       `/sessions/video/${sessionId}/call?mic=${micOn}&cam=${camOn}&cameraId=${selectedCamera}&microphoneId=${selectedMicrophone}&speakerId=${selectedSpeaker}`,
     );
+  };
+
+  const joinButtonLabel = () => {
+    if (!devicesReady) return "Configuring…";
+    if (isHost) return "Start Session";
+    if (!sessionActive) return "Waiting for host…";
+    return "Join Session";
   };
 
   return (
@@ -424,7 +443,7 @@ const VideoPreview = () => {
         )}
       </div>
 
-      <div className="col-span-1 bg-surface/50 border-l border-border/50 flex flex-col backdrop-blur-sm h-full min-w-0">
+      <div className="col-span-1 bg-surface/50 border-l border-border/50 overflow-y-auto scrollbar-hide flex flex-col backdrop-blur-sm h-full min-w-0">
         <div className="p-4 border-b border-white/5 flex items-center justify-between shrink-0 bg-surface/20">
           <h1 className="text-xl font-semibold text-text-primary">
             Session Preview
@@ -497,7 +516,7 @@ const VideoPreview = () => {
 
                           <div className="min-w-0 flex-1">
                             <p className="text-[10px] uppercase font-bold tracking-wider text-text-secondary leading-none mb-1.5">
-                              {participant.isHost ? "You" : "Partner"}
+                              {participant.id === user?.id ? "You" : "Partner"} 
                             </p>
                             <p className="text-text-primary text-sm font-semibold truncate leading-tight">
                               {participant.name}
@@ -506,7 +525,7 @@ const VideoPreview = () => {
                         </div>
 
                         {participant.isCurrentUser && !participant.isHost && (
-                          <span className="text-[10px] font-bold uppercase tracking-wider text-text-secondary/60 bg-text-primary/5 px-2.5 py-1 rounded-md border border-text-primary/5 shrink-0">
+                          <span className="text-[10px] font-bold uppercase tracking-wider text-text-primary bg-text-primary/5 px-2.5 py-1 rounded-md border border-text-primary/5 shrink-0">
                             You
                           </span>
                         )}
@@ -559,17 +578,18 @@ const VideoPreview = () => {
         </div>
 
         <div className="p-6 border-t border-border/5 bg-background/50 shrink-0">
+          {!isHost && !sessionActive && devicesReady && (
+            <p className="text-xs text-text-secondary text-center mb-2">
+              You'll be able to join as soon as the host starts the session.
+            </p>
+          )}
           <button
             onClick={handleJoin}
-            disabled={!devicesReady || loading || !!error || !stream}
+            disabled={!devicesReady || loading || !!error || !stream || !canJoin}
             className="w-full bg-primary hover:bg-primary/90 disabled:opacity-40 disabled:hover:bg-primary text-white py-3.5 rounded-xl font-medium tracking-wide transition shadow-xl active:scale-[0.99]"
             type="button"
           >
-            {!devicesReady
-              ? "Configuring…"
-              : sessionData?.isHost
-                ? "Start Session"
-                : "Join Session"}
+            {joinButtonLabel()}
           </button>
         </div>
       </div>

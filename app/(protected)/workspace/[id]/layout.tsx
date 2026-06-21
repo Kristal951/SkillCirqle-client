@@ -108,7 +108,7 @@ export default function WorkspaceLayout({
           userId={user?.id}
         />
 
-        <main className="flex-1 p-6 ml-72 overflow-auto">{children}</main>
+        <main className="flex-1 md:p-6 md:ml-72 px-4 py-6 overflow-auto">{children}</main>
       </div>
     </div>
   );

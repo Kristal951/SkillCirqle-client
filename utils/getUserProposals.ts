@@ -35,7 +35,10 @@ export async function getUserProposals(userId: string) {
   learn_skill:skills!proposals_learn_skill_id_fkey (
     id,
     title
-  )
+  ),
+  proposal_workspaces!proposal_workspaces_proposal_id_fkey (
+      id
+    )
   `,
     )
     .or(`sender_id.eq.${userId},receiver_id.eq.${userId}`)
@@ -45,6 +48,6 @@ export async function getUserProposals(userId: string) {
     throw new Error(error.message);
   }
 
-  console.log(data)
+  console.log(data);
   return data;
 }

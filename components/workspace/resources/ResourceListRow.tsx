@@ -1,4 +1,6 @@
 "use client";
+import { ExternalLink, Trash2 } from "lucide-react";
+import Image from "next/image";
 import React from "react";
 
 type ResourceType = "file" | "link" | "note";
@@ -32,7 +34,8 @@ function fileIcon(mime: string | null) {
   if (mime.startsWith("video/")) return "movie";
   if (mime.includes("pdf")) return "picture_as_pdf";
   if (mime.includes("sheet") || mime.includes("excel")) return "table_chart";
-  if (mime.includes("presentation") || mime.includes("powerpoint")) return "slideshow";
+  if (mime.includes("presentation") || mime.includes("powerpoint"))
+    return "slideshow";
   if (mime.includes("zip")) return "folder_zip";
   return "description";
 }
@@ -78,38 +81,50 @@ export function ResourceRow({
               ? "bg-blue-500/10 text-blue-400 border-blue-500/20"
               : r.type === "note"
                 ? "bg-amber-500/10 text-amber-400 border-amber-500/20"
-                : color === "emerald"
+                : r.type === "file"
                   ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
-                  : color === "violet"
-                    ? "bg-violet-500/10 text-violet-400 border-violet-500/20"
-                    : "bg-text-primary/5 text-text-secondary border-text-primary/10"
+                  :  "bg-text-primary/5 text-text-secondary border-text-primary/10"
           }`}
         >
           <span className="material-symbols-outlined text-base">{icon}</span>
         </div>
 
         <div className="flex-1 min-w-0">
-          <p className="text-sm text-text-primary font-medium truncate" title={title ?? ""}>
+          <p
+            className="text-sm text-text-primary font-medium truncate"
+            title={title ?? ""}
+          >
             {title || "Untitled Resource"}
           </p>
 
           <div className="flex items-center gap-2 mt-0.5 text-xs text-text-secondary/60 flex-wrap">
+            {showSize && <span>{formatBytes(r.file_size!)}</span>}
+
             {showSize && (
-              <span>{formatBytes(r.file_size!)}</span>
-            )}
-            
-            {showSize && (
-              <span className="text-text-secondary/30 select-none">·</span>
+              <span className="text-text-secondary select-none">·</span>
             )}
 
-            <span className="truncate max-w-30">
-              {r.profiles?.name || "Shared User"}
-            </span>
-
+            <div className="w-5 h-5 rounded-full relative overflow-hidden bg-text-primary/10 shrink-0 border border-text-primary/5">
+              {r.profiles?.avatar_url ? (
+                <Image
+                  src={r.profiles.avatar_url}
+                  alt={r.profiles.name || "Avatar"}
+                  fill
+                  sizes="20px"
+                  className="object-cover"
+                />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center text-[10px] font-bold text-text-secondary uppercase">
+                  {r.profiles?.name?.charAt(0) || "?"}
+                </div>
+              )}
+            </div>
             {trackName && (
               <>
-                <span className="text-text-secondary/30 select-none">·</span>
-                <span className={`font-medium ${color === "emerald" ? "text-emerald-400" : "text-violet-400"}`}>
+                <span className="text-text-secondary select-none">·</span>
+                <span
+                  className={`font-medium ${color === "primary" ? "text-primary" : "text-accent"}`}
+                >
                   {trackName}
                 </span>
               </>
@@ -118,17 +133,17 @@ export function ResourceRow({
         </div>
       </div>
 
-      <div className="flex items-center gap-4 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity duration-200 shrink-0">
+      <div className="flex items-center gap-4 md:opacity-0 md:group-hover:opacity-100 focus-within:opacity-100 transition-opacity duration-200 shrink-0">
         {(r.type === "file" || r.type === "note") && (
           <button
             type="button"
             onClick={onOpen}
-            className="text-xs font-semibold text-primary hover:underline transition-all"
+            className="inline-flex items-center gap-1 text-xs font-semibold text-accent hover:underline transition-all focus:outline-none focus:ring-1 focus:ring-accent rounded px-1"
           >
-            Open
+            <ExternalLink className="w-4 h-4" />
           </button>
         )}
-        
+
         {r.type === "link" && r.url && (
           <a
             href={r.url}
@@ -136,22 +151,21 @@ export function ResourceRow({
             rel="noopener noreferrer"
             className="text-xs font-semibold text-blue-400 hover:underline transition-all flex items-center gap-0.5"
           >
-            <span>Visit</span>
-            <span className="material-symbols-outlined text-[10px]">arrow_outward</span>
+            <ExternalLink className="w-4 h-4" />
           </a>
         )}
-        
+
         {isOwner && (
           <button
             type="button"
             onClick={onDelete}
-            className="text-xs font-semibold text-red-400/70 hover:text-red-400 transition-all"
+            aria-label="Delete item"
+            className="p-2 text-red-400/70 hover:text-red-500 hover:bg-red-500/10 active:bg-red-500/20 rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-red-400/50"
           >
-            Delete
+            <Trash2 className="w-4 h-4" />
           </button>
         )}
       </div>
-
     </div>
   );
 }

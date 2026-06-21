@@ -241,7 +241,7 @@ export default function Dashboard() {
         </div>
       </section> */}
 
-      <section className="relative w-full p-4 gap-6 flex flex-col md:flex-row lg:flex-row justify-between items-center md:p-10 bg-primary border border-border rounded-md overflow-hidden">
+      <section className="relative w-full p-4 z-50 gap-6 flex flex-col md:flex-row lg:flex-row justify-between items-center md:p-10 bg-primary border border-border rounded-md overflow-hidden">
         <div className="flex items-center w-full gap-3">
           <div className=" w-14 md:w-20 md:h-20 lg:w-20 lg:h-20 h-14 rounded-full flex items-center justify-center text-text-primary bg-background">
             <span

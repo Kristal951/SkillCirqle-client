@@ -1,8 +1,9 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import { Bell, Mail, MessageSquare, Zap, ShieldCheck } from "lucide-react";
+import { Bell, Mail, Zap } from "lucide-react";
 import Spinner from "../ui/Spinner";
-import OneSignal from "@/lib/oneSignal";
+import OneSignal from "react-onesignal";
+import { initOneSignal } from "@/lib/oneSignal";
 
 type Settings = {
   in_app: boolean;
@@ -26,54 +27,44 @@ const NotificationSettings = () => {
     email_alerts: false,
     push_notifications: true,
   });
-  const [saving, setSaving] = useState<string | null>(null);
+  const [saving, setSaving] = useState<keyof Settings | null>(null);
   const [loading, setLoading] = useState(true);
 
+  const persistSetting = async (key: keyof Settings, value: boolean) => {
+    const res = await fetch("/api/user/notification-settings", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ [key]: value }),
+    });
+    const data = await res.json();
+    if (!data.success) {
+      throw new Error(data.message);
+    }
+  };
+
   const updateSetting = async (key: keyof Settings) => {
+    if (saving) return; 
     setSaving(key);
-
     const previous = settings;
-
     try {
       let nextValue = !settings[key];
 
       if (key === "push_notifications") {
+        await initOneSignal(); 
         const granted = await OneSignal.Notifications.requestPermission();
         if (!granted) {
           nextValue = false;
           await OneSignal.User.PushSubscription.optOut();
-          setSettings({
-            ...settings,
-            push_notifications: false,
-          });
+          setSettings({ ...settings, push_notifications: false });
+          await persistSetting("push_notifications", false);
           return;
         }
-
         await OneSignal.User.PushSubscription.optIn();
       }
 
-      const updated = {
-        ...settings,
-        [key]: nextValue,
-      };
-
+      const updated = { ...settings, [key]: nextValue };
       setSettings(updated);
-
-      const res = await fetch("/api/user/notification-settings", {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          [key]: nextValue,
-        }),
-      });
-
-      const data = await res.json();
-
-      if (!data.success) {
-        throw new Error(data.message);
-      }
+      await persistSetting(key, nextValue);
     } catch (err) {
       console.error(err);
       setSettings(previous);
@@ -86,9 +77,7 @@ const NotificationSettings = () => {
     const fetchSettings = async () => {
       try {
         const res = await fetch("/api/user/notification-settings");
-
         const data = await res.json();
-
         if (data.success) {
           setSettings(data.settings);
         }
@@ -98,7 +87,6 @@ const NotificationSettings = () => {
         setLoading(false);
       }
     };
-
     fetchSettings();
   }, []);
 
@@ -108,13 +96,11 @@ const NotificationSettings = () => {
         <div className="flex flex-col gap-8">
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 rounded-xl bg-surface" />
-
             <div className="flex flex-col gap-2">
               <div className="h-5 w-40 rounded-md bg-surface" />
               <div className="h-3 w-64 rounded-md bg-surface" />
             </div>
           </div>
-
           <div className="grid gap-4">
             {[1, 2, 3].map((item) => (
               <div
@@ -123,13 +109,11 @@ const NotificationSettings = () => {
               >
                 <div className="flex items-center gap-4">
                   <div className="w-10 h-10 rounded-lg bg-surface" />
-
                   <div className="flex flex-col gap-2">
                     <div className="h-4 w-36 rounded-md bg-surface" />
                     <div className="h-3 w-56 rounded-md bg-surface" />
                   </div>
                 </div>
-
                 <div className="w-11 h-6 rounded-full bg-surface" />
               </div>
             ))}
@@ -153,7 +137,6 @@ const NotificationSettings = () => {
             </p>
           </div>
         </div>
-
         <div className="grid gap-4">
           <NotificationToggle
             icon={Bell}
@@ -161,18 +144,16 @@ const NotificationSettings = () => {
             description="Show notifications inside SkillCirqle."
             active={settings.in_app}
             onToggle={() => updateSetting("in_app")}
-            saving={saving === "in_app_notifications"}
+            saving={saving === "in_app"}
           />
-
           <NotificationToggle
             icon={Mail}
             title="Email Alerts"
             description="Receive important updates via email."
             active={settings.email_alerts}
             onToggle={() => updateSetting("email_alerts")}
-            saving={saving === "email_notifications"}
+            saving={saving === "email_alerts"}
           />
-
           <NotificationToggle
             icon={Zap}
             title="Push Notifications"
@@ -181,22 +162,6 @@ const NotificationSettings = () => {
             onToggle={() => updateSetting("push_notifications")}
             saving={saving === "push_notifications"}
           />
-
-          {/* <NotificationToggle
-            icon={MessageSquare}
-            title="Direct Mentions"
-            description="Notify me when someone mentions me in a cirqle discussion."
-            active={settings.mentions}
-            onToggle={() => toggle("mentions")}
-          />
-
-          <NotificationToggle
-            icon={ShieldCheck}
-            title="Security Alerts"
-            description="Critical updates about your account security and login activity."
-            active={true} // Usually forced true for security
-            disabled={true}
-          /> */}
         </div>
       </div>
     </div>
@@ -212,9 +177,7 @@ const NotificationToggle = ({
   disabled,
   saving,
 }: NotificationToggleProps) => (
-  <div
-    className={`flex items-center justify-between p-4 rounded-xl transition-all`}
-  >
+  <div className="flex items-center justify-between p-4 rounded-xl transition-all">
     <div className="flex gap-4 items-center">
       <div
         className={`p-2 rounded-lg ${active ? "text-text-primary bg-background" : "text-text-secondary bg-surface"} shadow-sm`}
@@ -228,7 +191,6 @@ const NotificationToggle = ({
         </span>
       </div>
     </div>
-
     <button
       onClick={!disabled ? onToggle : undefined}
       disabled={disabled || !!saving}

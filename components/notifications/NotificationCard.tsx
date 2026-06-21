@@ -73,6 +73,14 @@ const NotificationCard = ({
       );
     }
 
+    if (type === "session") {
+      return (
+        <span className="material-symbols-outlined text-[14px]!">
+          calendar_today
+        </span>
+      );
+    }
+
     if (type === "review") {
       return (
         <span
@@ -120,15 +128,15 @@ const NotificationCard = ({
         )
       }
       transition={{ delay: index * 0.04, ease: "easeOut" }}
-      className={`group cursor-pointer relative flex items-center gap-4 p-4 rounded-xl border transition-all duration-300 ${
+      className={`group cursor-pointer relative flex items-center gap-4 p-4 border transition-all duration-300 ${
         notif.is_read
           ? "bg-surface/40 border-border/50 opacity-80 hover:opacity-100"
           : "bg-linear-to-r from-surface to-surface/80 border-primary/20 shadow-[0_8px_30px_rgb(0,0,0,0.04)]"
       } hover:border-primary/40 hover:shadow-xl hover:shadow-primary/5`}
     >
-      {!notif.is_read && (
+      {/* {!notif.is_read && (
         <div className="absolute -left-px top-1/2 -translate-y-1/2 w-0.75 h-8 bg-primary rounded-r-full shadow-[0_0_15px_rgba(var(--primary-rgb),0.5)]" />
-      )}
+      )} */}
 
       <div className="relative shrink-0">
         <div
@@ -142,6 +150,8 @@ const NotificationCard = ({
               alt=""
               className="w-full h-full object-cover"
             />
+          ) : notif.type.includes("session") ? (
+            <span className="material-symbols-outlined">calendar_today</span>
           ) : (
             <User size={24} className="text-text-secondary/40" />
           )}
@@ -152,7 +162,9 @@ const NotificationCard = ({
             ? getIcon("proposal")
             : notif?.type.includes("new_message")
               ? getIcon("message")
-              : getIcon("notification")}
+              : notif?.type.includes("session")
+                ? getIcon("session")
+                : getIcon("notification")}
         </div>
       </div>
 
@@ -177,7 +189,7 @@ const NotificationCard = ({
             </span>
           </div>
 
-          <p className="text-sm font-medium text-text-secondary line-clamp-1 group-hover:text-text-primary/80 transition-colors">
+          <p className="text-sm font-medium text-text-secondary group-hover:text-text-primary/80 transition-colors">
             {notif.data?.proposalMsg || notif?.data?.msgPrev || notif.message}
           </p>
         </div>

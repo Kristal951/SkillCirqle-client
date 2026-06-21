@@ -13,7 +13,7 @@ const BottomBar = () => {
   }
 
   return (
-    <div className="w-full md:hidden fixed left-0 right-0 bottom-0 h-16 bg-[#0B0813] border-t border-white/10 z-50 px-2">
+    <div className="w-full md:hidden fixed left-0 right-0 bottom-0 h-16 bg-background border-t border-border z-50 px-2">
       <div className="flex items-center justify-around h-full max-w-md mx-auto">
         {NavLinks.map((link, i) => {
           if (link.onlyOnDesktop) return null;

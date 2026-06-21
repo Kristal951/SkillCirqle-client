@@ -1,16 +1,23 @@
 import OneSignal from "react-onesignal";
 
-let initialized = false;
+let initPromise: Promise<void> | null = null;
 
-export async function initOneSignal() {
-  if (initialized) return;
-
-  await OneSignal.init({
-    appId: process.env.NEXT_PUBLIC_ONESIGNAL_APP_ID!,
-    allowLocalhostAsSecureOrigin: true,
-  });
-
-  initialized = true;
+export function initOneSignal(): Promise<void> {
+  if (!initPromise) {
+    initPromise = OneSignal.init({
+      appId: process.env.NEXT_PUBLIC_ONESIGNAL_APP_ID!,
+    });
+  }
+  return initPromise;
 }
 
-export default OneSignal
+export async function loginOneSignal(userId: string) {
+  if (!userId) return;
+  await initOneSignal();
+  await OneSignal.login(userId);
+}
+
+export async function logoutOneSignal() {
+  await initOneSignal();
+  await OneSignal.logout();
+}

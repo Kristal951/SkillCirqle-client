@@ -110,7 +110,14 @@ const Sidebar = ({ isSideBarOpen, setIsSideBarOpen }: SidebarProps) => {
                     </span>
                   </>
                 ) : (
-                  <span className="material-symbols-outlined text-2xl shrink-0">
+                  <span
+                    className="material-symbols-outlined text-2xl shrink-0"
+                    style={{
+                      fontVariationSettings: isActive
+                        ? "'FILL' 1, 'wght' 400"
+                        : "'FILL' 0, 'wght' 400",
+                    }}
+                  >
                     {link.icon}
                   </span>
                 )}

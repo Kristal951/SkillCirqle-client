@@ -3,7 +3,7 @@ import { createSupabaseServer } from "@/lib/supabaseServer";
 export const getUserSkillsFromTable = async (userId: string) => {
   const supabase = await createSupabaseServer();
   if (!userId) {
-    console.log("user Id is needed");
+    console.log("Unauthorized");
     return;
   }
 

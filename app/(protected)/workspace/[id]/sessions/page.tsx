@@ -8,6 +8,7 @@ import { SessionsSkeleton } from "@/components/workspace/sessions/SessionSkeleto
 import UpcomingSessionsCard from "@/components/workspace/sessions/UpcomingSessionsCard";
 import PastSessionCard from "@/components/workspace/sessions/PastSessionCard";
 import { useAuthStore } from "@/store/useAuthStore";
+import { Plus } from "lucide-react";
 
 interface Session {
   id: string;
@@ -96,175 +97,186 @@ export default function SessionsPage() {
 
   return (
     <>
-      <div className="w-full h-full flex flex-col gap-20">
-        <div className="flex items-center justify-between">
-          <h1 className="text-4xl font-bold text-text-primary">Sessions</h1>
-          {sessions.length > 0 && (
-            <button
-              onClick={() => setShowModal(true)}
-              className="flex items-center gap-1.5 bg-primary/80 hover:bg-primary text-text-primary text-sm font-medium px-4 py-2.5 rounded-lg transition-colors shadow-sm"
-            >
-              <svg
-                className="w-4 h-4"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth={2}
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M12 4v16m8-8H4"
-                />
-              </svg>
-              Schedule Session
-            </button>
-          )}
+      {/* Changed h-full to min-h-screen or min-h-[calc(100vh-something)] depending on structural wraps */}
+      <div className="w-full min-h-full flex flex-col relative pb-24 md:pb-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <h1 className="text-4xl font-bold text-text-primary tracking-tight">
+              Sessions
+            </h1>
+            <p className="text-sm text-text-secondary mt-1">
+              Manage and schedule your skill sessions
+            </p>
+          </div>
+
+          {/* Hidden on small screens, relies on Floating Action Button below */}
+          <button
+            onClick={() => setShowModal(true)}
+            className="hidden md:flex items-center justify-center gap-1.5 bg-primary/80 hover:bg-primary text-text-primary text-sm font-medium px-4 py-2.5 rounded-lg transition-colors shadow-sm h-fit"
+          >
+            <Plus className="w-4 h-4" strokeWidth={2.5} />
+            Schedule Session
+          </button>
         </div>
 
         {skillTracks.length > 1 && (
-          <div className="flex gap-1.5 p-1 bg-surface/30 backdrop-blur-sm border border-surface/50 rounded-full w-max shadow-sm">
-            <button
-              onClick={() => setActiveTrack("all")}
-              className={`text-sm font-medium px-4 py-1.5 rounded-full transition-all duration-200 ${
-                activeTrack === "all"
-                  ? "bg-primary text-text-primary shadow-sm"
-                  : "text-text-secondary hover:text-text-primary hover:bg-surface/50"
-              }`}
-            >
-              All
-            </button>
+          <div className="w-full flex items-center justify-center md:justify-start">
+            <div className="flex gap-1.5 p-1 bg-surface/30 backdrop-blur-sm border border-surface/50 rounded-md w-max shadow-sm mt-10">
+              <button
+                onClick={() => setActiveTrack("all")}
+                className={`text-sm font-medium px-4 py-1.5 rounded-md transition-all duration-200 ${
+                  activeTrack === "all"
+                    ? "bg-primary text-text-primary shadow-sm"
+                    : "text-text-secondary hover:text-text-primary hover:bg-surface/50"
+                }`}
+              >
+                All
+              </button>
 
-            {skillTracks.map((track) => {
-              const isActive = activeTrack === track.id;
-              return (
-                <button
-                  key={track.id}
-                  onClick={() => setActiveTrack(track.id)}
-                  className={`text-sm font-medium px-4 py-1.5 rounded-full transition-all duration-200 ${
-                    isActive
-                      ? "bg-primary text-text-primary shadow-sm"
-                      : "text-text-secondary hover:text-text-primary hover:bg-surface/50"
-                  }`}
-                >
-                  {track.skills?.title}
-                </button>
-              );
-            })}
-          </div>
-        )}
-
-        {active.length > 0 && (
-          <div className="flex flex-col gap-3 w-full">
-            <p className="text-xs font-bold uppercase tracking-widest text-emerald-400 flex items-center gap-1.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-              Live Now
-            </p>
-            <div className="flex flex-col gap-4 w-full">
-              {active.map((s) => {
-                const date = new Date(s.scheduled_at);
+              {skillTracks.map((track) => {
+                const isActive = activeTrack === track.id;
                 return (
-                  <UpcomingSessionsCard
-                    key={s.id}
-                    s={s}
-                    date={date}
-                    isHost={s.host_id === user?.id}
-                    getTrackName={getTrackName}
-                    showRescheduleBtn={false}
-                    onJoin={(id) => {
-                      const route = s.type === "VIDEO" ? "video" : "audio";
-                      router.push(`/sessions/${route}/${id}/preview`);
-                    }}
-                  />
+                  <button
+                    key={track.id}
+                    onClick={() => setActiveTrack(track.id)}
+                    className={`text-sm font-medium px-4 py-1.5 rounded-md transition-all duration-200 ${
+                      isActive
+                        ? "bg-primary text-text-primary shadow-sm"
+                        : "text-text-secondary hover:text-text-primary hover:bg-surface/50"
+                    }`}
+                  >
+                    {track.skills?.title}
+                  </button>
                 );
               })}
             </div>
           </div>
         )}
 
-        {loading ? (
-          <SessionsSkeleton />
-        ) : (
-          <div className="flex flex-col gap-15 w-full">
-            {upcoming.length > 0 && (
-              <div className="flex flex-col gap-3 w-full">
-                <p className="text-xl font-bold text-text-primary">
-                  Upcoming Sessions
-                </p>
-                <div className="flex flex-col gap-4 w-full">
-                  {upcoming.map((s) => {
-                    const date = new Date(s.scheduled_at);
-
-                    return (
-                      <UpcomingSessionsCard
-                        key={s.id}
-                        s={s}
-                        date={date}
-                        isHost={s.host_id === user?.id}
-                        getTrackName={getTrackName}
-                        onReschedule={handleReschedule}
-                        onJoin={(id) => {
-                          const route = s.type === "VIDEO" ? "video" : "audio";
-                          router.push(`/sessions/${route}/${id}/preview`);
-                        }}
-                      />
-                    );
-                  })}
-                </div>
+        <div className="w-full gap-10 mt-10">
+          {active.length > 0 && (
+            <div className="flex flex-col gap-3 w-full">
+              <p className="text-xs font-bold uppercase tracking-widest text-emerald-400 flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                Live Now
+              </p>
+              <div className="flex flex-col gap-4 w-full">
+                {active.map((s) => {
+                  const date = new Date(s.scheduled_at);
+                  return (
+                    <UpcomingSessionsCard
+                      key={s.id}
+                      s={s}
+                      date={date}
+                      isHost={s.host_id === user?.id}
+                      getTrackName={getTrackName}
+                      showRescheduleBtn={false}
+                      onJoin={(id) => {
+                        const route = s.type === "VIDEO" ? "video" : "audio";
+                        router.push(`/sessions/${route}/${id}/preview`);
+                      }}
+                    />
+                  );
+                })}
               </div>
-            )}
+            </div>
+          )}
 
-            {past.length > 0 && (
-              <div className="flex flex-col gap-3 w-full">
-                <p className="text-xl font-bold text-text-primary">
-                  Past Sessions
-                </p>
-                <div className="flex flex-col gap-4 w-full">
-                  {past.map((s) => {
-                    return (
-                      <PastSessionCard
-                        s={s}
-                        getTrackName={getTrackName}
-                        key={s.id}
-                      />
-                    );
-                  })}
+          {loading ? (
+            <SessionsSkeleton />
+          ) : (
+            <div className="flex flex-col gap-15 w-full">
+              {upcoming.length > 0 && (
+                <div className="flex flex-col gap-3 w-full">
+                  <p className="text-xl font-bold text-text-primary">
+                    Upcoming Sessions
+                  </p>
+                  <div className="flex flex-col gap-4 w-full">
+                    {upcoming.map((s) => {
+                      const date = new Date(s.scheduled_at);
+
+                      return (
+                        <UpcomingSessionsCard
+                          key={s.id}
+                          s={s}
+                          date={date}
+                          isHost={s.host_id === user?.id}
+                          getTrackName={getTrackName}
+                          onReschedule={handleReschedule}
+                          onJoin={(id) => {
+                            const route =
+                              s.type === "VIDEO" ? "video" : "audio";
+                            router.push(`/sessions/${route}/${id}/preview`);
+                          }}
+                        />
+                      );
+                    })}
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
 
-            {filtered.length === 0 && (
-              <div className="flex flex-col items-center justify-center p-8 py-16 text-center max-w-xl mx-auto w-full mt-6">
-                <span
-                  className="material-symbols-outlined text-text-secondary mb-4 select-none"
-                  style={{ fontSize: "4rem" }}
-                  aria-hidden="true"
-                >
-                  calendar_add_on
-                </span>
+              {past.length > 0 && (
+                <div className="flex flex-col gap-3 w-full">
+                  <p className="text-xl font-bold text-text-primary">
+                    Past Sessions
+                  </p>
+                  <div className="flex flex-col gap-4 w-full">
+                    {past.map((s) => {
+                      return (
+                        <PastSessionCard
+                          s={s}
+                          getTrackName={getTrackName}
+                          key={s.id}
+                        />
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
 
-                <h3 className="text-xl font-bold text-text-primary mb-1">
-                  You have no sessions yet
-                </h3>
-
-                <p className="text-text-secondary mb-6 text-sm max-w-sm">
-                  Create your first session to get started with your scheduled
-                  workspace activities.
-                </p>
-
-                <button
-                  onClick={() => setShowModal(true)}
-                  className="flex items-center justify-center gap-2 rounded-xl bg-primary text-text-primary px-5 py-3 text-sm font-semibold shadow-md transition-all hover:opacity-90 active:scale-95"
-                >
-                  <span className="material-symbols-outlined text-xl">
+              {filtered.length === 0 && (
+                <div className="flex flex-col items-center justify-center p-8 py-16 text-center max-w-xl mx-auto w-full mt-6">
+                  <span
+                    className="material-symbols-outlined text-text-secondary mb-4 select-none"
+                    style={{ fontSize: "4rem" }}
+                    aria-hidden="true"
+                  >
                     calendar_add_on
                   </span>
-                  <span>Schedule Session</span>
-                </button>
-              </div>
-            )}
-          </div>
-        )}
+
+                  <h3 className="text-xl font-bold text-text-primary mb-1">
+                    You have no sessions yet
+                  </h3>
+
+                  <p className="text-text-secondary mb-6 text-sm max-w-sm">
+                    Create your first session to get started with your scheduled
+                    workspace activities.
+                  </p>
+
+                  <button
+                    onClick={() => setShowModal(true)}
+                    className="flex items-center justify-center gap-2 rounded-xl bg-primary text-text-primary px-5 py-3 text-sm font-semibold shadow-md transition-all hover:opacity-90 active:scale-95"
+                  >
+                    <span className="material-symbols-outlined text-xl">
+                      calendar_add_on
+                    </span>
+                    <span>Schedule Session</span>
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
+        <div className="md:hidden fixed bottom-20 right-6 z-40">
+          <button
+            onClick={() => setShowModal(true)}
+            aria-label="Schedule new session"
+            className="bg-primary hover:bg-primary/90 text-text-primary p-4 rounded-full shadow-xl transition-all duration-200 active:scale-95 hover:scale-105 flex items-center justify-center border border-white/10"
+          >
+            <Plus className="w-6 h-6 stroke-[2.5]" />
+          </button>
+        </div>
       </div>
 
       {(showModal || rescheduling) && (

@@ -1,8 +1,6 @@
 "use client";
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
 import React from "react";
-import Spinner from "../ui/Spinner";
-import { useAuthStore } from "@/store/useAuthStore";
 
 const LoginWithGoogleButton = ({
   loading,
@@ -11,7 +9,6 @@ const LoginWithGoogleButton = ({
   loading: boolean;
   setLoading: React.Dispatch<React.SetStateAction<boolean>>;
 }) => {
-  const { fetchUser } = useAuthStore();
 
   const handleGoogleLogin = async () => {
     setLoading(true);
@@ -27,8 +24,6 @@ const LoginWithGoogleButton = ({
           },
         },
       });
-
-      await fetchUser();
 
       if (error) {
         console.error("Google Login error:", error.message);

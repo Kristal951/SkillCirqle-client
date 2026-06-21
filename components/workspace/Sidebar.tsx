@@ -69,6 +69,11 @@ const Sidebar = ({
               >
                 <span
                   className={`material-symbols-outlined text-lg transition-transform ${isActive ? "text-text-primary" : "opacity-70"}`}
+                  style={{
+                    fontVariationSettings: isActive
+                      ? "'FILL' 1, 'wght' 400"
+                      : "'FILL' 0, 'wght' 400",
+                  }}
                 >
                   {item.icon}
                 </span>
@@ -78,7 +83,7 @@ const Sidebar = ({
           })}
         </nav>
 
-        {skillTracks.length > 0 && (
+        {/* {skillTracks.length > 0 && (
           <div className="mt-6 px-6">
             <p className="text-[10px] font-bold uppercase tracking-wider text-text-secondary/50 mb-3">
               Skill tracks
@@ -110,7 +115,7 @@ const Sidebar = ({
               })}
             </div>
           </div>
-        )}
+        )} */}
       </div>
 
       {otherMember && (

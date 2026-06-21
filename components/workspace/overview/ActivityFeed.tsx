@@ -178,10 +178,10 @@ export default function ActivityFeed({ activity, loading }: ActivityFeedProps) {
   if (activity.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-8 px-4 text-center">
-        <span className="material-symbols-outlined text-text-secondary/20 text-3xl mb-1">
+        <span className="material-symbols-outlined text-text-secondary mb-1" style={{fontSize: '40px'}}>
           history_toggle_off
         </span>
-        <p className="text-xs text-text-secondary/50">
+        <p className="text-xs text-text-secondary">
           No history activity logged yet.
         </p>
       </div>
