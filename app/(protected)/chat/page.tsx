@@ -13,6 +13,7 @@ import MessageBubble from "@/components/chat/MessageBubble";
 import Spinner from "@/components/ui/Spinner";
 import { ArrowDown, ChevronDown } from "lucide-react";
 import { useSocketStore } from "@/store/useSocketStore";
+import ChatBubbleOff from "@material-symbols/svg-400/outlined/chat_bubble_off.svg";
 
 export type UIMessage = {
   id: string;
@@ -288,9 +289,10 @@ const Chat = () => {
     return (
       <div className="w-full h-full flex items-center justify-center text-gray-400">
         <div className="text-center flex flex-col items-center">
-          <span className="material-symbols-outlined text-[100px]">
+          {/* <span className="material-symbols-outlined text-[100px]">
             chat_bubble_off
-          </span>
+          </span> */}
+          <ChatBubbleOff className="material-symbols-outlined text-[100px]"/>
           <h2 className="text-2xl mt-2 text-white">No chat selected</h2>
           <p className="text-sm text-text-secondary">Select a conversation to start messaging</p>
         </div>
@@ -310,9 +312,7 @@ const Chat = () => {
     return (
       <div className="w-full h-full flex items-center justify-center text-gray-400">
         <div className="text-center flex flex-col items-center">
-          <span className="material-symbols-outlined text-[100px]">
-            chat_bubble_off
-          </span>
+         <ChatBubbleOff className="material-symbols-outlined text-[100px]"/>
           <h2 className="text-2xl mt-2 text-white">No messages yet</h2>
           <p className="text-sm">Start the conversation</p>
         </div>

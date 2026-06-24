@@ -1,6 +1,16 @@
 "use client";
 import React from "react";
 import { useNow } from "@/hooks/useNow";
+import HistoryToggleOff from "@material-symbols/svg-400/outlined/history_toggle_off.svg"
+import CalendarToday from "@material-symbols/svg-400/outlined/calendar_today.svg"
+import EventRepeat from "@material-symbols/svg-400/outlined/event_repeat.svg"
+import TaskAlt from "@material-symbols/svg-400/outlined/task_alt.svg"
+import EventBusy from "@material-symbols/svg-400/outlined/event_busy.svg"
+import Flag from "@material-symbols/svg-400/outlined/flag.svg"
+import MilitaryTech from "@material-symbols/svg-400/outlined/military_tech.svg"
+import FolderOpen from "@material-symbols/svg-400/outlined/folder_open.svg"
+import Delete from "@material-symbols/svg-400/outlined/delete.svg"
+import { IconType } from "@/utils/SvgType";
 
 export type ActivityType =
   | "session_scheduled"
@@ -28,15 +38,15 @@ export interface Activity {
   } | null;
 }
 
-const ICONS: Record<ActivityType, string> = {
-  session_scheduled: "calendar_today",
-  session_rescheduled: "event_repeat",
-  session_completed: "task_alt",
-  session_cancelled: "event_busy",
-  milestone_added: "flag",
-  milestone_completed: "military_tech",
-  resource_added: "folder_open",
-  resource_removed: "delete",
+const ICONS: Record<ActivityType, IconType> = {
+  session_scheduled: CalendarToday,
+  session_rescheduled: EventRepeat,
+  session_completed: TaskAlt,
+  session_cancelled: EventBusy,
+  milestone_added: Flag,
+  milestone_completed: MilitaryTech,
+  resource_added: FolderOpen,
+  resource_removed: Delete,
 };
 
 const COLORS: Record<ActivityType, string> = {
@@ -178,9 +188,7 @@ export default function ActivityFeed({ activity, loading }: ActivityFeedProps) {
   if (activity.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-8 px-4 text-center">
-        <span className="material-symbols-outlined text-text-secondary mb-1" style={{fontSize: '40px'}}>
-          history_toggle_off
-        </span>
+        <HistoryToggleOff className="text-text-secondary mb-1 text-[40px]"/>
         <p className="text-xs text-text-secondary">
           No history activity logged yet.
         </p>
@@ -192,15 +200,14 @@ export default function ActivityFeed({ activity, loading }: ActivityFeedProps) {
     <div className="flex flex-col">
       {activity.map((item, i) => {
         const isLast = i === activity.length - 1;
+        const Icon = ICONS[item.type]
         return (
           <div key={item.id} className="flex gap-3 group relative">
             <div className="flex flex-col items-center shrink-0">
               <div
                 className={`w-8 h-8 rounded-xl flex items-center justify-center border transition-all duration-300 z-10 ${COLORS[item.type] ?? "bg-text-primary/5 text-text-secondary border-transparent"}`}
               >
-                <span className="material-symbols-outlined text-[15px]">
-                  {ICONS[item.type] ?? "circle"}
-                </span>
+                <Icon className="text-[15px]"/>
               </div>
 
               {!isLast && (

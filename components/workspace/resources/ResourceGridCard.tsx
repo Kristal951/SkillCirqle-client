@@ -2,6 +2,15 @@
 import React from "react";
 import Image from "next/image";
 import { ExternalLink, Trash2 } from "lucide-react";
+import ImageIcon from "@material-symbols/svg-400/outlined/image.svg"
+import Video from "@material-symbols/svg-400/outlined/video_camera_back.svg"
+import Pdf from "@material-symbols/svg-400/outlined/picture_as_pdf.svg"
+import TableChart from "@material-symbols/svg-400/outlined/table_chart.svg"
+import SlideShow from "@material-symbols/svg-400/outlined/slideshow.svg"
+import FolderZip from "@material-symbols/svg-400/outlined/folder_zip.svg"
+import Description from "@material-symbols/svg-400/outlined/description.svg"
+import StickyNote from "@material-symbols/svg-400/outlined/sticky_note_2.svg"
+import Link from "@material-symbols/svg-400/outlined/link.svg"
 
 type ResourceType = "file" | "link" | "note";
 
@@ -30,14 +39,14 @@ function formatBytes(bytes: number) {
 
 function fileIcon(mime: string | null) {
   if (!mime) return "description";
-  if (mime.startsWith("image/")) return "image";
-  if (mime.startsWith("video/")) return "movie";
-  if (mime.includes("pdf")) return "picture_as_pdf";
-  if (mime.includes("sheet") || mime.includes("excel")) return "table_chart";
+  if (mime.startsWith("image/")) return ImageIcon;
+  if (mime.startsWith("video/")) return Video;
+  if (mime.includes("pdf")) return Pdf;
+  if (mime.includes("sheet") || mime.includes("excel")) return TableChart;
   if (mime.includes("presentation") || mime.includes("powerpoint"))
-    return "slideshow";
-  if (mime.includes("zip")) return "folder_zip";
-  return "description";
+    return SlideShow;
+  if (mime.includes("zip")) return FolderZip;
+  return Description;
 }
 
 export function ResourceCard({
@@ -55,11 +64,11 @@ export function ResourceCard({
   onOpen: () => void;
   onDelete: () => void;
 }) {
-  const icon =
+  const Icon =
     r.type === "link"
-      ? "link"
+      ? Link
       : r.type === "note"
-        ? "sticky_note_2"
+        ? StickyNote
         : fileIcon(r.file_mime_type);
 
   const title =
@@ -84,7 +93,7 @@ export function ResourceCard({
                   : "bg-text-primary/5 text-text-secondary border-text-primary/10"
           }`}
         >
-          <span className="material-symbols-outlined text-base">{icon}</span>
+          <Icon className="text-base"/>
         </div>
 
         {isOwner && (

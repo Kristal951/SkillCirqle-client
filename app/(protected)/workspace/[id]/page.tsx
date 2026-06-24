@@ -10,6 +10,10 @@ import ActivityFeed from "@/components/workspace/overview/ActivityFeed";
 import { useWorkspaceActivity } from "@/hooks/useWorkspaceActivity";
 import UpcomingSessionsCard from "@/components/workspace/sessions/UpcomingSessionsCard";
 import Link from "next/link";
+import Timer from "@material-symbols/svg-400/outlined/timer.svg"
+import CalendarToday from "@material-symbols/svg-400/outlined/calendar_today.svg"
+import MilitaryTech from "@material-symbols/svg-400/outlined/military_tech.svg"
+import CalendarAddOn from "@material-symbols/svg-400/outlined/calendar_add_on.svg"
 
 interface Session {
   id: string;
@@ -105,7 +109,7 @@ export default function WorkspaceOverview() {
       label: "Sessions done",
       value: completedSessions.length,
       subValue: expectedNumberOfSessions,
-      icon: "timer",
+      icon: Timer,
     },
     {
       label: "Upcoming Session",
@@ -125,14 +129,14 @@ export default function WorkspaceOverview() {
             },
           )
         : null,
-      icon: "calendar_today",
+      icon: CalendarToday,
       compact: true,
     },
     {
       label: "Milestones completed",
       value: completedMilestones.length,
       subValue: milestones.length,
-      icon: "military_tech",
+      icon: MilitaryTech,
     },
   ];
 
@@ -222,13 +226,7 @@ export default function WorkspaceOverview() {
         </div>
         {upcomingSessions.length === 0 ? (
           <div className="flex flex-col items-center justify-center text-center max-w-xl mx-auto w-full mt-10">
-            <span
-              className="material-symbols-outlined text-text-secondary mb-4 select-none"
-              style={{ fontSize: "4rem" }}
-              aria-hidden="true"
-            >
-              calendar_add_on
-            </span>
+            <CalendarAddOn className="text-text-secondary mb-4 select-none text-[4rem]"/>
 
             <h3 className="text-xl font-bold text-text-primary mb-1">
               You have no sessions yet

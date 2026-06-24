@@ -1,5 +1,6 @@
 import Tooltip from "@/components/ui/Tooltip";
 import { useEffect, useRef, useState } from "react";
+import Info from "@material-symbols/svg-400/outlined/info.svg"
 
 const USER_TZ = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
@@ -68,7 +69,6 @@ export default function DateTimePicker({
   const isToday = selectedDate === todayStr;
   const nowMinutes = today.getHours() * 60 + today.getMinutes();
 
-  // ✅ filter out past time slots only when the selected date is today
   const availableTimeSlots = isToday
     ? TIME_SLOTS.filter((s) => s.minutesFromMidnight > nowMinutes)
     : TIME_SLOTS;
@@ -83,7 +83,6 @@ export default function DateTimePicker({
     else setViewMonth((m) => m + 1);
   }
 
-  // ✅ if the currently selected time becomes invalid (date changed to today, time already passed), reset it
   useEffect(() => {
     if (isToday) {
       const stillValid = availableTimeSlots.some((s) => s.value === selectedTime);
@@ -243,7 +242,7 @@ export default function DateTimePicker({
 
         <div className="flex items-center gap-1.5 py-4">
           <p className="text-[11px] font-body text-text-secondary flex items-center gap-2">
-            <span className="material-symbols-outlined text-[14px]">info</span>
+            <Info className="text-[14px]"/>
             Time is displayed in your local timezone ({USER_TZ.replace(/_/g, " ")})
           </p>
         </div>

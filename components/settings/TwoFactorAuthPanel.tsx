@@ -3,6 +3,8 @@
 import { getMfaStatus } from "@/lib/getUserMfaStatus";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
+import VerifiedUser from "@material-symbols/svg-400/outlined/verified_user.svg"
+import ArrowForwardIos from "@material-symbols/svg-400/outlined/arrow_forward_ios.svg"
 
 const TwoFactorAuthPanel = ({
   setShow2faMdl,
@@ -80,12 +82,7 @@ const TwoFactorAuthPanel = ({
       className="bg-surface/50 flex-1 cursor-pointer rounded-2xl p-6 flex flex-col justify-between group hover:bg-surface transition-colors"
     >
       <div>
-        <span
-          className="material-symbols-outlined text-text-primary mb-4"
-          style={{ fontSize: "3rem" }}
-        >
-          verified_user
-        </span>
+        <VerifiedUser className="text-[3rem]"/>
 
         <h4 className="font-headline font-bold text-lg">Two-Factor Auth</h4>
 
@@ -102,7 +99,7 @@ const TwoFactorAuthPanel = ({
         </span>
 
         <button className="text-on-surface-variant group-hover:bg-background w-10 h-10 flex items-center justify-center cursor-pointer rounded-full font-medium text-sm">
-          <span className="material-symbols-outlined">arrow_forward_ios</span>
+          <ArrowForwardIos className="text-xl"/>
         </button>
       </div>
     </div>

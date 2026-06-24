@@ -30,7 +30,7 @@ function first<T>(value: T | T[] | null | undefined): T | undefined {
 
 export function useWorkspaceActivity(
   workspaceId: string | undefined,
-  limit = 10,
+  limit = 5,
 ) {
   const [activity, setActivity] = useState<Activity[]>([]);
   const [loading, setLoading] = useState(true);
@@ -44,17 +44,17 @@ export function useWorkspaceActivity(
     const supabase = getSupabaseBrowserClient();
     setLoading(true);
 
-    const { data, error } = await supabase.from("activities").select(`
+    const { data, error } = await supabase.from("workspace_activity").select(`
       id,
       type,
       metadata,
       created_at,
       actor_id,
-      profiles!activities_actor_id_fkey (
+      profiles!workspace_activity_actor_id_fkey (
         name,
         avatar_url
       )
-  `);
+  `).limit(limit)
 
     const activities: Activity[] = (data ?? []).map((row) => {
       const profile = first(row.profiles);

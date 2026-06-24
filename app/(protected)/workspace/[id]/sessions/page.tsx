@@ -85,6 +85,7 @@ export default function SessionsPage() {
   const active = filtered.filter((s) =>
     ["ACTIVE", "RINGING"].includes(s.status),
   );
+  console.log(active, 'active')
   const upcoming = filtered.filter((s) => s.status === "SCHEDULED");
   const past = filtered.filter((s) =>
     ["COMPLETED", "MISSED", "REJECTED", "CANCELLED"].includes(s.status),
@@ -97,7 +98,6 @@ export default function SessionsPage() {
 
   return (
     <>
-      {/* Changed h-full to min-h-screen or min-h-[calc(100vh-something)] depending on structural wraps */}
       <div className="w-full min-h-full flex flex-col relative pb-24 md:pb-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
@@ -109,7 +109,6 @@ export default function SessionsPage() {
             </p>
           </div>
 
-          {/* Hidden on small screens, relies on Floating Action Button below */}
           <button
             onClick={() => setShowModal(true)}
             className="hidden md:flex items-center justify-center gap-1.5 bg-primary/80 hover:bg-primary text-text-primary text-sm font-medium px-4 py-2.5 rounded-lg transition-colors shadow-sm h-fit"
@@ -155,7 +154,7 @@ export default function SessionsPage() {
 
         <div className="w-full gap-10 mt-10">
           {active.length > 0 && (
-            <div className="flex flex-col gap-3 w-full">
+            <div className="flex flex-col gap-3 w-full mb-15">
               <p className="text-xs font-bold uppercase tracking-widest text-emerald-400 flex items-center gap-1.5">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
                 Live Now

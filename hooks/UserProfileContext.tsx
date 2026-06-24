@@ -39,3 +39,4 @@ export const UserProfileProvider = ({
 };
 
 export const useUserProfile = () => useContext(UserProfileContext);
+

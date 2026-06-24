@@ -1,4 +1,6 @@
 import React from "react";
+import Password from "@material-symbols/svg-400/outlined/password.svg"
+import ArrowForwardIos from "@material-symbols/svg-400/outlined/arrow_forward_ios.svg"
 
 const ChangePasswordPanel = ({
   setShowPasswdMdl,
@@ -10,9 +12,7 @@ const ChangePasswordPanel = ({
       onClick={() => setShowPasswdMdl(true)}
       className="bg-surface/50 flex-1 cursor-pointer hover:bg-surface px-6 py-6 space-y-6 transition-colors rounded-2xl group"
     >
-      <span className="material-symbols-outlined" style={{ fontSize: "3rem" }}>
-        password
-      </span>
+      <Password className="text-[3rem]"/>
 
       <div className="w-full flex flex-col gap-2">
         <h2 className="text-3xl font-semibold">Change Password</h2>
@@ -24,7 +24,7 @@ const ChangePasswordPanel = ({
 
       <div className="w-full flex items-center justify-end">
         <button className="text-on-surface-variant group-hover:bg-background w-10 h-10 flex items-center justify-center cursor-pointer rounded-full font-medium text-sm">
-          <span className="material-symbols-outlined">arrow_forward_ios</span>
+          <ArrowForwardIos className="text-xl"/>
         </button>
       </div>
     </div>

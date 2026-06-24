@@ -1,4 +1,17 @@
 import React from "react";
+import Timer from "@material-symbols/svg-400/outlined/timer.svg";
+import Schedule from "@material-symbols/svg-400/outlined/schedule.svg";
+import Videocam from "@material-symbols/svg-400/outlined/video_camera_back.svg";
+import Mic from "@material-symbols/svg-400/outlined/mic.svg";
+import EventRepeat from "@material-symbols/svg-400/outlined/event_repeat.svg";
+import EventBusy from "@material-symbols/svg-400/outlined/event_busy.svg";
+import CalendarToday from "@material-symbols/svg-400/outlined/calendar_today.svg";
+import CheckCircle from "@material-symbols/svg-400/outlined/check_circle.svg";
+import Block from "@material-symbols/svg-400/outlined/block.svg";
+import Cancel from "@material-symbols/svg-400/outlined/cancel.svg";
+import Call from "@material-symbols/svg-400/outlined/call.svg";
+import PlayCircle from "@material-symbols/svg-400/outlined/play_circle.svg";
+import { IconType } from "@/utils/SvgType";
 
 interface Session {
   id: string;
@@ -26,49 +39,49 @@ type SessionStatus = Session["status"];
 
 const statusMap: Record<
   SessionStatus,
-  { color: string; bg: string; border: string; icon: string }
+  { color: string; bg: string; border: string; icon: IconType }
 > = {
   COMPLETED: {
     color: "text-green-400",
     bg: "bg-green-500/10",
     border: "border-green-500/20",
-    icon: "check_circle",
+    icon: CheckCircle,
   },
   MISSED: {
     color: "text-yellow-400",
     bg: "bg-yellow-500/10",
     border: "border-yellow-500/20",
-    icon: "event_busy",
+    icon: EventBusy,
   },
   REJECTED: {
     color: "text-red-400",
     bg: "bg-red-500/10",
     border: "border-red-500/20",
-    icon: "block",
+    icon: Block,
   },
   CANCELLED: {
     color: "text-text-secondary",
     bg: "bg-text-secondary/10",
     border: "border-text-secondary/20",
-    icon: "cancel",
+    icon: Cancel,
   },
   SCHEDULED: {
     color: "text-blue-400",
     bg: "bg-blue-500/10",
     border: "border-blue-500/20",
-    icon: "schedule",
+    icon: Schedule,
   },
   RINGING: {
     color: "text-accent-400",
     bg: "bg-accent/10",
     border: "border-accent/20",
-    icon: "call",
+    icon: Call,
   },
   ACTIVE: {
     color: "text-purple-400",
     bg: "bg-purple-500/10",
     border: "border-purple-500/20",
-    icon: "play_circle",
+    icon: PlayCircle,
   },
 };
 
@@ -88,6 +101,7 @@ const PastSessionCard = ({ s, getTrackName }: Props) => {
   });
 
   const date = new Date(s.scheduled_at);
+  const Icon = status.icon;
 
   return (
     <div className="flex items-center justify-between p-4 bg-surface/40 hover:bg-surface/60 rounded-xl border border-text-primary/5 transition-all duration-300 gap-4">
@@ -95,9 +109,10 @@ const PastSessionCard = ({ s, getTrackName }: Props) => {
         <div
           className={`w-10 h-10 flex items-center justify-center rounded-xl border ${status.bg} ${status.border} shrink-0`}
         >
-          <span className={`material-symbols-outlined text-xl ${status.color}`}>
+          {/* <span className={`material-symbols-outlined text-xl ${status.color}`}>
             {status.icon}
-          </span>
+          </span> */}
+          <Icon className={`text-xl ${status.color}`} />
         </div>
 
         <div className="flex flex-col min-w-0 gap-1 flex-1">
@@ -118,9 +133,7 @@ const PastSessionCard = ({ s, getTrackName }: Props) => {
               <>
                 {trackName && <span className="opacity-30">|</span>}
                 <div className="flex items-center gap-1">
-                  <span className="material-symbols-outlined text-sm opacity-80">
-                    timer
-                  </span>
+                  <Timer className="text-sm" />
                   <span>{s.duration} mins</span>
                 </div>
               </>
@@ -128,9 +141,7 @@ const PastSessionCard = ({ s, getTrackName }: Props) => {
 
             <span className="opacity-30">|</span>
             <div className="flex items-center gap-1">
-              <span className="material-symbols-outlined text-sm opacity-80">
-                schedule
-              </span>
+              <Schedule className="text-sm" />
               <span>{formattedDate}</span>
               <span className="w-1 h-1 rounded-full bg-text-secondary" />
               <span>
@@ -147,7 +158,7 @@ const PastSessionCard = ({ s, getTrackName }: Props) => {
                 <span className="opacity-30">|</span>
                 <div className="flex items-center gap-1">
                   <span className="material-symbols-outlined text-sm opacity-80">
-                    {s.type === "VIDEO" ? "videocam" : "mic"}
+                    {s.type === "VIDEO" ? <Videocam /> : <Mic />}
                   </span>
                   <span className="capitalize">{s.type.toLowerCase()}</span>
                 </div>
@@ -167,9 +178,3 @@ const PastSessionCard = ({ s, getTrackName }: Props) => {
 };
 
 export default PastSessionCard;
-
-// Integrate the OneSignal Web SDK into this codebase.
-
-// Follow the instructions at: https://documentation.onesignal.com/docs/en/web-sdk-setup
-
-// App ID: b60cad30-7dce-4363-86d5-a8283b708917

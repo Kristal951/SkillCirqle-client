@@ -1,3 +1,4 @@
+import Image from "next/image";
 import React from "react";
 
 const ThirdSection = () => {
@@ -5,10 +6,11 @@ const ThirdSection = () => {
     <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 grid-rows-2 gap-6 min-h-150">
       <div className="md:col-span-2 md:row-span-2 bg-black/80 p-12 rounded-2xl flex flex-col justify-end relative overflow-hidden group">
         <div className="absolute inset-0 z-0">
-          <img
+          <Image
             alt="Cybersecurity expert"
-            className="w-full h-full object-cover opacity-30 grayscale group-hover:scale-105 transition-transform duration-700"
-            data-alt="professional cybersecurity specialist working in a dark room with multiple monitors glowing in deep violet and blue hues"
+            fill
+            sizes="(max-width: 768px) 100vw, 50vw"
+            className="object-cover opacity-30 grayscale group-hover:scale-105 transition-transform duration-700"
             src="https://lh3.googleusercontent.com/aida-public/AB6AXuC2HoE-6WGv1QsWLKPnlr731sJpdoXkFKFIJ-mE0giMgCi_0stLsq4YlnCX3gPpyr49EXd9eXWVPpRMay0ntOMRHfsMz2tVEE9z3mW_OhCvZpvmHjyHPRgk8nI3aFwXEIAzkOVq11M7sy0WlpLYxm1sSF_joCRfgxHc4GxJLL6k_e1sY0IXZDYUzQBaVIj9oN-nl7L8x48XlWEu9562mAf05OaO0edNBsrQo-idqnXoRk_6Qvngk92KEjwBhvHN6nH5C6nyHSZ3RRWA"
           />
         </div>

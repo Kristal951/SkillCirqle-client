@@ -8,6 +8,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowRight, Gift } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo } from "react";
+import SwapHoriz from "@material-symbols/svg-400/outlined/swap_horiz.svg";
 
 export default function Dashboard() {
   const { user } = useAuthStore();
@@ -244,13 +245,7 @@ export default function Dashboard() {
       <section className="relative w-full p-4 z-50 gap-6 flex flex-col md:flex-row lg:flex-row justify-between items-center md:p-10 bg-primary border border-border rounded-md overflow-hidden">
         <div className="flex items-center w-full gap-3">
           <div className=" w-14 md:w-20 md:h-20 lg:w-20 lg:h-20 h-14 rounded-full flex items-center justify-center text-text-primary bg-background">
-            <span
-              className="material-symbols-outlined"
-              style={{ fontSize: "3rem" }}
-            >
-              {" "}
-              swap_horiz
-            </span>
+            <SwapHoriz className="text-5xl text-text-primary font-extrabold"/>
           </div>
           <div className="relative z-10 flex flex-col gap-1 text-primary-foreground">
             <h1 className="md:text-3xl text-xl font-bold text-text-primary">
@@ -271,13 +266,7 @@ export default function Dashboard() {
       <section className="relative w-full p-4 gap-6 flex flex-col md:flex-row lg:flex-row justify-between items-center md:p-10 bg-surface/50 border border-border rounded-md overflow-hidden">
         <div className="flex items-center w-full gap-3">
           <div className=" w-14 md:w-20 md:h-20 lg:w-20 lg:h-20 h-14 rounded-full flex items-center justify-center text-accent bg-accent/20 border border-accent">
-            <span
-              className="material-symbols-outlined"
-              style={{ fontSize: "2rem" }}
-            >
-              {" "}
-              swap_horiz
-            </span>
+           <SwapHoriz className="text-5xl"/>
           </div>
           <div className="relative z-10 flex flex-col md:gap-2 gap-1 text-primary-foreground">
             <h1 className="md:text-3xl text-xl font-bold text-text-primary">

@@ -13,7 +13,10 @@ import { ListSkeleton } from "@/components/workspace/resources/ListSkeleton";
 import { EmptyState } from "@/components/workspace/resources/EmptyState";
 import { logActivity } from "@/lib/activity";
 import { normalizeProfile } from "@/utils/normalizeProfile";
-import { Plus } from "lucide-react"; // Using Lucide icon for clean modern FAB presentation
+import { Plus } from "lucide-react"; 
+import GridView from "@material-symbols/svg-400/outlined/grid_view.svg"
+import ViewList from "@material-symbols/svg-400/outlined/view_list.svg"
+import Add from "@material-symbols/svg-400/outlined/add.svg"
 
 type ResourceType = "file" | "link" | "note";
 type ViewMode = "grid" | "list";
@@ -141,7 +144,7 @@ export default function ResourcesPage() {
             onClick={() => setShowModal(true)}
             className="hidden md:flex items-center gap-1.5 bg-primary hover:bg-primary/90 text-text-primary text-sm px-4 py-2.5 rounded-xl font-medium transition-colors shadow-sm shadow-primary/10"
           >
-            <span className="material-symbols-outlined text-[18px]">add</span>
+            <Add className="text-[18px]"/>
             Add resource
           </button>
         </div>
@@ -187,9 +190,7 @@ export default function ResourcesPage() {
               }`}
               aria-label="Grid view"
             >
-              <span className="material-symbols-outlined text-[18px]">
-                grid_view
-              </span>
+              <GridView className="text-[18px]"/>
             </button>
             <button
               onClick={() => setViewMode("list")}
@@ -200,9 +201,7 @@ export default function ResourcesPage() {
               }`}
               aria-label="List view"
             >
-              <span className="material-symbols-outlined text-[18px]">
-                view_list
-              </span>
+              <ViewList className="text-[18px]"/>
             </button>
           </div>
         </div>

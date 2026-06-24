@@ -10,10 +10,19 @@ import { useAuthStore } from "@/store/useAuthStore";
 import Image from "next/image";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import Videocam from "@material-symbols/svg-400/outlined/video_camera_front.svg"
+import VideocamOff from "@material-symbols/svg-400/outlined/video_camera_front_off.svg"
+import Mic from "@material-symbols/svg-400/outlined/mic.svg"
+import MicOff from "@material-symbols/svg-400/outlined/mic_off.svg"
+import Close from "@material-symbols/svg-400/outlined/close.svg"
+import VolumeUp from "@material-symbols/svg-400/outlined/volume_up.svg"
+import ExpandMore from "@material-symbols/svg-400/outlined/arrow_drop_down.svg"
+import ExpandLess from "@material-symbols/svg-400/outlined/arrow_drop_up.svg"
+import { IconType } from "@/utils/SvgType";
 
 interface CustomSelectProps {
   label: string;
-  icon: string;
+  icon: IconType
   value: string;
   options: MediaDeviceInfo[];
   onChange: (id: string) => void;
@@ -22,7 +31,7 @@ interface CustomSelectProps {
 
 const CustomSelect = ({
   label,
-  icon,
+  icon: Icon,
   value,
   options,
   onChange,
@@ -58,16 +67,18 @@ const CustomSelect = ({
         className="w-full bg-surface/90 border border-border/50 rounded-xl px-3 py-2.5 text-sm text-text-primary flex items-center justify-between hover:bg-surface transition text-left"
       >
         <div className="flex items-center gap-2.5 truncate">
-          <span className="material-symbols-outlined text-text-primary text-lg shrink-0 select-none">
-            {icon}
-          </span>
+          <Icon className="text-text-primary text-lg shrink-0 select-none"/>
           <span className="truncate">
             {selectedOption?.label || fallbackLabel}
           </span>
         </div>
-        <span className="material-symbols-outlined text-text-secondary text-sm select-none">
-          {isOpen ? "expand_less" : "expand_more"}
-        </span>
+        {
+          isOpen ? (
+            <ExpandLess className="text-text-secondary text-sm select-none"/>
+          ) : (
+            <ExpandMore className="text-text-secondary text-sm select-none"/>
+          )
+        }
       </button>
 
       {isOpen && (
@@ -91,11 +102,7 @@ const CustomSelect = ({
                     : "text-text-secondary hover:bg-text-secondary/20 hover:text-text-primary"
                 }`}
               >
-                <span
-                  className={`material-symbols-outlined text-lg ${opt.deviceId === value ? "text-white" : "text-zinc-500"}`}
-                >
-                  {icon}
-                </span>
+                <Icon className={`material-symbols-outlined text-lg ${opt.deviceId === value ? "text-white" : "text-text-secondary"}`}/>
                 <span className="truncate">
                   {opt.label || `${fallbackLabel} ${idx + 1}`}
                 </span>
@@ -148,8 +155,6 @@ const VideoPreview = () => {
     ? sessionData.host
     : sessionData?.guest;
 
-  // Host can always start; guests must wait until the host has actually
-  // started the session (sessionData.status flips to "ACTIVE").
   const isHost = !!sessionData?.isHost;
   const sessionActive = sessionData?.status === "ACTIVE";
   const canJoin = isHost || sessionActive;
@@ -342,12 +347,12 @@ const VideoPreview = () => {
 
   const toolbarButtonsConfig: ToolbarButtonConfig[] = [
     {
-      icon: micOn ? "mic" : "mic_off",
+      icon: micOn ? Mic : MicOff,
       onClick: () => toggleMic(),
       variant: micOn ? "standard" : "active-primary",
     },
     {
-      icon: camOn ? "videocam" : "videocam_off",
+      icon: camOn ? Videocam : VideocamOff,
       onClick: () => toggleCam(),
       variant: camOn ? "standard" : "active-primary",
     },
@@ -401,9 +406,7 @@ const VideoPreview = () => {
 
         {error && (
           <div className="text-center p-6 max-w-sm border border-border rounded-2xl shadow-xl">
-            <span className="material-symbols-outlined text-red-400 text-4xl mb-2">
-              videocam_off
-            </span>
+            <Videocam className=" text-red-400 text-4xl mb-2"/>
             <p className="text-text-primary font-medium mb-1">{error}</p>
             <p className="text-xs text-text-secondary mb-4">
               {permissionError === "denied"
@@ -453,9 +456,7 @@ const VideoPreview = () => {
             className="text-text-secondary hover:text-white transition p-1 rounded-lg hover:bg-white/5"
             type="button"
           >
-            <span className="material-symbols-outlined text-xl block">
-              close
-            </span>
+            <Close className="text-xl"/>
           </button>
         </div>
 
@@ -551,7 +552,7 @@ const VideoPreview = () => {
             <div className="space-y-2">
               <CustomSelect
                 label="Camera"
-                icon="videocam"
+                icon={Videocam}
                 value={selectedCamera}
                 options={cameras}
                 fallbackLabel="Camera"
@@ -559,7 +560,7 @@ const VideoPreview = () => {
               />
               <CustomSelect
                 label="Microphone"
-                icon="mic"
+                icon={Mic}
                 value={selectedMicrophone}
                 options={microphones}
                 fallbackLabel="Microphone"
@@ -567,7 +568,7 @@ const VideoPreview = () => {
               />
               <CustomSelect
                 label="Speaker Output"
-                icon="volume_up"
+                icon={VolumeUp}
                 value={selectedSpeaker}
                 options={speakers}
                 fallbackLabel="Speaker"

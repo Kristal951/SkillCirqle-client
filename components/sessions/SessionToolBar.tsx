@@ -1,8 +1,9 @@
 "use client";
+import { IconType } from "@/utils/SvgType";
 import { useState } from "react";
 
 export interface ToolbarButtonConfig {
-  icon: string;
+  icon: IconType;
   onClick: () => void;
   variant?: "standard" | "active-primary" | "toggle-danger" | "hangup";
   label?: string;
@@ -53,16 +54,20 @@ export const CallToolbar = ({ buttons }: CallToolbarProps) => {
             transform: showToolbar ? "translateY(0)" : "translateY(20px)",
           }}
         >
-          {buttons.map((btn, index) => (
-            <button
-              key={index}
-              onClick={btn.onClick}
-              className={getButtonClass(btn.variant)}
-            >
-              <span className="material-symbols-outlined">{btn.icon}</span>
-              {btn.label && <span>{btn.label}</span>}
-            </button>
-          ))}
+          {buttons.map((btn, index) => {
+            const Icon = btn.icon;
+
+            return (
+              <button
+                key={index}
+                onClick={btn.onClick}
+                className={getButtonClass(btn.variant)}
+              >
+                <Icon />
+                {btn.label && <span>{btn.label}</span>}
+              </button>
+            );
+          })}
         </div>
       </div>
     </>

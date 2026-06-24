@@ -4,12 +4,11 @@ import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
 import { useChatStore } from "@/store/useChatStore";
 import { useAuthStore } from "@/store/useAuthStore";
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import Spinner from "../ui/Spinner";
-import { formatDistanceToNowStrict } from "date-fns";
 import { useSocketStore } from "@/store/useSocketStore";
 import { FileText, Image, MessageSquarePlus, Mic } from "lucide-react";
 import { getSocket } from "@/lib/socket";
 import { formatLastSeenShort } from "@/utils/formatTime";
+import Search from "@material-symbols/svg-400/outlined/search.svg";
 
 const Sidebar = () => {
   const {
@@ -187,9 +186,7 @@ const Sidebar = () => {
         </h2>
 
         <div className="relative group">
-          <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary text-xl pointer-events-none group-focus-within:text-primary transition-colors">
-            search
-          </span>
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary text-xl pointer-events-none group-focus-within:text-primary transition-colors" />
           <input
             type="text"
             placeholder="Search Conversations..."

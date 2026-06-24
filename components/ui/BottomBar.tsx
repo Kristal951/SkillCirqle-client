@@ -1,4 +1,3 @@
-import { useAuthStore } from "@/store/useAuthStore";
 import { useChatStore } from "@/store/useChatStore";
 import { NavLinks } from "@/utils/Navbar";
 import Link from "next/link";
@@ -21,6 +20,7 @@ const BottomBar = () => {
           const isActive =
             pathname === link.path ||
             (link.path !== "/" && pathname.startsWith(link.path));
+          const Icon = link.icon;
 
           return (
             <Link
@@ -30,20 +30,16 @@ const BottomBar = () => {
                 isActive ? "text-text-primary" : "text-text-secondary"
               }`}
             >
-                <span
-                  className="material-symbols-outlined text-4xl select-none transition-all duration-200"
-                  style={{
-                    fontVariationSettings: isActive 
-                      ? "'FILL' 1, 'wght' 400" 
-                      : "'FILL' 0, 'wght' 400",
-                  }}
-                >
-                  {link.icon}
-                </span>
+              <Icon
+                className="w-6 h-6 shrink-0"
+                weight={isActive ? "fill" : "regular"}
+              />
 
               <span
                 className={`text-[11px] mt-1 tracking-wide transition-colors ${
-                  isActive ? "text-text-primary font-semibold" : "text-text-secondary font-medium"
+                  isActive
+                    ? "text-text-primary font-semibold"
+                    : "text-text-secondary font-medium"
                 }`}
               >
                 {link.title}

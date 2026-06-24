@@ -1,11 +1,10 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Providers from "@/components/Providers";
 import { SpeedInsights } from "@vercel/speed-insights/next";
-import "@fontsource-variable/material-symbols-outlined/full.css";
+// import "@fontsource-variable/material-symbols-outlined/full.css";
 import OneSignalProvider from "@/providers/oneSignal";
-import OneSignalLoginSync from "@/providers/OneSignalLoginSync";
+import Script from "next/script";
 
 // const geistSans = Geist({
 //   variable: "--font-geist-sans",
@@ -45,10 +44,10 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        <script
+        <Script
           src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js"
-          defer
-        ></script>
+          strategy="lazyOnload"
+        />
       </head>
       <body className={`antialiased`}>
         <OneSignalProvider />

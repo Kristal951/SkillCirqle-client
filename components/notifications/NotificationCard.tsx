@@ -18,6 +18,10 @@ import { useAuthStore } from "@/store/useAuthStore";
 import { useChatStore } from "@/store/useChatStore";
 import { useNotificationsStore } from "@/store/useNotificationsStore";
 import Spinner from "../ui/Spinner";
+import SwapHoriz from "@material-symbols/svg-400/outlined/swap_horiz.svg"
+import Chat from "@material-symbols/svg-400/outlined/chat.svg"
+import CalendarToday from "@material-symbols/svg-400/outlined/calendar_today.svg"
+import StarFill from "@material-symbols/svg-400/outlined/star-fill.svg"
 
 const NotificationCard = ({
   notif,
@@ -61,37 +65,25 @@ const NotificationCard = ({
   const getIcon = (type: string) => {
     if (type.includes("message")) {
       return (
-        <span className="material-symbols-outlined text-[14px]!">chat</span>
+        <Chat className="text-[14px]!"/>
       );
     }
 
     if (type === "proposal") {
       return (
-        <span className="material-symbols-outlined text-[14px]!">
-          swap_horiz
-        </span>
+        <SwapHoriz className="text-[14px]!"/>
       );
     }
 
     if (type === "session") {
       return (
-        <span className="material-symbols-outlined text-[14px]!">
-          calendar_today
-        </span>
+       <CalendarToday className="text-[14px]!"/>
       );
     }
 
     if (type === "review") {
       return (
-        <span
-          className="material-symbols-outlined text-amber-500"
-          style={{
-            fontVariationSettings: "'FILL' 1",
-            fontSize: "18px",
-          }}
-        >
-          star
-        </span>
+        <StarFill className="text-[14px]!"/>
       );
     }
 
@@ -128,11 +120,11 @@ const NotificationCard = ({
         )
       }
       transition={{ delay: index * 0.04, ease: "easeOut" }}
-      className={`group cursor-pointer relative flex items-center gap-4 p-4 border transition-all duration-300 ${
+      className={`group cursor-pointer relative flex items-center gap-4 p-4 transition-all duration-300 ${
         notif.is_read
-          ? "bg-surface/40 border-border/50 opacity-80 hover:opacity-100"
-          : "bg-linear-to-r from-surface to-surface/80 border-primary/20 shadow-[0_8px_30px_rgb(0,0,0,0.04)]"
-      } hover:border-primary/40 hover:shadow-xl hover:shadow-primary/5`}
+          ? "bg-surface/80"
+          : "bg-surface"
+      }`}
     >
       {/* {!notif.is_read && (
         <div className="absolute -left-px top-1/2 -translate-y-1/2 w-0.75 h-8 bg-primary rounded-r-full shadow-[0_0_15px_rgba(var(--primary-rgb),0.5)]" />
@@ -151,7 +143,7 @@ const NotificationCard = ({
               className="w-full h-full object-cover"
             />
           ) : notif.type.includes("session") ? (
-            <span className="material-symbols-outlined">calendar_today</span>
+            <CalendarToday className="text-2xl"/>
           ) : (
             <User size={24} className="text-text-secondary/40" />
           )}

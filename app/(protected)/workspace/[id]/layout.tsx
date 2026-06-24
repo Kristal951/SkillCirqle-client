@@ -6,6 +6,8 @@ import { useWorkspace } from "@/hooks/useWorkspace";
 import { useAuthStore } from "@/store/useAuthStore";
 import Spinner from "@/components/ui/Spinner";
 import Sidebar from "@/components/workspace/Sidebar";
+import { useSidebarStore } from "@/store/useSidebarStore";
+import { useEffect } from "react";
 
 interface WorkspaceLayoutProps {
   children: React.ReactNode;
@@ -21,8 +23,14 @@ export default function WorkspaceLayout({
   const id = params.id as string;
   const { user } = useAuthStore();
   const { workspace, members, skillTracks, loading } = useWorkspace(id);
+  const {setCollapsed} = useSidebarStore()
 
   const isSwap = workspace?.proposal?.engagement_type === "swap";
+
+   useEffect(()=> {
+    setCollapsed(true)
+  }, [setCollapsed])
+
 
   if (loading) {
     return (
@@ -42,7 +50,6 @@ export default function WorkspaceLayout({
       </div>
     );
   }
-
   return (
     <div className="h-full bg-background flex flex-col">
       {/* <header className="bg-background border-b border-border px-4 py-3 flex items-center justify-between sticky top-0 z-30">

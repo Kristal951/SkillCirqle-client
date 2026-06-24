@@ -3,6 +3,10 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import React from "react";
+import Dashboard from '@material-symbols/svg-400/outlined/dashboard.svg'
+import CalendarToday from '@material-symbols/svg-400/outlined/calendar_today.svg'
+import FolderOpen from '@material-symbols/svg-400/outlined/folder_open.svg'
+import SelectCheckBox from '@material-symbols/svg-400/outlined/select_check_box.svg'
 
 interface Member {
   user_id: string;
@@ -37,10 +41,10 @@ const Sidebar = ({
   const pathname = usePathname();
 
   const NAV = [
-    { label: "Overview", href: "", icon: "dashboard" },
-    { label: "Sessions", href: "/sessions", icon: "calendar_today" },
-    { label: "Resources", href: "/resources", icon: "folder_open" },
-    { label: "Milestones", href: "/milestones", icon: "select_check_box" },
+    { label: "Overview", href: "", icon: Dashboard },
+    { label: "Sessions", href: "/sessions", icon: CalendarToday },
+    { label: "Resources", href: "/resources", icon: FolderOpen },
+    { label: "Milestones", href: "/milestones", icon: SelectCheckBox },
   ];
 
   const basePath = `/workspace/${id}`;
@@ -57,6 +61,7 @@ const Sidebar = ({
               item.href === ""
                 ? currentPath === ""
                 : currentPath.startsWith(item.href);
+                const Icon = item.icon
             return (
               <Link
                 key={item.label}
@@ -67,16 +72,7 @@ const Sidebar = ({
                     : "text-text-secondary hover:bg-surface/40 hover:text-text-primary"
                 }`}
               >
-                <span
-                  className={`material-symbols-outlined text-lg transition-transform ${isActive ? "text-text-primary" : "opacity-70"}`}
-                  style={{
-                    fontVariationSettings: isActive
-                      ? "'FILL' 1, 'wght' 400"
-                      : "'FILL' 0, 'wght' 400",
-                  }}
-                >
-                  {item.icon}
-                </span>
+                <Icon className={`text-lg transition-transform ${isActive ? "text-text-primary" : "opacity-70"}`}/>
                 <span>{item.label}</span>
               </Link>
             );

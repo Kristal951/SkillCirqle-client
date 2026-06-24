@@ -22,6 +22,11 @@ import { useMessageActionsStore } from "@/store/useMessageStore";
 import { AnimatePresence } from "framer-motion";
 import { motion } from "framer-motion";
 import { toast } from "@/lib/toast";
+import AddCircle from "@material-symbols/svg-400/outlined/add_circle.svg";
+import AddCircleFill from "@material-symbols/svg-400/outlined/add_circle-fill.svg";
+import DescriptionFill from "@material-symbols/svg-400/outlined/description-fill.svg";
+import ImageFill from "@material-symbols/svg-400/outlined/image-fill.svg";
+import FolderFill from "@material-symbols/svg-400/outlined/folder-fill.svg";
 
 // type RecorderState = "idle" | "recording" | "paused" | "preview";
 
@@ -700,14 +705,11 @@ const Input = () => {
           onClick={() => setShowAttachmentModal(!showAttachmentModal)}
           className={`p-2 rounded-full transition-colors `}
         >
-          <span
-            className="material-symbols-outlined text-[24px]"
-            style={{
-              fontVariationSettings: `${showAttachmentModal ? "'FILL' 1" : ""}`,
-            }}
-          >
-            add_circle
-          </span>
+          {showAttachmentModal ? (
+            <AddCircleFill className="text-[24px]" />
+          ) : (
+            <AddCircle className="text-[24px]" />
+          )}
         </button>
 
         <div className="flex-1 bg-muted/50 rounded-2xl px-4 py-2 flex items-center min-h-11">
@@ -788,42 +790,21 @@ const Input = () => {
             onClick={() => fileInputRef.current?.click()}
             className="flex items-center gap-3 w-full hover:bg-primary/10 py-4 px-6 transition-colors text-text-primary group"
           >
-            <span
-              className="material-symbols-outlined text-text-primary group-hover:scale-110 transition-transform"
-              style={{
-                fontVariationSettings: "'FILL' 1",
-              }}
-            >
-              description
-            </span>
+            <DescriptionFill className="text-text-primary group-hover:scale-110 transition-transform"/>
             <span className="text-base font-medium">Document</span>
           </button>
           <button
             onClick={() => imageInputRef.current?.click()}
             className="flex items-center gap-3 w-full hover:bg-primary/10 py-4 px-6 transition-colors text-text-primary group"
           >
-            <span
-              className="material-symbols-outlined text-text-primary group-hover:scale-110 transition-transform"
-              style={{
-                fontVariationSettings: "'FILL' 1",
-              }}
-            >
-              image
-            </span>
+             <ImageFill className="text-text-primary group-hover:scale-110 transition-transform"/>
             <span className="text-base font-medium">Image</span>
           </button>
           <button
             onClick={() => fileInputRef.current?.click()}
             className="flex items-center gap-3 w-full hover:bg-primary/10 py-4 px-6 transition-colors text-text-primary group"
           >
-            <span
-              className="material-symbols-outlined text-text-primary group-hover:scale-110 transition-transform"
-              style={{
-                fontVariationSettings: "'FILL' 1",
-              }}
-            >
-              folder
-            </span>
+             <FolderFill className="text-text-primary group-hover:scale-110 transition-transform"/>
             <span className="text-base font-medium">File</span>
           </button>
         </div>

@@ -1,5 +1,7 @@
 import Image from "next/image";
 import React from "react";
+import Hub from "@material-symbols/svg-400/outlined/hub.svg";
+import Language from "@material-symbols/svg-400/outlined/language.svg";
 
 const Footer = () => {
   const footerLinks = [
@@ -58,11 +60,11 @@ const Footer = () => {
 
         <div className="flex gap-4">
           <button className="w-9 h-9 rounded-lg bg-surface-1 flex items-center justify-center text-text-secondary hover:text-primary transition">
-            <span className="material-symbols-outlined text-lg">language</span>
+            <Language className="text-lg"/>
           </button>
 
           <button className="w-9 h-9 rounded-lg bg-surface-1 flex items-center justify-center text-text-secondary hover:text-primary transition">
-            <span className="material-symbols-outlined text-lg">hub</span>
+            <Hub className="text-lg"/>
           </button>
         </div>
       </div>

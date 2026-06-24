@@ -1,7 +1,20 @@
 import React from "react";
+import CheckCircle from "@material-symbols/svg-400/outlined/check_circle.svg";
+import ErrorIcon from "@material-symbols/svg-400/outlined/error.svg";
+import Info from "@material-symbols/svg-400/outlined/info.svg";
+import Warning from "@material-symbols/svg-400/outlined/warning.svg";
+
+type IconName = "check_circle" | "error" | "info" | "warning";
+
+const ICONS: Record<IconName, React.FC<React.SVGProps<SVGSVGElement>>> = {
+  check_circle: CheckCircle,
+  error: ErrorIcon,
+  info: Info,
+  warning: Warning,
+};
 
 type MaterialIconProps = {
-  name: string;
+  name: IconName;
   className?: string;
   size?: number;
   fill?: boolean;
@@ -13,14 +26,17 @@ const MaterialIcon = ({
   size = 20,
   fill = false,
 }: MaterialIconProps) => {
+  const Icon = ICONS[name];
+
+  if (!Icon) return null;
+
   return (
-    <span
-      className={`material-symbols-outlined ${className}`}
-      style={{ fontSize: size }}
-      data-weight={fill ? "fill" : undefined}
-    >
-      {name}
-    </span>
+    <Icon
+      width={size}
+      height={size}
+      className={className}
+      style={fill ? { fill: "currentColor" } : undefined}
+    />
   );
 };
 

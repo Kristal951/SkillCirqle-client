@@ -1,12 +1,15 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
-import { Check, ShieldCheck, X } from "lucide-react"; // Using Lucide for the checklist icons
+import { Check, ShieldCheck, X } from "lucide-react"; 
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
 import { changePassword } from "@/lib/changePassword";
 import { toast } from "@/lib/toast";
 import Spinner from "../ui/Spinner";
 import { useRouter } from "next/navigation";
+import Close from "@material-symbols/svg-400/outlined/close.svg"
+import VisibilityOff from "@material-symbols/svg-400/outlined/visibility_off.svg"
+import Visibility from "@material-symbols/svg-400/outlined/visibility.svg"
 
 export default function PasswordModal({
   showPasswordModal,
@@ -123,7 +126,7 @@ export default function PasswordModal({
           onClick={() => setShowPasswordModal(false)}
           className="absolute top-5 right-5 z-20 w-10 h-10 flex items-center justify-center rounded-full bg-background/50 hover:bg-red-500/10 hover:text-red-500 transition-all active:scale-90"
         >
-          <span className="material-symbols-outlined text-xl">close</span>
+          <Close className="text-xl"/>
         </button>
 
         <div className="flex-1 p-8 md:p-12">
@@ -160,7 +163,7 @@ export default function PasswordModal({
                   className="absolute right-4 top-1/2 -translate-y-1/2 text-text-secondary hover:text-primary transition-colors"
                 >
                   <span className="material-symbols-outlined text-lg!">
-                    {showCurrent ? "visibility_off" : "visibility"}
+                    {showCurrent ? <VisibilityOff/> : <Visibility/> }
                   </span>
                 </button>
               </div>
@@ -186,7 +189,7 @@ export default function PasswordModal({
                     className="absolute right-4 top-1/2 -translate-y-1/2 text-text-secondary hover:text-primary transition-colors"
                   >
                     <span className="material-symbols-outlined text-lg!">
-                      {showNew ? "visibility_off" : "visibility"}
+                      {showNew ? <VisibilityOff/> : <Visibility/> }
                     </span>
                   </button>
                 </div>

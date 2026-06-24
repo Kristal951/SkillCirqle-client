@@ -10,8 +10,8 @@ import TwoFactorVerify from "./TwoFactorVerify";
 import { useAuthStore } from "@/store/useAuthStore";
 import RecoveryCodesView from "./RecoveryCodesView";
 import { useRouter } from "next/navigation";
-import CheckMail from "@/app/auth/verify-email/page";
 import VerifyMFA from "@/app/auth/mfa/verify/page";
+import Close from "@material-symbols/svg-400/outlined/close.svg"
 
 export type Step =
   | "loading"
@@ -356,7 +356,7 @@ export default function TwoFAModal({
             }}
             className="absolute top-3 right-2 p-2 text-on-surface-variant/40 hover:text-on-surface hover:bg-surface-container-high/50 rounded-full transition-all"
           >
-            <span className="material-symbols-outlined">close</span>
+           <Close className="text-xl"/>
           </button>
         )}
       </div>

@@ -8,6 +8,8 @@ import { Coins } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import Psychology from "@material-symbols/svg-400/outlined/psychology.svg";
+import School from "@material-symbols/svg-400/outlined/school.svg";
 
 export default function UserProfilePage() {
   const { user: profile } = useUserProfile();
@@ -203,13 +205,13 @@ export default function UserProfilePage() {
           <SkillsCard
             title="Skills i can teach"
             skills={profile?.skills_to_teach || []}
-            icon="psychology"
+            icon={Psychology}
             color="primary"
           />
           <SkillsCard
             title="Skills i want to learn"
             skills={profile?.skills_to_learn || []}
-            icon="school"
+            icon={School}
             color="accent"
           />
         </div>

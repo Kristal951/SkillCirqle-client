@@ -3,6 +3,7 @@ import Header from "@/components/chat/Header";
 import Sidebar from "@/components/chat/Sidebar";
 import Input from "@/components/chat/Input";
 import { useChatStore } from "@/store/useChatStore";
+import Chat from "@material-symbols/svg-400/outlined/chat.svg";
 
 export default function ChatShell({ children }: { children: React.ReactNode }) {
   const { activeChat } = useChatStore();
@@ -36,9 +37,7 @@ export default function ChatShell({ children }: { children: React.ReactNode }) {
           <div className="hidden md:flex flex-1 items-center justify-center bg-surface/5">
             <div className="text-center animate-in fade-in zoom-in duration-300">
               <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="material-symbols-outlined text-primary text-4xl">
-                  chat
-                </span>
+                <Chat className="text-primary text-4xl" />
               </div>
               <h2 className="text-xl font-semibold">SkillCirqle Chat</h2>
               <p className="text-text-secondary max-w-xs mx-auto text-sm mt-2">

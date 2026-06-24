@@ -36,11 +36,11 @@ const Toast = ({
   };
 
   const IconMap = {
-    success: <MaterialIcon name="check_circle" className="text-green-400" fill />,
-    error: <MaterialIcon name="error" className="text-red-400" fill />,
-    info: <MaterialIcon name="info" className="text-blue-400" fill />,
-    warning: <MaterialIcon name="info" className="text-amber-400" fill />,
-  };
+  success: <MaterialIcon name="check_circle" className="text-green-400" fill />,
+  error: <MaterialIcon name="error" className="text-red-400" fill />,
+  info: <MaterialIcon name="info" className="text-blue-400" fill />,
+  warning: <MaterialIcon name="warning" className="text-amber-400" fill />,
+};
 
   const Icon = IconMap[type];
 

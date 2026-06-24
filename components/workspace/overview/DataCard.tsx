@@ -1,7 +1,8 @@
+import { IconType } from "@/utils/SvgType";
 import React from "react";
 
 interface DataCardProps {
-  icon: string;
+  icon: IconType;
   label: string;
   value: string | number;
   subValue?:string | number | null;
@@ -9,7 +10,7 @@ interface DataCardProps {
 }
 
 const DataCard = ({
-  icon,
+  icon: Icon,
   label,
   value,
   subValue,
@@ -18,12 +19,7 @@ const DataCard = ({
   return (
     <div className="bg-surface/50 p-8 rounded-2xl transition-transform hover:-translate-y-1 duration-300 relative overflow-hidden group cursor-pointer">
       <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-        <span
-          className="material-symbols-outlined"
-          style={{ fontSize: "60px" }}
-        >
-          {icon}
-        </span>
+        <Icon className="text-[60px]"/>
       </div>
 
       <p className="font-label text-xs uppercase tracking-widest text-text-secondary mb-2">

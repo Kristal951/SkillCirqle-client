@@ -9,6 +9,8 @@ import {
 } from "@/lib/uploadToCloudinary";
 import { addUserSkillsToRequiredTables } from "@/lib/addUserSkillsToRequiredTables";
 import { toast } from "@/lib/toast";
+import Psychology from "@material-symbols/svg-400/outlined/psychology.svg";
+import School from "@material-symbols/svg-400/outlined/school.svg";
 
 const ProfileDetailsPanel = () => {
   const { user, updateUser, isUpdatingUser } = useAuthStore();
@@ -448,9 +450,7 @@ const ProfileDetailsPanel = () => {
       <div className="space-y-6">
         <div className="flex flex-col gap-3">
           <div className="flex gap-2 items-center text-text-secondary/80 px-1">
-            <span className="material-symbols-outlined text-primary">
-              psychology
-            </span>
+            <Psychology className="text-primary text-xl"/>
             <h2 className="text-xs font-bold uppercase tracking-wider">
               Skills I can teach
             </h2>
@@ -539,9 +539,7 @@ const ProfileDetailsPanel = () => {
 
         <div className="flex flex-col gap-3">
           <div className="flex gap-2 items-center text-text-secondary/80 px-1">
-            <span className="material-symbols-outlined text-accent">
-              school
-            </span>
+            <School className="text-accent text-xl"/>
             <h2 className="text-xs font-bold uppercase tracking-wider">
               Skills I want to learn
             </h2>

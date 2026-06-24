@@ -7,6 +7,17 @@ import { normalizeProfile } from "@/utils/normalizeProfile";
 import { useRef, useState } from "react";
 import MarkdownToolbar from "./MarkDownToolBar";
 import { renderSimpleMarkdown } from "@/lib/simpleMarkDown";
+import ImageIcon from "@material-symbols/svg-400/outlined/image.svg"
+import Video from "@material-symbols/svg-400/outlined/video_camera_back.svg"
+import Pdf from "@material-symbols/svg-400/outlined/picture_as_pdf.svg"
+import TableChart from "@material-symbols/svg-400/outlined/table_chart.svg"
+import SlideShow from "@material-symbols/svg-400/outlined/slideshow.svg"
+import FolderZip from "@material-symbols/svg-400/outlined/folder_zip.svg"
+import Description from "@material-symbols/svg-400/outlined/description.svg"
+import Close from "@material-symbols/svg-400/outlined/close.svg"
+import Link from "@material-symbols/svg-400/outlined/link.svg"
+import UploadFile from "@material-symbols/svg-400/outlined/upload_file.svg"
+import CloudUpload from "@material-symbols/svg-400/outlined/cloud_upload.svg"
 
 type ResourceType = "file" | "link" | "note";
 
@@ -36,15 +47,15 @@ function formatBytes(bytes: number) {
 }
 
 function fileIcon(mime: string | null) {
-  if (!mime) return "description";
-  if (mime.startsWith("image/")) return "image";
-  if (mime.startsWith("video/")) return "movie";
-  if (mime.includes("pdf")) return "picture_as_pdf";
-  if (mime.includes("sheet") || mime.includes("excel")) return "table_chart";
+  if (!mime) return Description;
+  if (mime.startsWith("image/")) return ImageIcon;
+  if (mime.startsWith("video/")) return Video;
+  if (mime.includes("pdf")) return Pdf;
+  if (mime.includes("sheet") || mime.includes("excel")) return TableChart;
   if (mime.includes("presentation") || mime.includes("powerpoint"))
-    return "slideshow";
-  if (mime.includes("zip")) return "folder_zip";
-  return "description";
+    return SlideShow;
+  if (mime.includes("zip")) return FolderZip;
+  return Description;
 }
 
 export function AddResourceModal({
@@ -169,17 +180,17 @@ export function AddResourceModal({
             onClick={onClose}
             className="rounded-lg p-1 text-text-secondary hover:bg-text-primary/5 transition-colors"
           >
-            <span className="material-symbols-outlined text-[18px]">close</span>
+            <Close className="text-[18px]"/>
           </button>
         </div>
 
         <div className="flex flex-col gap-5 p-6">
           <div className="flex gap-2">
             {[
-              { type: "file" as const, icon: "upload_file" },
-              { type: "link" as const, icon: "link" },
+              { type: "file" as const, Icon: UploadFile },
+              { type: "link" as const, Icon: Link },
               //   { type: "note" as const, icon: "sticky_note_2" },
-            ].map(({ type, icon }) => (
+            ].map(({ type, Icon }) => (
               <button
                 key={type}
                 onClick={() => setTabType(type)}
@@ -189,9 +200,7 @@ export function AddResourceModal({
                     : "border-text-primary/10 text-text-secondary hover:bg-text-primary/5"
                 }`}
               >
-                <span className="material-symbols-outlined text-[15px]">
-                  {icon}
-                </span>
+                <Icon className="text-[15px]"/>
                 {type}
               </button>
             ))}
@@ -219,9 +228,10 @@ export function AddResourceModal({
                       : "border-text-primary/10 hover:border-primary/30 hover:bg-text-primary/2"
                   }`}
                 >
-                  <span className="material-symbols-outlined text-text-secondary/30 text-[32px] mb-2">
-                    cloud_upload
-                  </span>
+                  <div className="w-full flex items-center justify-center">
+   <CloudUpload className="text-text-secondary/30 text-[32px] mb-2"/>
+                  </div>
+               
                   <p className="text-sm text-text-secondary">
                     Drop a file or click to browse
                   </p>

@@ -8,6 +8,20 @@ import { Coins } from "lucide-react";
 import { useTheme } from "next-themes";
 import Link from "next/link";
 import React, { useState } from "react";
+import SwapHoriz from "@material-symbols/svg-400/outlined/swap_horiz-fill.svg";
+import Settings from "@material-symbols/svg-400/outlined/settings.svg";
+import Share from "@material-symbols/svg-400/outlined/share.svg";
+import KeyboardArrowUp from "@material-symbols/svg-400/outlined/keyboard_arrow_up.svg";
+import KeyboardArrowDown from "@material-symbols/svg-400/outlined/keyboard_arrow_down.svg";
+import StarFill from "@material-symbols/svg-400/outlined/star-fill.svg";
+import Star from "@material-symbols/svg-400/outlined/star.svg";
+import Psychology from "@material-symbols/svg-400/outlined/psychology.svg";
+import School from "@material-symbols/svg-400/outlined/school.svg";
+import Reviews from "@material-symbols/svg-400/outlined/reviews.svg";
+import LocalFireDepartment from "@material-symbols/svg-400/outlined/local_fire_department.svg";
+import LocalFireDepartmentFill from "@material-symbols/svg-400/outlined/local_fire_department-fill.svg";
+import Check from "@material-symbols/svg-400/outlined/check.svg";
+import History from "@material-symbols/svg-400/outlined/history.svg"
 
 const ProfilePage = () => {
   const { user } = useAuthStore();
@@ -18,12 +32,12 @@ const ProfilePage = () => {
   const statCardData = [
     {
       title: "Exchanges",
-      icon: "swap_horiz",
+      icon: SwapHoriz,
       value: user?.exchanges,
     },
     {
       title: "Rating",
-      icon: "star",
+      icon: Star,
       value: user?.rating,
     },
   ];
@@ -64,23 +78,20 @@ const ProfilePage = () => {
                 href="/settings"
                 className="md:px-4 px-2 flex items-center justify-center gap-2 py-2 md:py-3 bg-primary dark:text-white rounded-md border-border border text-primary font-bold shadow-lg hover:scale-105 transition-transform"
               >
-                <span className="material-symbols-outlined">settings</span>
+                <Settings/>
                 Profile Settings
               </Link>
               <button
                 onClick={() => setShowShareModal(!showShareModal)}
                 className="md:px-4 px-2 md:py-3 py-2 rounded-md border gap-2 border-border flex items-center justify-center text-text-primary font-bold hover:bg-primary/10 transition-colors"
               >
-                <span className="material-symbols-outlined">share</span>
+               <Share/>
                 Share
                 {showShareModal ? (
-                  <span className="material-symbols-outlined">
-                    keyboard_arrow_up
-                  </span>
+                  <KeyboardArrowUp/>
                 ) : (
-                  <span className="material-symbols-outlined">
-                    keyboard_arrow_down
-                  </span>
+                 
+                    <KeyboardArrowDown/>
                 )}
               </button>
 
@@ -103,14 +114,15 @@ const ProfilePage = () => {
             className="col-span-1 p-6 rounded-md flex items-center gap-6 hover:bg-surface transition-colors bg-surface/50"
           >
             <div className="bg-background w-12 h-12 flex items-center justify-center rounded-xl">
-              <span
+              {/* <span
                 className="material-symbols-outlined"
                 style={{
                   fontVariationSettings: "'FILL' 1",
                 }}
               >
                 {info.icon}
-              </span>
+              </span> */}
+              <info.icon className="text-2xl"/>
             </div>
             <div>
               <h2
@@ -179,13 +191,13 @@ const ProfilePage = () => {
           <SkillsCard
             title="Skills i can teach"
             skills={user?.skills_to_teach || []}
-            icon="psychology"
+            icon={Psychology}
             color="primary"
           />
           <SkillsCard
             title="Skills i want to learn"
             skills={user?.skills_to_learn || []}
-            icon="school"
+            icon={School}
             color="accent"
           />
         </div>
@@ -193,9 +205,7 @@ const ProfilePage = () => {
         <div className="col-span-2 md:col-span-1 lg:col-span-1 bg-surface/50 p-4 h-90 rounded-md">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 flex items-center bg-background rounded-xl justify-center border border-border shadow-inner">
-              <span className="material-symbols-outlined text-text-primary">
-                reviews
-              </span>
+              <Reviews className="text-text-primary"/>
             </div>
             <h1 className="text-xl font-bold tracking-tight">Reviews</h1>
           </div>
@@ -224,24 +234,14 @@ const ProfilePage = () => {
         <div className="col-span-1 md:p-6 p-4 bg-surface/50 rounded-md flex flex-col gap-6">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 flex items-center bg-background rounded-xl justify-center border border-border shadow-inner">
-              <span className="material-symbols-outlined text-text-primary">
-                local_fire_department
-              </span>
+             <LocalFireDepartment className="text-text-primary text-xl"/>
             </div>
             <h1 className="text-xl font-bold tracking-tight">Streak History</h1>
           </div>
 
           <div className="flex items-end gap-2">
             <div className="flex items-center">
-              <span
-                className="material-symbols-outlined text-accent animate-pulse"
-                style={{
-                  fontVariationSettings: "'FILL' 1",
-                  fontSize: "3.5rem",
-                }}
-              >
-                local_fire_department
-              </span>
+              <LocalFireDepartmentFill className="text-accent animate-pulse text-[3rem]"/>
               <span className="text-5xl font-black tracking-tighter">
                 {user?.streaks || 0}
               </span>
@@ -282,12 +282,7 @@ const ProfilePage = () => {
                       }`}
                     >
                       {i === 1 || i === 2 ? (
-                        <span
-                          className="material-symbols-outlined text-sm"
-                          style={{ fontVariationSettings: "'wght' 700" }}
-                        >
-                          check
-                        </span>
+                        <Check className="text-sm"/>
                       ) : null}
                     </div>
                   </div>
@@ -318,9 +313,7 @@ const ProfilePage = () => {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 flex items-center bg-background rounded-xl justify-center border border-border shadow-inner">
-                <span className="material-symbols-outlined text-text-primary">
-                  history
-                </span>
+                <History className="text-xl text-text-primary"/>
               </div>
               <h1 className="text-xl font-bold tracking-tight">
                 Exchange History
@@ -355,15 +348,24 @@ const ProfilePage = () => {
                   {[...Array(5)].map((_, index) => {
                     const rating = 4;
                     return (
-                      <span
-                        key={index}
-                        className="material-symbols-outlined text-lg!"
-                        style={{
-                          fontVariationSettings: `'FILL' ${index < rating ? 1 : 0}`,
-                        }}
-                      >
-                        star
-                      </span>
+                      <>
+                        {
+                          index < rating ? (
+                            <StarFill/>
+                          ) : (
+                            <Star/>
+                          )
+                        }
+                      </>
+                      // <span
+                      //   key={index}
+                      //   className="material-symbols-outlined text-lg!"
+                      //   style={{
+                      //     fontVariationSettings: `'FILL' ${index < rating ? 1 : 0}`,
+                      //   }}
+                      // >
+                      //   star
+                      // </span>
                     );
                   })}
                 </div>

@@ -9,6 +9,16 @@ import {
 } from "@/components/sessions/SessionToolBar";
 import Whiteboard from "@/components/sessions/WhiteBoard";
 import Notes from "@/components/sessions/Notes";
+import Videocam from "@material-symbols/svg-400/outlined/video_camera_front.svg"
+import VideocamOff from "@material-symbols/svg-400/outlined/video_camera_front_off.svg"
+import Mic from "@material-symbols/svg-400/outlined/mic.svg"
+import MicOff from "@material-symbols/svg-400/outlined/mic_off.svg"
+import Chat from "@material-symbols/svg-400/outlined/chat.svg"
+import Draw from "@material-symbols/svg-400/outlined/draw.svg"
+import Note from "@material-symbols/svg-400/outlined/notes.svg"
+import PresentToAll from "@material-symbols/svg-400/outlined/present_to_all.svg"
+import CallEnd from "@material-symbols/svg-400/outlined/call_end.svg"
+import BackHand from "@material-symbols/svg-400/outlined/back_hand.svg"
 
 declare global {
   interface Window {
@@ -97,42 +107,42 @@ const CallPage = ({ params }: { params: Promise<{ id: string }> }) => {
 
   const toolbarButtonsConfig: ToolbarButtonConfig[] = [
     {
-      icon: micOn ? "mic" : "mic_off",
+      icon: micOn ? Mic : MicOff,
       onClick: () => apiRef.current?.executeCommand("toggleAudio"),
       variant: micOn ? "standard" : "active-primary",
     },
     {
-      icon: camOn ? "videocam" : "videocam_off",
+      icon: camOn ? Videocam : VideocamOff,
       onClick: () => apiRef.current?.executeCommand("toggleVideo"),
       variant: camOn ? "standard" : "active-primary",
     },
     {
-      icon: "present_to_all",
+      icon: PresentToAll,
       onClick: () => apiRef.current?.executeCommand("toggleShareScreen"),
       variant: isSharing ? "active-primary" : "standard",
     },
     {
-      icon: "chat",
+      icon: Chat,
       onClick: () => apiRef.current?.executeCommand("toggleChat"),
       variant: "standard",
     },
     {
-      icon: "draw",
+      icon: Draw,
       onClick: () => setShowWhiteBoard((prev) => !prev),
       variant: showWhiteBoard ? "active-primary" : "standard",
     },
     {
-      icon: "notes",
+      icon: Note,
       onClick: () => setShowNotesPanel((prev) => !prev),
       variant: showNotesPanel ? "active-primary" : "standard",
     },
     {
-      icon: "back_hand",
+      icon: BackHand,
       onClick: () => apiRef.current?.executeCommand("toggleRaiseHand"),
       variant: "standard",
     },
     {
-      icon: "call_end",
+      icon: CallEnd,
       label: "End Session",
       onClick: () => apiRef.current?.executeCommand("hangup"),
       variant: "hangup",

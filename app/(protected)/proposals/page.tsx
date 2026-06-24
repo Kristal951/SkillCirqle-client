@@ -9,6 +9,9 @@ import ProposalCard from "@/components/proposals/ProposalCard";
 import { ProposalCardSkeleton } from "@/components/proposals/ProposalFeedSkeleton";
 import Sidebar from "@/components/proposals/Sidebar";
 import { Info } from "lucide-react";
+import Psychology from "@material-symbols/svg-400/outlined/psychology.svg";
+import School from "@material-symbols/svg-400/outlined/school.svg";
+import { IconType } from "@/utils/SvgType";
 
 type ProposalTab = "received" | "sent";
 
@@ -24,8 +27,8 @@ export type ProposalView = {
   goal: string;
   expectedSessions: number;
   sessionDuration: number;
-  skillToTeachIcon: string;
-  skillToLearnIcon: string;
+  skillToTeachIcon: IconType;
+  skillToLearnIcon: IconType;
   senderID: string;
   receiverID: string;
   message: string;
@@ -110,8 +113,8 @@ const ProposalsPage = () => {
       workspaceId: p.workspace?.id ?? null,
       iLearn: isSender ? p.learn_skill?.title : p.teach_skill?.title,
       iTeach: isSender ? p.teach_skill?.title : p.learn_skill?.title,
-      skillToTeachIcon: "school",
-      skillToLearnIcon: "psychology",
+      skillToTeachIcon: School,
+      skillToLearnIcon: Psychology,
     };
   };
 

@@ -3,6 +3,9 @@
 import { toast } from "@/lib/toast";
 import { useAuthStore } from "@/store/useAuthStore";
 import React, { useRef, useEffect } from "react";
+import QrCode from "@material-symbols/svg-400/outlined/qr_code.svg"
+import PersonAdd from "@material-symbols/svg-400/outlined/person_add.svg"
+import Share from "@material-symbols/svg-400/outlined/share.svg"
 
 interface ShareAction {
   title: string;
@@ -68,17 +71,17 @@ export default function SharePopoverModal({
   const shareModalData = [
     {
       title: "Share Profile",
-      icon: "share",
+      icon: Share,
       onClick: shareProfile,
     },
     {
       title: "Show QR Code",
-      icon: "qr_code",
+      icon: QrCode,
       onClick: () => setShowQrModal(true),
     },
     {
       title: "Invite Link",
-      icon: "person_add",
+      icon: PersonAdd,
       onClick: copyInvite,
     },
   ];
@@ -107,6 +110,7 @@ export default function SharePopoverModal({
       className="absolute top-18 right-4 w-52 bg-surface/90 backdrop-blur-md border border-border/40 rounded-xl flex flex-col shadow-xl shadow-black/20 z-50 animate-scale-up"
     >
       {shareModalData.map((action, i) => {
+        const Icon = action.icon
         return (
           <button
             key={i}
@@ -118,7 +122,7 @@ export default function SharePopoverModal({
             className="w-full px-3 py-2 flex items-center gap-2.5 text-xs font-semibold text-text-secondary hover:text-text-primary hover:bg-text-secondary/10 transition-all group text-left"
           >
             <div className="text-text-secondary/60 group-hover:text-text-primary transition-colors shrink-0">
-              <span className="material-symbols-outlined">{action.icon}</span>
+              <Icon className="text-2xl"/>
             </div>
             <span className="truncate transition-transform duration-150">
               {action.title}

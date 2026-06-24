@@ -3,6 +3,11 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function middleware(request: NextRequest) {
   let response = NextResponse.next();
+  const path = request.nextUrl.pathname;
+
+  if (path === "/") {
+    return NextResponse.next();
+  }
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -31,7 +36,6 @@ export async function middleware(request: NextRequest) {
     data: { session },
   } = await supabase.auth.getSession();
 
-  const path = request.nextUrl.pathname;
   const isUpdatePasswordPage = path === "/auth/update-password";
   const isAuthPage =
     path.startsWith("/auth") &&
@@ -102,5 +106,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico|api/auth).*)"],
+  matcher: ["/((?!_next/static|_next/image|favicon.ico|api/auth|$).*)"],
 };

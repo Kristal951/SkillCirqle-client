@@ -162,7 +162,7 @@ const NotificationDrawer = ({
             )}
 
             <div
-              className={`fixed top-0 right-0 h-screen w-full max-w-md bg-surface shadow-2xl transform transition-transform duration-300 ease-in-out pointer-events-auto ${
+              className={`fixed top-0 right-0 h-screen w-full max-w-md bg-surface/80 shadow-2xl transform transition-transform duration-300 ease-in-out pointer-events-auto ${
                 isOpen ? "translate-x-0" : "translate-x-full"
               }`}
             >
@@ -252,7 +252,7 @@ const NotificationDrawer = ({
                 })}
               </div>
 
-              <div className="h-[calc(100vh-70px)] overflow-y-auto divide-y divide-gray-100 dark:divide-gray-800 mt-5">
+              <div className="h-[calc(100vh-70px)] overflow-y-auto divide-y mt-5">
                 {loading ? (
                   <div className="flex flex-col items-center justify-center h-64 text-text-secondary">
                     <Loader2 className="w-8 h-8 animate-spin text-blue-500 mb-2" />
@@ -266,13 +266,15 @@ const NotificationDrawer = ({
                     </h3>
                   </div>
                 ) : (
-                  filteredNotifications.map((notification, i) => (
-                    <NotificationCard
-                      notif={notification}
-                      index={i}
-                      key={notification.id}
-                    />
-                  ))
+                  <div className="w-full flex flex-col mb-22">
+                    {filteredNotifications.map((notification, i) => (
+                      <NotificationCard
+                        notif={notification}
+                        index={i}
+                        key={notification.id}
+                      />
+                    ))}
+                  </div>
                 )}
               </div>
             </div>

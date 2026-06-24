@@ -1,6 +1,13 @@
 import { useNow } from "@/hooks/useNow";
 import { getSessionPhase } from "@/utils/sessionUseNow";
 import React from "react";
+import Timer from "@material-symbols/svg-400/outlined/timer.svg"
+import Schedule from "@material-symbols/svg-400/outlined/schedule.svg"
+import Videocam from "@material-symbols/svg-400/outlined/video_camera_back.svg"
+import Mic from "@material-symbols/svg-400/outlined/mic.svg"
+import EventRepeat from "@material-symbols/svg-400/outlined/event_repeat.svg" 
+import EventBusy from "@material-symbols/svg-400/outlined/event_busy.svg" 
+import CalendarToday from "@material-symbols/svg-400/outlined/calendar_today.svg" 
 
 interface Session {
   id: string;
@@ -52,7 +59,6 @@ const UpcomingSessionsCard = ({
   return (
     <div className="group relative flex flex-col sm:flex-row sm:items-center gap-4 p-4 sm:p-5 bg-surface/50 hover:bg-surface/80 rounded-xl transition-all duration-300 border border-text-primary/5 hover:border-text-primary/10 hover:shadow-xl hover:shadow-primary/5">
       
-      {/* Date Box Indicator */}
       <div className="flex sm:flex-col items-center justify-start sm:justify-center gap-2 sm:gap-1 px-4 py-2.5 sm:py-3 sm:w-20 bg-background rounded-xl border border-text-primary/5 shadow-inner transition-colors duration-300 shrink-0">
         <span className="text-[10px] uppercase tracking-[0.15em] text-text-secondary font-bold">
           {date.toLocaleDateString("en-GB", { month: "short" })}
@@ -62,13 +68,11 @@ const UpcomingSessionsCard = ({
         </span>
       </div>
 
-      {/* Info Body */}
       <div className="flex-1 min-w-0">
         <h3 className="text-base font-semibold text-text-primary mb-1.5 wrap-break-word line-clamp-2 sm:truncate">
           {s.title}
         </h3>
 
-        {/* Metadata Badges & Dividers */}
         <div className="flex flex-wrap items-center gap-x-2 gap-y-1.5 text-xs text-text-secondary">
           {trackName && (
             <span className="font-bold text-[10px] uppercase tracking-wider text-accent bg-accent/10 px-2 py-0.5 rounded">
@@ -79,14 +83,14 @@ const UpcomingSessionsCard = ({
           {s.duration && (
             <div className="flex items-center gap-1">
               {trackName && <span className="opacity-20 mr-1 sm:inline hidden">|</span>}
-              <span className="material-symbols-outlined text-sm opacity-70">timer</span>
+              <Timer className="text-sm opacity-70"/>
               <span>{s.duration} mins</span>
             </div>
           )}
 
           <div className="flex items-center gap-1">
             <span className="opacity-20 mr-1 sm:inline hidden">|</span>
-            <span className="material-symbols-outlined text-sm opacity-70">schedule</span>
+            <Schedule className="text-sm opacity-70"/>
             <span>
               {date.toLocaleTimeString("en-US", {
                 hour: "numeric",
@@ -100,7 +104,7 @@ const UpcomingSessionsCard = ({
             <div className="flex items-center gap-1">
               <span className="opacity-20 mr-1 sm:inline hidden">|</span>
               <span className="material-symbols-outlined text-sm opacity-70">
-                {s.type === "VIDEO" ? "videocam" : "mic"}
+                {s.type === "VIDEO" ? <Videocam/> : <Mic/>}
               </span>
               <span className="capitalize">{s.type.toLowerCase()}</span>
             </div>
@@ -109,7 +113,7 @@ const UpcomingSessionsCard = ({
           {totalReschedules > 0 && (
             <div className="flex items-center gap-1 text-xs font-medium text-accent">
               <span className="opacity-20 mr-1 text-text-secondary sm:inline hidden">|</span>
-              <span className="material-symbols-outlined text-sm">event_repeat</span>
+              <EventRepeat className="text-sm"/>
               <span>
                 Rescheduled{" "}
                 {totalReschedules === 1
@@ -131,13 +135,13 @@ const UpcomingSessionsCard = ({
             className="bg-emerald-500 hover:bg-emerald-600 text-white px-5 py-2.5 gap-2 rounded-lg flex items-center justify-center transition-all duration-200 active:scale-95 text-sm font-semibold w-full sm:w-auto animate-pulse"
           >
             <span className="material-symbols-outlined text-lg">
-              {s.type === "VIDEO" ? "videocam" : "mic"}
+              {s.type === "VIDEO" ? <Videocam/> : <Mic/>}
             </span>
             <span>{isHost ? "Start Session" : "Join Session"}</span>
           </button>
         ) : phase === "missed" ? (
           <span className="text-xs font-semibold text-rose-500 bg-rose-500/10 px-3 py-1.5 rounded-lg flex items-center justify-center gap-1.5 w-full sm:w-auto">
-            <span className="material-symbols-outlined text-sm">event_busy</span>
+            <EventBusy className="text-lg"/>
             Session Missed
           </span>
         ) : (
@@ -147,7 +151,7 @@ const UpcomingSessionsCard = ({
               onClick={() => onReschedule?.(s.id)}
               className="bg-background hover:bg-primary/10 text-text-secondary hover:text-text-primary border border-border hover:border-primary/30 px-4 py-2.5 gap-2 rounded-lg flex items-center justify-center transition-all duration-200 active:scale-95 text-sm font-medium w-full sm:w-auto"
             >
-              <span className="material-symbols-outlined text-lg">calendar_today</span>
+              <CalendarToday className="text-lg"/>
               <span>Reschedule</span>
             </button>
           )

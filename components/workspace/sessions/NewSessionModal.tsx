@@ -1,11 +1,11 @@
 import { useState } from "react";
 import DateTimePicker, { toUTCIso, USER_TZ } from "./DateTimePicker";
 import { useAuthStore } from "@/store/useAuthStore";
-import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
-import { toast } from "@/lib/toast";
 import Spinner from "@/components/ui/Spinner";
-import { logActivity } from "@/lib/activity";
 import { createSession } from "@/utils/createSession";
+import Videocam from "@material-symbols/svg-400/outlined/video_camera_back.svg"
+import Mic from "@material-symbols/svg-400/outlined/mic.svg"
+import Event from "@material-symbols/svg-400/outlined/event.svg"
 
 interface SkillTrack {
   id: string;
@@ -211,9 +211,16 @@ export default function NewSessionModal({
                           : "border-text-primary/10 bg-surface/20 text-text-secondary hover:bg-text-primary/5"
                       }`}
                     >
-                      <span className="material-symbols-outlined text-[15px]">
+                      {/* <span className="material-symbols-outlined text-[15px]">
                         {t === "VIDEO" ? "videocam" : "mic"}
-                      </span>
+                      </span> */}
+                      {
+                        t === "VIDEO" ? (
+                          <Videocam className="text-[15px]"/>
+                        ) : (
+                          <Mic className="text-[15px]"/>
+                        )
+                      }
                       {t.charAt(0) + t.slice(1).toLowerCase()}
                     </button>
                   ))}
@@ -276,9 +283,7 @@ export default function NewSessionModal({
               Session scheduled for
             </p>
             <div className="flex items-center gap-1">
-              <span className="material-symbols-outlined text-text-primary text-sm">
-                event
-              </span>
+              <Event className="text-text-primary text-sm"/>
               <p className="text-xs text-text-primary">
                 {selectedDate && selectedTime
                   ? new Date(

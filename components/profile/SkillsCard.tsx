@@ -1,14 +1,15 @@
+import { IconType } from '@/utils/SvgType';
 import React from 'react'
 
 const SkillsCard = ({
     title,
     skills,
-    icon,
+    icon : Icon,
     color,
   }: {
     title: string;
     skills: string[];
-    icon: string;
+    icon: IconType;
     color: string;
   }) => {
     return (
@@ -17,7 +18,7 @@ const SkillsCard = ({
           <div className="w-full flex gap-2 items-center justify-between">
             <div className="w-max h-max flex items-center gap-2">
               <div className="w-10 h-10 flex items-center bg-background rounded-xl justify-center">
-                <span className="material-symbols-outlined">{icon}</span>
+                <Icon className='text-text-primary text-xl'/>
               </div>
               <h1 className="text-2xl font-bold">{title}</h1>
             </div>

@@ -1,33 +1,42 @@
+import {
+  House,
+  MagnifyingGlassIcon,
+  ChatIcon,
+  UserIcon,
+  GearIcon,
+  FileTextIcon
+} from "@phosphor-icons/react";
+
 export const NavLinks = [
   {
     title: "Home",
     path: "/dashboard",
-    icon: "home",
+    icon: House,
   },
   {
     title: "Search",
     path: "/search",
-    icon: "search",
+    icon: MagnifyingGlassIcon,
   },
   {
     title: "Proposals",
     path: "/proposals",
-    icon: "docs",
+    icon: FileTextIcon,
   },
   {
     title: "Chat",
     path: "/chat",
-    icon: "chat",
+    icon: ChatIcon,
   },
   {
     title: "Profile",
     path: "/profile",
-    icon: "account_circle",
+    icon: UserIcon,
   },
   {
     title: "Settings",
     path: "/settings",
-    icon: "settings",
+    icon: GearIcon,
     onlyOnDesktop: true,
   },
 ];
