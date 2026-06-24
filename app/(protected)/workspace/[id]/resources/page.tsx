@@ -1,7 +1,8 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
 import { useWorkspace } from "@/hooks/useWorkspace";
+import { useWorkspaceResources } from "@/hooks/useWorkspaceResources";
 import { toast } from "@/lib/toast";
 import { useAuthStore } from "@/store/useAuthStore";
 import { useParams } from "next/navigation";
@@ -12,11 +13,10 @@ import { GridSkeleton } from "@/components/workspace/resources/GridSkeleton";
 import { ListSkeleton } from "@/components/workspace/resources/ListSkeleton";
 import { EmptyState } from "@/components/workspace/resources/EmptyState";
 import { logActivity } from "@/lib/activity";
-import { normalizeProfile } from "@/utils/normalizeProfile";
-import { Plus } from "lucide-react"; 
-import GridView from "@material-symbols/svg-400/outlined/grid_view.svg"
-import ViewList from "@material-symbols/svg-400/outlined/view_list.svg"
-import Add from "@material-symbols/svg-400/outlined/add.svg"
+import { Plus } from "lucide-react";
+import GridView from "@material-symbols/svg-400/outlined/grid_view.svg";
+import ViewList from "@material-symbols/svg-400/outlined/view_list.svg";
+import Add from "@material-symbols/svg-400/outlined/add.svg";
 
 type ResourceType = "file" | "link" | "note";
 type ViewMode = "grid" | "list";
@@ -45,67 +45,12 @@ export default function ResourcesPage() {
   const { user } = useAuthStore();
   const { skillTracks } = useWorkspace(workspaceId);
 
-  const [resources, setResources] = useState<Resource[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { resources, loading, error, addResource, handleDeleteResource } =
+    useWorkspaceResources({ workspaceId });
+
   const [activeTrack, setActiveTrack] = useState<string | "all">("all");
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
   const [showModal, setShowModal] = useState(false);
-
-  useEffect(() => {
-    if (!workspaceId) return;
-    fetchResources();
-  }, [workspaceId]);
-
-  async function fetchResources() {
-    const supabase = getSupabaseBrowserClient();
-    setLoading(true);
-    const { data } = await supabase
-      .from("workspace_resources")
-      .select(
-        `
-        id, type, skill_track_id, file_name, file_size, file_mime_type,
-        storage_path, url, link_title, note_title, note_body,
-        description, created_at, uploaded_by,
-        profiles ( name, avatar_url )
-      `,
-      )
-      .eq("workspace_id", workspaceId)
-      .order("created_at", { ascending: false });
-
-    const normalized = (data ?? []).map(normalizeProfile);
-    setResources(normalized as Resource[]);
-    setLoading(false);
-  }
-
-  async function handleDelete(resource: Resource) {
-    const supabase = getSupabaseBrowserClient();
-    if (resource.storage_path) {
-      await supabase.storage
-        .from("workspace-resources")
-        .remove([resource.storage_path]);
-    }
-    await supabase.from("workspace_resources").delete().eq("id", resource.id);
-    setResources((prev) => prev.filter((r) => r.id !== resource.id));
-
-    const resourceName =
-      resource.type === "file"
-        ? resource.file_name
-        : resource.type === "link"
-          ? resource.link_title || resource.url
-          : resource.note_title;
-
-    if (user?.id) {
-      await logActivity(workspaceId, user.id, "resource_removed", {
-        resource_name: resourceName,
-        resource_type: resource.type,
-      });
-    }
-
-    toast.success(
-      "Resource removed",
-      "It's no longer visible in this workspace.",
-    );
-  }
 
   async function getSignedUrl(storagePath: string) {
     const supabase = getSupabaseBrowserClient();
@@ -130,6 +75,10 @@ export default function ResourcesPage() {
       ? resources
       : resources.filter((r) => r.skill_track_id === activeTrack);
 
+  if (error) {
+    toast.error("Couldn't load resources", error);
+  }
+
   return (
     <>
       <div className="w-full pb-24 md:pb-6 relative">
@@ -144,7 +93,7 @@ export default function ResourcesPage() {
             onClick={() => setShowModal(true)}
             className="hidden md:flex items-center gap-1.5 bg-primary hover:bg-primary/90 text-text-primary text-sm px-4 py-2.5 rounded-xl font-medium transition-colors shadow-sm shadow-primary/10"
           >
-            <Add className="text-[18px]"/>
+            <Add className="text-[18px]" />
             Add resource
           </button>
         </div>
@@ -190,7 +139,7 @@ export default function ResourcesPage() {
               }`}
               aria-label="Grid view"
             >
-              <GridView className="text-[18px]"/>
+              <GridView className="text-[18px]" />
             </button>
             <button
               onClick={() => setViewMode("list")}
@@ -201,7 +150,7 @@ export default function ResourcesPage() {
               }`}
               aria-label="List view"
             >
-              <ViewList className="text-[18px]"/>
+              <ViewList className="text-[18px]" />
             </button>
           </div>
         </div>
@@ -225,7 +174,7 @@ export default function ResourcesPage() {
                   trackName={getTrackName(r.skill_track_id)}
                   isOwner={r.uploaded_by === user?.id}
                   onOpen={() => r.storage_path && getSignedUrl(r.storage_path)}
-                  onDelete={() => handleDelete(r)}
+                  onDelete={() => handleDeleteResource(r)}
                 />
               ))}
             </div>
@@ -239,7 +188,7 @@ export default function ResourcesPage() {
                   trackName={getTrackName(r.skill_track_id)}
                   isOwner={r.uploaded_by === user?.id}
                   onOpen={() => r.storage_path && getSignedUrl(r.storage_path)}
-                  onDelete={() => handleDelete(r)}
+                  onDelete={() => handleDeleteResource(r)}
                 />
               ))}
             </div>
@@ -262,7 +211,7 @@ export default function ResourcesPage() {
           workspaceId={workspaceId}
           skillTracks={skillTracks}
           onClose={() => setShowModal(false)}
-          onAdded={(resource) => setResources((prev) => [resource, ...prev])}
+          onAdded={(resource) => addResource(resource)}
         />
       )}
     </>

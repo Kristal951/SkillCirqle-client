@@ -1,4 +1,3 @@
-// hooks/useAuthFetch.ts
 "use client";
 
 import { useRouter } from "next/navigation";

@@ -81,7 +81,7 @@ export function ResourceRow({
   const showSize = r.type === "file" && r.file_size;
 
   return (
-    <div className="flex items-center justify-between gap-4 px-5 py-3.5 group hover:bg-text-primary/2 border-b border-text-primary/3 last:border-0 transition-colors duration-200">
+    <div className="flex items-center justify-between gap-4 md:px-5 px-2 py-3.5 group hover:bg-text-primary/2 border-b border-text-primary/3 last:border-0 transition-colors duration-200">
       <div className="flex items-center gap-3 min-w-0 flex-1">
         <div
           className={`w-9 h-9 rounded-xl flex items-center justify-center border shrink-0

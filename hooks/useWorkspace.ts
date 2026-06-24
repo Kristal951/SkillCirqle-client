@@ -132,7 +132,6 @@ export function useWorkspace(workspaceId: string) {
       if (membersResult.error) throw membersResult.error;
       if (tracksResult.error) throw tracksResult.error;
 
-      // workspaceResult.data -> Workspace
       if (workspaceResult.data) {
         const proposal = first(workspaceResult.data.proposal);
         setWorkspace({
@@ -151,7 +150,6 @@ export function useWorkspace(workspaceId: string) {
         });
       }
 
-      // membersResult.data -> WorkspaceMember[]
       const members: WorkspaceMember[] = (membersResult.data ?? []).map((m) => {
         const profile = first(m.profiles);
         return {
@@ -169,7 +167,6 @@ export function useWorkspace(workspaceId: string) {
       });
       setMembers(members);
 
-      // tracksResult.data -> SkillTrack[]
       const skillTracks: SkillTrack[] = (tracksResult.data ?? []).map((t) => {
         const skill = first(t.skills);
         return {
@@ -204,60 +201,6 @@ export function useWorkspace(workspaceId: string) {
 
     fetchWorkspace();
   }, [workspaceId, fetchWorkspace]);
-
-  //   useEffect(() => {
-  //     if (!workspaceId) return;
-
-  //     const supabase = getSupabaseBrowserClient();
-
-  //     const channel = supabase
-  //       .channel(`workspace-${workspaceId}`)
-
-  //       .on(
-  //         "postgres_changes",
-  //         {
-  //           event: "*",
-  //           schema: "public",
-  //           table: "workspace_members",
-  //           filter: `workspace_id=eq.${workspaceId}`,
-  //         },
-  //         () => {
-  //           fetchWorkspace();
-  //         },
-  //       )
-
-  //       .on(
-  //         "postgres_changes",
-  //         {
-  //           event: "*",
-  //           schema: "public",
-  //           table: "workspace_skill_tracks",
-  //           filter: `workspace_id=eq.${workspaceId}`,
-  //         },
-  //         () => {
-  //           fetchWorkspace();
-  //         },
-  //       )
-
-  //       .on(
-  //         "postgres_changes",
-  //         {
-  //           event: "*",
-  //           schema: "public",
-  //           table: "proposal_workspaces",
-  //           filter: `id=eq.${workspaceId}`,
-  //         },
-  //         () => {
-  //           fetchWorkspace();
-  //         },
-  //       )
-
-  //       .subscribe();
-
-  //     return () => {
-  //       supabase.removeChannel(channel);
-  //     };
-  //   }, [workspaceId, fetchWorkspace]);
 
   return {
     workspace,

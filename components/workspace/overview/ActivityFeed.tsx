@@ -171,8 +171,8 @@ export default function ActivityFeed({ activity, loading }: ActivityFeedProps) {
 
   if (loading) {
     return (
-      <div className="flex flex-col gap-4">
-        {[1, 2, 3].map((i) => (
+      <div className="flex flex-col gap-3">
+        {[1, 2, 3, 4, 5].map((i) => (
           <div key={i} className="flex items-center gap-3 animate-pulse">
             <div className="w-8 h-8 rounded-xl bg-text-primary/5 shrink-0" />
             <div className="flex-1 flex flex-col gap-2">
@@ -202,7 +202,7 @@ export default function ActivityFeed({ activity, loading }: ActivityFeedProps) {
         const isLast = i === activity.length - 1;
         const Icon = ICONS[item.type]
         return (
-          <div key={item.id} className="flex gap-3 group relative">
+          <div key={item.id} className="flex gap-3 py-1 group relative">
             <div className="flex flex-col items-center shrink-0">
               <div
                 className={`w-8 h-8 rounded-xl flex items-center justify-center border transition-all duration-300 z-10 ${COLORS[item.type] ?? "bg-text-primary/5 text-text-secondary border-transparent"}`}

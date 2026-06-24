@@ -10,10 +10,11 @@ import ActivityFeed from "@/components/workspace/overview/ActivityFeed";
 import { useWorkspaceActivity } from "@/hooks/useWorkspaceActivity";
 import UpcomingSessionsCard from "@/components/workspace/sessions/UpcomingSessionsCard";
 import Link from "next/link";
-import Timer from "@material-symbols/svg-400/outlined/timer.svg"
-import CalendarToday from "@material-symbols/svg-400/outlined/calendar_today.svg"
-import MilitaryTech from "@material-symbols/svg-400/outlined/military_tech.svg"
-import CalendarAddOn from "@material-symbols/svg-400/outlined/calendar_add_on.svg"
+import Timer from "@material-symbols/svg-400/outlined/timer.svg";
+import CalendarToday from "@material-symbols/svg-400/outlined/calendar_today.svg";
+import MilitaryTech from "@material-symbols/svg-400/outlined/military_tech.svg";
+import CalendarAddOn from "@material-symbols/svg-400/outlined/calendar_add_on.svg";
+import Resources from "@/components/workspace/overview/Resources";
 
 interface Session {
   id: string;
@@ -47,12 +48,9 @@ interface RecentMilestone {
 export default function WorkspaceOverview() {
   const params = useParams();
   const id = params.id as string;
-  const { workspace, skillTracks, loading, members } = useWorkspace(id);
-  const { activity, loading: activityLoading } = useWorkspaceActivity(
-    workspace?.id,
-    5,
-  );
+  const { workspace, skillTracks, loading } = useWorkspace(id);
 
+  const { activity, loading: activityLoading } = useWorkspaceActivity(id, 5);
   const [sessions, setSessions] = useState<Session[]>([]);
   const [milestones, setMilestones] = useState<RecentMilestone[]>([]);
   const [overviewLoading, setOverviewLoading] = useState(false);
@@ -200,12 +198,30 @@ export default function WorkspaceOverview() {
       </div> */}
 
       <div className="w-full grid grid-cols-2 gap-6 mt-15">
-        <div className="col-span-2 md:col-span-1 p-8 bg-surface/50"></div>
+        <div className="col-span-2 md:col-span-1 md:py-8 md:px-2 px-2 py-6 bg-surface/50 rounded-lg">
+          <div className="px-4 w-full flex items-center justify-between mb-4">
+            <p className="md:text-sm text-xs font-bold text-text-primary uppercase tracking-wider">
+              Resources
+            </p>
+
+            <Link
+              href={`/workspace/${id}/resources`}
+              className="text-sm text-accent underline"
+            >
+              View all
+            </Link>
+          </div>
+
+          <Resources />
+        </div>
         <div className="col-span-2 md:col-span-1 p-6 rounded-lg bg-surface/50">
           <p className="text-sm font-bold text-text-primary uppercase tracking-wider mb-4">
             Recent activities
           </p>
-          <ActivityFeed activity={activity} loading={activityLoading} />
+
+          <div className="w-full flex flex-col gap-3">
+            <ActivityFeed activity={activity} loading={activityLoading} />
+          </div>
         </div>
       </div>
 
@@ -226,7 +242,7 @@ export default function WorkspaceOverview() {
         </div>
         {upcomingSessions.length === 0 ? (
           <div className="flex flex-col items-center justify-center text-center max-w-xl mx-auto w-full mt-10">
-            <CalendarAddOn className="text-text-secondary mb-4 select-none text-[4rem]"/>
+            <CalendarAddOn className="text-text-secondary mb-4 select-none text-[4rem]" />
 
             <h3 className="text-xl font-bold text-text-primary mb-1">
               You have no sessions yet

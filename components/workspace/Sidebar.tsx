@@ -6,7 +6,7 @@ import React from "react";
 import Dashboard from '@material-symbols/svg-400/outlined/dashboard.svg'
 import CalendarToday from '@material-symbols/svg-400/outlined/calendar_today.svg'
 import FolderOpen from '@material-symbols/svg-400/outlined/folder_open.svg'
-import SelectCheckBox from '@material-symbols/svg-400/outlined/select_check_box.svg'
+import MilitaryTech from "@material-symbols/svg-400/outlined/military_tech.svg";
 
 interface Member {
   user_id: string;
@@ -44,7 +44,7 @@ const Sidebar = ({
     { label: "Overview", href: "", icon: Dashboard },
     { label: "Sessions", href: "/sessions", icon: CalendarToday },
     { label: "Resources", href: "/resources", icon: FolderOpen },
-    { label: "Milestones", href: "/milestones", icon: SelectCheckBox },
+    { label: "Milestones", href: "/milestones", icon: MilitaryTech },
   ];
 
   const basePath = `/workspace/${id}`;
@@ -72,7 +72,7 @@ const Sidebar = ({
                     : "text-text-secondary hover:bg-surface/40 hover:text-text-primary"
                 }`}
               >
-                <Icon className={`text-lg transition-transform ${isActive ? "text-text-primary" : "opacity-70"}`}/>
+                <Icon className={`text-[1.5rem] transition-transform ${isActive ? "text-text-primary" : "opacity-70"}`}/>
                 <span>{item.label}</span>
               </Link>
             );
