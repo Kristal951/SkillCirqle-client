@@ -2,19 +2,6 @@ import type { Metadata } from "next";
 import "./globals.css";
 import Providers from "@/components/Providers";
 import { SpeedInsights } from "@vercel/speed-insights/next";
-// import "@fontsource-variable/material-symbols-outlined/full.css";
-import OneSignalProvider from "@/providers/oneSignal";
-import Script from "next/script";
-
-// const geistSans = Geist({
-//   variable: "--font-geist-sans",
-//   subsets: ["latin"],
-// });
-
-// const geistMono = Geist_Mono({
-//   variable: "--font-geist-mono",
-//   subsets: ["latin"],
-// });
 
 export const metadata: Metadata = {
   title: "SkillCirqle",
@@ -43,14 +30,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <head>
-        <Script
-          src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js"
-          strategy="lazyOnload"
-        />
-      </head>
       <body className={`antialiased`}>
-        <OneSignalProvider />
         <Providers>{children}</Providers>
         <SpeedInsights />
       </body>

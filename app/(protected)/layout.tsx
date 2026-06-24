@@ -7,6 +7,10 @@ import BottomBar from "@/components/ui/BottomBar";
 import Spinner from "@/components/ui/Spinner";
 import { useClearSessionCache } from "@/hooks/useSessions";
 import { useLogoutModal } from "@/providers/LogoutContext";
+import NotificationProvider from "@/providers/NotificationProvider";
+import OneSignalProvider from "@/providers/oneSignal";
+import OneSignalLoginSync from "@/providers/OneSignalLoginSync";
+import SocketProvider from "@/providers/SocketProvider";
 import { useAuthStore } from "@/store/useAuthStore";
 import { useChatStore } from "@/store/useChatStore";
 import { usePathname } from "next/navigation";
@@ -67,11 +71,17 @@ export default function RootLayout({
         />
 
         <main
-          className={`flex-1 overflow-y-auto ${isInSessionPage ? 'mt-0' : 'mt-17.5'} ${
-            isInChatPage && activeChat  ? "mb-0" : "mb-13 md:mb-0"
+          className={`flex-1 overflow-y-auto ${isInSessionPage ? "mt-0" : "mt-17.5"} ${
+            isInChatPage && activeChat ? "mb-0" : "mb-13 md:mb-0"
           }`}
         >
-          {children}
+          <OneSignalProvider />
+          <NotificationProvider>
+            <SocketProvider>
+              <OneSignalLoginSync />
+              {children}
+            </SocketProvider>
+          </NotificationProvider>
         </main>
       </div>
 

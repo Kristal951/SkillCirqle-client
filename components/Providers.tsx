@@ -29,16 +29,11 @@ export default function Providers({ children }: { children: React.ReactNode }) {
       <ToastContainer />
       <AuthProvider>
         <Analytics />
-        <SocketProvider>
-          <NotificationProvider>
-            <LogoutModalProvider>
-              <QueryClientProvider client={queryClient}>
-                <OneSignalLoginSync />
-                {children}
-              </QueryClientProvider>
-            </LogoutModalProvider>
-          </NotificationProvider>
-        </SocketProvider>
+        <LogoutModalProvider>
+          <QueryClientProvider client={queryClient}>
+            {children}
+          </QueryClientProvider>
+        </LogoutModalProvider>
       </AuthProvider>
     </ThemeProvider>
   );

@@ -15,14 +15,14 @@ export default function UserProfilePage() {
   const { user: profile } = useUserProfile();
   const { user } = useAuthStore();
   const [creatingConv, setCreatingConv] = useState(false);
-  const router = useRouter()
+  const router = useRouter();
 
   const { theme } = useTheme();
   const isLoggedInUser = user?.id === profile?.id;
 
-  const handleStartProposal = ()=> {
-    router.push(`/proposals/new/${profile?.id}`)
-  }
+  const handleStartProposal = () => {
+    router.push(`/proposals/new/${profile?.id}`);
+  };
 
   const statCardData = [
     {
@@ -90,7 +90,10 @@ export default function UserProfilePage() {
                   Edit Profile
                 </button>
               ) : (
-                <button onClick={handleStartProposal} className="px-4 flex items-center justify-center gap-2 py-3 bg-primary dark:text-white rounded-md border-border border text-primary font-bold shadow-lg hover:scale-105 transition-transform">
+                <button
+                  onClick={handleStartProposal}
+                  className="px-4 flex items-center justify-center gap-2 py-3 bg-primary dark:text-white rounded-md border-border border text-primary font-bold shadow-lg hover:scale-105 transition-transform"
+                >
                   <span className="material-symbols-outlined">swap_horiz</span>
                   Propose Swap
                 </button>
@@ -191,10 +194,7 @@ export default function UserProfilePage() {
               <h3 className="text-[10px] uppercase tracking-wider font-semibold">
                 Tokens
               </h3>
-              <p className="text-xl font-bold">
-                {" "}
-                {profile?.skill_tokens || 0}
-              </p>
+              <p className="text-xl font-bold"> {profile?.skill_tokens || 0}</p>
             </div>
           </div>
         </div>
