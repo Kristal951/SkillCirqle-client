@@ -1,0 +1,10 @@
+version: "3"
+agent:
+  authtoken: 38tG4r5mIp6uKepCkSSbRDDgN7U_26JQYVx9zep27oFgXAiZL
+tunnels:
+  nextjs:
+    proto: http
+    addr: 3000
+  jitsi:
+    proto: http
+    addr: https://localhost:8443

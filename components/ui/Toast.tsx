@@ -36,11 +36,11 @@ const Toast = ({
   };
 
   const IconMap = {
-  success: <MaterialIcon name="check_circle" className="text-green-400" fill />,
-  error: <MaterialIcon name="error" className="text-red-400" fill />,
-  info: <MaterialIcon name="info" className="text-blue-400" fill />,
-  warning: <MaterialIcon name="warning" className="text-amber-400" fill />,
-};
+    success: <MaterialIcon name="check_circle" className="text-green-400" fill />,
+    error: <MaterialIcon name="error" className="text-red-400" fill />,
+    info: <MaterialIcon name="info" className="text-blue-400" fill />,
+    warning: <MaterialIcon name="warning" className="text-amber-400" fill />,
+  };
 
   const Icon = IconMap[type];
 
@@ -56,22 +56,22 @@ const Toast = ({
     <div
       role="alert"
       aria-live="assertive"
-      className={`bg-background p-3 z-100 rounded-md flex justify-between gap-3 ${styles[type]}`}
+      className={`bg-background p-3 z-100 rounded-md flex justify-between items-start gap-3 ${styles[type]}`}
     >
-      <div className="flex items-start sm:items-center gap-3 w-full">
+      <div className="flex items-start gap-3 w-full">
         <div
           className={`p-2 rounded-full flex items-center justify-center shrink-0 ${iconContainerStyles[type]}`}
         >
           {Icon}
         </div>
 
-        <div className="flex flex-col gap-1 min-w-0">
-          <p className="text-sm sm:text-base font-semibold text-text-primary wrap-break-word">
+        <div className={`flex flex-col gap-1 min-w-0 justify-center min-h-10`}>
+          <p className="text-sm sm:text-base font-semibold text-text-primary wrap-break-words">
             {message}
           </p>
 
           {description && (
-            <p className="text-xs sm:text-sm text-text-secondary wrap-break-word">
+            <p className="text-xs sm:text-sm text-text-secondary wrap-break-words">
               {description}
             </p>
           )}
@@ -81,7 +81,7 @@ const Toast = ({
       <button
         onClick={() => onClose(id)}
         aria-label="Close notification"
-        className="self-end sm:self-auto text-gray-400 hover:text-gray-200 transition"
+        className="mt-1 shrink-0 text-gray-400 hover:text-gray-200 transition"
       >
         <X size={16} />
       </button>

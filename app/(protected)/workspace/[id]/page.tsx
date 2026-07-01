@@ -81,7 +81,6 @@ export default function WorkspaceOverview() {
       .select("id, title, scheduled_at, status, skill_track_id, duration, type")
       .eq("workspace_id", id)
       .order("scheduled_at", { ascending: true })
-      .limit(3);
 
     const { data: miles } = await supabase
       .from("workspace_milestones")

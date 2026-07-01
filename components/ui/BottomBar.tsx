@@ -7,7 +7,7 @@ const BottomBar = () => {
   const pathname = usePathname();
   const { activeChat } = useChatStore();
 
-  if (pathname.startsWith("/chat") && activeChat) {
+  if ((pathname.startsWith("/chat") && activeChat) || pathname.startsWith("/sessions")) {
     return null;
   }
 

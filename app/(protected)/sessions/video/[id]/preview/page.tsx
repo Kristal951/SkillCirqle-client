@@ -119,6 +119,7 @@ const VideoPreview = () => {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const searchParams = useSearchParams();
+  
 
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
@@ -373,9 +374,6 @@ const VideoPreview = () => {
   };
 
   const handleJoin = async () => {
-    // Guard: a guest should never be able to join before the host has
-    // started the session, even if this somehow gets called directly
-    // (e.g. a stale click queued before state updated).
     if (!canJoin) return;
 
     stopAllTracks();

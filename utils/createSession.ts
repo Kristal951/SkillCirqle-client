@@ -207,6 +207,7 @@ function sendSessionNotification(
 
   const isRescheduled = payload.rescheduled;
   const skillPart = payload.trackName ? ` for ${payload.trackName}` : "";
+  console.log(payload, 'pay')
 
   socket.emit("notification:send", {
     userId: payload.receiverId,

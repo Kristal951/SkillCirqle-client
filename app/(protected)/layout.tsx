@@ -13,6 +13,7 @@ import OneSignalLoginSync from "@/providers/OneSignalLoginSync";
 import SocketProvider from "@/providers/SocketProvider";
 import { useAuthStore } from "@/store/useAuthStore";
 import { useChatStore } from "@/store/useChatStore";
+import { useNotificationsStore } from "@/store/useNotificationsStore";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -28,19 +29,25 @@ export default function RootLayout({
 
   const { activeChat } = useChatStore();
   const pathname = usePathname();
-  const { logout } = useAuthStore();
+  const { logout, user } = useAuthStore();
 
   const { showLogoutModal, openLogoutModal, closeLogoutModal } =
     useLogoutModal();
+  const { fetchNotifications } = useNotificationsStore();
 
   useEffect(() => {
     setIsInChatPage(pathname.startsWith("/chat"));
   }, [pathname]);
   useEffect(() => {
-    setIsInSessionPage(pathname.startsWith("/session"));
+    setIsInSessionPage(pathname.startsWith("/sessions"));
+      console.log(isInSessionPage, 'sess', pathname)
   }, [pathname]);
 
   const clearSessionCache = useClearSessionCache();
+
+  useEffect(() => {
+    if (user?.id) fetchNotifications(user?.id || "");
+  }, [user?.id, fetchNotifications]);
 
   const handleOpenLogout = () => {
     openLogoutModal();
@@ -72,7 +79,7 @@ export default function RootLayout({
 
         <main
           className={`flex-1 overflow-y-auto ${isInSessionPage ? "mt-0" : "mt-17.5"} ${
-            isInChatPage && activeChat ? "mb-0" : "mb-13 md:mb-0"
+            (isInChatPage && activeChat) || isInSessionPage ? "mb-0" : "mb-13 md:mb-0"
           }`}
         >
           <OneSignalProvider />
