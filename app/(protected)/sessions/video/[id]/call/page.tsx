@@ -222,11 +222,11 @@ const CallPage = ({ params }: { params: Promise<{ id: string }> }) => {
 
       variant: screenSharing ? "active-primary" : "standard",
     },
-    {
-      icon: Chat,
-      onClick: () => apiRef.current?.executeCommand("toggleChat"),
-      variant: "standard",
-    },
+    // {
+    //   icon: Chat,
+    //   onClick: () => apiRef.current?.executeCommand("toggleChat"),
+    //   variant: "standard",
+    // },
     {
       icon: Draw,
       onClick: () => {
