@@ -6,6 +6,7 @@ export function initOneSignal(): Promise<void> {
   if (!initPromise) {
     initPromise = OneSignal.init({
       appId: process.env.NEXT_PUBLIC_ONESIGNAL_APP_ID!,
+      allowLocalhostAsSecureOrigin: process.env.NODE_ENV !== "production",
     });
   }
   return initPromise;

@@ -10,116 +10,45 @@ import { useAuthStore } from "@/store/useAuthStore";
 import Image from "next/image";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import Videocam from "@material-symbols/svg-400/outlined/video_camera_front.svg"
-import VideocamOff from "@material-symbols/svg-400/outlined/video_camera_front_off.svg"
-import Mic from "@material-symbols/svg-400/outlined/mic.svg"
-import MicOff from "@material-symbols/svg-400/outlined/mic_off.svg"
-import Close from "@material-symbols/svg-400/outlined/close.svg"
-import VolumeUp from "@material-symbols/svg-400/outlined/volume_up.svg"
-import ExpandMore from "@material-symbols/svg-400/outlined/arrow_drop_down.svg"
-import ExpandLess from "@material-symbols/svg-400/outlined/arrow_drop_up.svg"
-import { IconType } from "@/utils/SvgType";
+import Videocam from "@material-symbols/svg-400/outlined/video_camera_front.svg";
+import VideocamOff from "@material-symbols/svg-400/outlined/video_camera_front_off.svg";
+import Mic from "@material-symbols/svg-400/outlined/mic.svg";
+import MicOff from "@material-symbols/svg-400/outlined/mic_off.svg";
+import Close from "@material-symbols/svg-400/outlined/close.svg";
+import VolumeUp from "@material-symbols/svg-400/outlined/volume_up.svg";
+import CustomSelect from "@/components/sessions/preview/CustomSelect";
+import { getSocket } from "@/lib/socket";
+import { toast } from "@/lib/toast";
 
-interface CustomSelectProps {
-  label: string;
-  icon: IconType
-  value: string;
-  options: MediaDeviceInfo[];
-  onChange: (id: string) => void;
-  fallbackLabel: string;
-}
+type SocketResponse = {
+  success: boolean;
+  message?:
+    | string
+    | {
+        title: string;
+        desc: string;
+      };
+};
 
-const CustomSelect = ({
-  label,
-  icon: Icon,
-  value,
-  options,
-  onChange,
-  fallbackLabel,
-}: CustomSelectProps) => {
-  const [isOpen, setIsOpen] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
+const showSocketError = (message?: SocketResponse["message"]) => {
+  if (!message) {
+    toast.error("Something went wrong");
+    return;
+  }
 
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(event.target as Node)
-      ) {
-        setIsOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+  if (typeof message === "string") {
+    toast.error(message);
+    return;
+  }
 
-  const selectedOption = options.find((o) => o.deviceId === value);
-
-  return (
-    <div className="space-y-1 relative" ref={dropdownRef}>
-      <label className="text-xs text-text-secondary font-medium px-1">
-        {label}
-      </label>
-
-      <button
-        type="button"
-        onClick={() => setIsOpen(!isOpen)}
-        className="w-full bg-surface/90 border border-border/50 rounded-xl px-3 py-2.5 text-sm text-text-primary flex items-center justify-between hover:bg-surface transition text-left"
-      >
-        <div className="flex items-center gap-2.5 truncate">
-          <Icon className="text-text-primary text-lg shrink-0 select-none"/>
-          <span className="truncate">
-            {selectedOption?.label || fallbackLabel}
-          </span>
-        </div>
-        {
-          isOpen ? (
-            <ExpandLess className="text-text-secondary text-sm select-none"/>
-          ) : (
-            <ExpandMore className="text-text-secondary text-sm select-none"/>
-          )
-        }
-      </button>
-
-      {isOpen && (
-        <div className="absolute z-50 w-full mt-1 bg-surface border border-border space-y-2 rounded-xl shadow-2xl max-h-48 overflow-y-auto scrollbar-hide p-1 backdrop-blur-xl">
-          {options.length === 0 ? (
-            <div className="px-3 py-2 text-xs text-text-secondary italic">
-              No devices found
-            </div>
-          ) : (
-            options.map((opt, idx) => (
-              <button
-                key={opt.deviceId || idx}
-                type="button"
-                onClick={() => {
-                  onChange(opt.deviceId);
-                  setIsOpen(false);
-                }}
-                className={`w-full text-left px-3 py-2 text-sm rounded-lg flex items-center gap-2.5 transition ${
-                  opt.deviceId === value
-                    ? "bg-primary text-text-primary font-medium"
-                    : "text-text-secondary hover:bg-text-secondary/20 hover:text-text-primary"
-                }`}
-              >
-                <Icon className={`material-symbols-outlined text-lg ${opt.deviceId === value ? "text-white" : "text-text-secondary"}`}/>
-                <span className="truncate">
-                  {opt.label || `${fallbackLabel} ${idx + 1}`}
-                </span>
-              </button>
-            ))
-          )}
-        </div>
-      )}
-    </div>
-  );
+  toast.error(message.title, message.desc);
 };
 
 const VideoPreview = () => {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
-  const searchParams = useSearchParams();
-  
+  const initialDeviceSetRef = useRef(false);
+  const isJoiningRef = useRef(false);
 
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
@@ -127,6 +56,7 @@ const VideoPreview = () => {
   const { user } = useAuthStore();
   const params = useParams();
   const router = useRouter();
+  const socket = getSocket();
 
   const [micOn, setMicOn] = useState(true);
   const [camOn, setCamOn] = useState(true);
@@ -139,6 +69,12 @@ const VideoPreview = () => {
   const [selectedCamera, setSelectedCamera] = useState("");
   const [selectedMicrophone, setSelectedMicrophone] = useState("");
   const [selectedSpeaker, setSelectedSpeaker] = useState("");
+  const [startingSession, setStartingSession] = useState(false);
+  const [sessionActive, setSessionActive] = useState(false);
+  const [previewLockedUntil, setPreviewLockedUntil] = useState<Date | null>(
+    null,
+  );
+  const [countdownSeconds, setCountdownSeconds] = useState<number | null>(null);
 
   const rawId = params?.id || params?.room_name;
   const sessionId = typeof rawId === "string" ? rawId : null;
@@ -148,17 +84,8 @@ const VideoPreview = () => {
     loading: sessionLoading,
     markSessionActive,
   } = useSessionData(sessionId, user?.id);
-  const isStillLoading = sessionLoading || !user;
-  const otherParticipant = sessionData?.isHost
-    ? sessionData.guest
-    : sessionData?.host;
-  const currentParticipant = sessionData?.isHost
-    ? sessionData.host
-    : sessionData?.guest;
 
   const isHost = !!sessionData?.isHost;
-  const sessionActive = sessionData?.status === "ACTIVE";
-  const canJoin = isHost || sessionActive;
 
   const getAvatarUrl = (name?: string) =>
     `https://ui-avatars.com/api/?name=${encodeURIComponent(name || "User")}&background=4f46e5&color=fff&bold=true&size=256`;
@@ -219,9 +146,21 @@ const VideoPreview = () => {
         video: true,
         audio: true,
       });
-      initialStream.getTracks().forEach((t) => t.stop());
+
+      streamRef.current = initialStream;
+      setStream(initialStream);
+
+      const videoTrack = initialStream.getVideoTracks()[0];
+      const audioTrack = initialStream.getAudioTracks()[0];
 
       await loadDevices();
+
+      initialDeviceSetRef.current = true;
+      setSelectedCamera(videoTrack?.getSettings().deviceId || "");
+      setSelectedMicrophone(audioTrack?.getSettings().deviceId || "");
+
+      setDevicesReady(true);
+      setLoading(false);
     } catch (err: any) {
       console.error("Device permission sequence failed:", err);
       setLoading(false);
@@ -240,6 +179,10 @@ const VideoPreview = () => {
 
   useEffect(() => {
     if (!selectedCamera && !selectedMicrophone) return;
+    if (initialDeviceSetRef.current) {
+      initialDeviceSetRef.current = false;
+      return;
+    }
 
     let isCurrent = true;
 
@@ -248,17 +191,42 @@ const VideoPreview = () => {
         setDevicesReady(false);
         stopAllTracks();
 
-        const constraints: MediaStreamConstraints = {
-          video: selectedCamera
-            ? { deviceId: { exact: selectedCamera } }
-            : true,
-          audio: selectedMicrophone
-            ? { deviceId: { exact: selectedMicrophone } }
-            : true,
-        };
+        const buildConstraints = (
+          camId: string,
+          micId: string,
+        ): MediaStreamConstraints => ({
+          video: camId ? { deviceId: { exact: camId } } : true,
+          audio: micId ? { deviceId: { exact: micId } } : true,
+        });
 
-        const newStream =
-          await navigator.mediaDevices.getUserMedia(constraints);
+        let newStream: MediaStream;
+
+        try {
+          newStream = await navigator.mediaDevices.getUserMedia(
+            buildConstraints(selectedCamera, selectedMicrophone),
+          );
+        } catch (constraintErr) {
+          if (
+            constraintErr instanceof DOMException &&
+            constraintErr.name === "OverconstrainedError"
+          ) {
+            console.warn(
+              "Selected device unavailable, falling back to default:",
+              constraintErr,
+            );
+            newStream = await navigator.mediaDevices.getUserMedia({
+              video: true,
+              audio: true,
+            });
+
+            const videoTrack = newStream.getVideoTracks()[0];
+            const audioTrack = newStream.getAudioTracks()[0];
+            setSelectedCamera(videoTrack?.getSettings().deviceId || "");
+            setSelectedMicrophone(audioTrack?.getSettings().deviceId || "");
+          } else {
+            throw constraintErr;
+          }
+        }
 
         if (!isCurrent) {
           newStream.getTracks().forEach((t) => t.stop());
@@ -294,10 +262,50 @@ const VideoPreview = () => {
   }, [selectedCamera, selectedMicrophone]);
 
   useEffect(() => {
+    if (!sessionData?.scheduledAt) return;
+
+    const scheduledAt = new Date(sessionData.scheduledAt).getTime();
+
+    const tick = () => {
+      const diff = Math.max(0, Math.floor((scheduledAt - Date.now()) / 1000));
+      setCountdownSeconds(diff);
+    };
+
+    tick();
+    const interval = setInterval(tick, 1000);
+
+    return () => clearInterval(interval);
+  }, [sessionData?.scheduledAt]);
+
+  useEffect(() => {
+    if (!socket || !sessionId) return;
+
+    const handleSessionStarted = ({
+      sessionId: startedSessionId,
+    }: {
+      sessionId: string;
+    }) => {
+      if (startedSessionId !== sessionId) return;
+      setSessionActive(true);
+    };
+
+    socket.on("session-started", handleSessionStarted);
+    return () => {
+      socket.off("session-started", handleSessionStarted);
+    };
+  }, [socket, sessionId]);
+
+  useEffect(() => {
     if (!sessionId) {
       router.replace("/dashboard");
     }
   }, [sessionId]);
+
+  useEffect(() => {
+    if (sessionData?.status === "ACTIVE") {
+      setSessionActive(true);
+    }
+  }, [sessionData?.status]);
 
   useEffect(() => {
     initializeMedia();
@@ -320,15 +328,27 @@ const VideoPreview = () => {
   }, []);
 
   const changeSpeaker = async (speakerId: string) => {
+    setSelectedSpeaker(speakerId);
+
     if (videoRef.current && "setSinkId" in videoRef.current) {
       try {
         await (videoRef.current as any).setSinkId(speakerId);
-        setSelectedSpeaker(speakerId);
       } catch (err) {
         console.error("Audio target assignment failed:", err);
       }
     }
   };
+
+  const isCountingDown =
+    countdownSeconds !== null && countdownSeconds > 0 && !sessionActive;
+
+  const formatCountdown = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${String(secs).padStart(2, "0")}`;
+  };
+
+  const canJoin = isHost || sessionActive;
 
   const toggleMic = () => {
     if (streamRef.current)
@@ -360,13 +380,74 @@ const VideoPreview = () => {
   ];
 
   useEffect(() => {
+    if (!stream) return;
+
     const video = videoRef.current;
-    if (!video || !stream) return;
-    video.srcObject = stream;
+    if (!video) return;
+
+    if (video.srcObject !== stream) {
+      video.srcObject = stream;
+    }
+
     const handleCanPlay = () => video.play().catch(() => {});
     video.addEventListener("loadedmetadata", handleCanPlay);
+
     return () => video.removeEventListener("loadedmetadata", handleCanPlay);
   }, [stream]);
+
+  useEffect(() => {
+    if (!socket || !sessionId) return;
+
+    const joinPreview = () => {
+      socket.emit(
+        "session:join-lobby",
+        { sessionId },
+        (response: {
+          success: boolean;
+          message?: string;
+          workspaceId?: string;
+          tooEarly?: boolean;
+          opensAt?: string;
+          requiresRating?: boolean;
+          unratedSessionId?: string;
+        }) => {
+          if (!response.success) {
+            if (response.tooEarly && response.opensAt) {
+              setPreviewLockedUntil(new Date(response.opensAt));
+              return;
+            }
+
+            if (response.requiresRating && response.unratedSessionId) {
+              showSocketError(response.message);
+              router.replace(
+                `/sessions/video/${response.unratedSessionId}/ended?reason=completed`,
+              );
+              return;
+            }
+
+            showSocketError(response.message);
+            router.replace(`/workspace/${response.workspaceId}`);
+            return;
+          }
+
+          setPreviewLockedUntil(null);
+        },
+      );
+    };
+
+    if (socket.connected) {
+      joinPreview();
+    } else {
+      socket.once("connect", joinPreview);
+    }
+
+    return () => {
+      socket.off("connect", joinPreview);
+      if (!isJoiningRef.current) {
+        socket.emit("session:leave-lobby", { sessionId });
+      }
+    };
+  }, [socket, sessionId, sessionData?.workspaceId]);
 
   const handleExit = () => {
     stopAllTracks();
@@ -375,16 +456,66 @@ const VideoPreview = () => {
 
   const handleJoin = async () => {
     if (!canJoin) return;
+    if (startingSession) return;
+    setStartingSession(true);
 
-    stopAllTracks();
-    await markSessionActive();
-    router.push(
-      `/sessions/video/${sessionId}/call?mic=${micOn}&cam=${camOn}&cameraId=${selectedCamera}&microphoneId=${selectedMicrophone}&speakerId=${selectedSpeaker}`,
-    );
+    try {
+      if (isHost) {
+        const success = await markSessionActive();
+        if (!success) {
+          return;
+        }
+      }
+
+      const refreshed = await new Promise<boolean>((resolve) => {
+        socket?.emit(
+          "session:join-lobby",
+          { sessionId },
+          (response: {
+            success: boolean;
+            message?: string;
+            requiresRating?: boolean;
+            unratedSessionId?: string;
+          }) => {
+            if (!response?.success) {
+              if (response.requiresRating && response.unratedSessionId) {
+                showSocketError(response.message);
+                window.location.href = `/sessions/video/${response.unratedSessionId}/ended?reason=completed`;
+                resolve(false);
+                return;
+              }
+
+              showSocketError(response.message);
+              resolve(false);
+              return;
+            }
+
+            resolve(true);
+          },
+        );
+      });
+
+      if (!refreshed) return;
+
+      isJoiningRef.current = true;
+
+      stopAllTracks();
+      router.push(
+        `/sessions/video/${sessionId}/call?mic=${micOn}&cam=${camOn}&cameraId=${selectedCamera}&microphoneId=${selectedMicrophone}&speakerId=${selectedSpeaker}`,
+      );
+    } catch (error) {
+      console.error("Error occurred while joining the session:", error);
+    } finally {
+      setStartingSession(false);
+    }
   };
 
   const joinButtonLabel = () => {
     if (!devicesReady) return "Configuring…";
+    if (isCountingDown) {
+      return `Starts in ${formatCountdown(countdownSeconds!)}`;
+    }
+    if (startingSession) return isHost ? "Starting…" : "Joining…";
     if (isHost) return "Start Session";
     if (!sessionActive) return "Waiting for host…";
     return "Join Session";
@@ -393,35 +524,12 @@ const VideoPreview = () => {
   return (
     <div className="w-full h-full grid grid-cols-1 md:grid-cols-4 bg-background">
       <div className="col-span-1 md:col-span-3 flex items-center justify-center relative p-4 md:p-8">
-        {loading && !error && (
-          <div className="flex flex-col items-center gap-3">
-            <Spinner size={30} />
-            <p className="text-zinc-400 text-sm animate-pulse">
-              Configuring Call settings
-            </p>
-          </div>
-        )}
-
-        {error && (
-          <div className="text-center p-6 max-w-sm border border-border rounded-2xl shadow-xl">
-            <Videocam className=" text-red-400 text-4xl mb-2"/>
-            <p className="text-text-primary font-medium mb-1">{error}</p>
-            <p className="text-xs text-text-secondary mb-4">
-              {permissionError === "denied"
-                ? "Check system settings to allow browser device access."
-                : "Ensure devices are secured firmly."}
-            </p>
-            <button
-              onClick={initializeMedia}
-              className="px-4 py-2 bg-surface/50 hover:bg-surface text-text-primary rounded-xl text-sm border border-border transition"
-            >
-              Retry Connection
-            </button>
-          </div>
-        )}
-
-        {!error && !loading && (
-          <div className="w-full h-full max-h-135 aspect-video relative bg-surface/50 rounded-3xl overflow-hidden shadow-2xl">
+        {!error && (
+          <div
+            className={`w-full h-full max-h-135 aspect-video relative bg-surface/50 rounded-3xl overflow-hidden shadow-2xl ${
+              loading ? "hidden" : ""
+            }`}
+          >
             <video
               ref={videoRef}
               autoPlay
@@ -442,6 +550,33 @@ const VideoPreview = () => {
             <CallToolbar buttons={toolbarButtonsConfig} />
           </div>
         )}
+
+        {loading && !error && (
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
+            <Spinner size={30} />
+            <p className="text-zinc-400 text-sm animate-pulse">
+              Configuring Call settings
+            </p>
+          </div>
+        )}
+
+        {error && (
+          <div className="text-center p-6 max-w-sm border border-border rounded-2xl shadow-xl">
+            <Videocam className=" text-red-400 text-4xl mb-2" />
+            <p className="text-text-primary font-medium mb-1">{error}</p>
+            <p className="text-xs text-text-secondary mb-4">
+              {permissionError === "denied"
+                ? "Check system settings to allow browser device access."
+                : "Ensure devices are secured firmly."}
+            </p>
+            <button
+              onClick={initializeMedia}
+              className="px-4 py-2 bg-surface/50 hover:bg-surface text-text-primary rounded-xl text-sm border border-border transition"
+            >
+              Retry Connection
+            </button>
+          </div>
+        )}
       </div>
 
       <div className="col-span-1 bg-surface/50 border-l border-border/50 overflow-y-auto scrollbar-hide flex flex-col backdrop-blur-sm h-full min-w-0">
@@ -454,13 +589,13 @@ const VideoPreview = () => {
             className="text-text-secondary hover:text-white transition p-1 rounded-lg hover:bg-white/5"
             type="button"
           >
-            <Close className="text-xl"/>
+            <Close className="text-xl" />
           </button>
         </div>
 
         <div className="flex-1 p-6 space-y-8 text-zinc-300 overflow-y-auto min-h-0">
           <div className="space-y-1">
-            <span className="text-[10px] tracking-wider uppercase font-bold text-text-secondary/60 block">
+            <span className="text-[10px] tracking-wider uppercase font-bold text-text-secondary block">
               Session Title
             </span>
             <h2 className="text-lg font-bold text-text-primary capitalize wrap-break-word leading-snug">
@@ -468,8 +603,17 @@ const VideoPreview = () => {
             </h2>
           </div>
 
+          <div className="space-y-1">
+            <span className="text-[10px] tracking-wider uppercase font-bold text-text-secondary block">
+              Session Duration
+            </span>
+            <h2 className="text-sm font-bold text-text-primary capitalize wrap-break-word leading-snug">
+              {sessionData?.duration || "00:00"} minutes
+            </h2>
+          </div>
+
           <div className="w-full space-y-2">
-            <span className="text-[10px] tracking-wider uppercase font-bold text-text-secondary/60 block">
+            <span className="text-[10px] tracking-wider uppercase font-bold text-text-secondary block">
               Session Participants
             </span>
 
@@ -493,6 +637,7 @@ const VideoPreview = () => {
               sessionData?.guest && (
                 <div className="space-y-2">
                   {[sessionData.host, sessionData.guest].map((participant) => {
+                    const isMe = participant.id === user?.id;
                     const avatarSrc =
                       participant.avatar_url || getAvatarUrl(participant.name);
 
@@ -515,7 +660,7 @@ const VideoPreview = () => {
 
                           <div className="min-w-0 flex-1">
                             <p className="text-[10px] uppercase font-bold tracking-wider text-text-secondary leading-none mb-1.5">
-                              {participant.id === user?.id ? "You" : "Partner"} 
+                              {isMe ? "You" : "Partner"}
                             </p>
                             <p className="text-text-primary text-sm font-semibold truncate leading-tight">
                               {participant.name}
@@ -523,7 +668,7 @@ const VideoPreview = () => {
                           </div>
                         </div>
 
-                        {participant.isCurrentUser && !participant.isHost && (
+                        {isMe && !participant.isHost && (
                           <span className="text-[10px] font-bold uppercase tracking-wider text-text-primary bg-text-primary/5 px-2.5 py-1 rounded-md border border-text-primary/5 shrink-0">
                             You
                           </span>
@@ -543,7 +688,7 @@ const VideoPreview = () => {
           </div>
 
           <div className="space-y-2">
-            <h3 className="text-[10px] font-bold uppercase tracking-wider text-text-secondary/60 block">
+            <h3 className="text-[10px] font-bold uppercase tracking-wider text-text-secondary block">
               Device settings
             </h3>
 
@@ -577,15 +722,23 @@ const VideoPreview = () => {
         </div>
 
         <div className="p-6 border-t border-border/5 bg-background/50 shrink-0">
-          {!isHost && !sessionActive && devicesReady && (
+          {!isHost && !sessionActive && devicesReady && !isCountingDown && (
             <p className="text-xs text-text-secondary text-center mb-2">
               You'll be able to join as soon as the host starts the session.
             </p>
           )}
           <button
             onClick={handleJoin}
-            disabled={!devicesReady || loading || !!error || !stream || !canJoin}
-            className="w-full bg-primary hover:bg-primary/90 disabled:opacity-40 disabled:hover:bg-primary text-white py-3.5 rounded-xl font-medium tracking-wide transition shadow-xl active:scale-[0.99]"
+            disabled={
+              !devicesReady ||
+              loading ||
+              !!error ||
+              !stream ||
+              !canJoin ||
+              startingSession ||
+              isCountingDown
+            }
+            className="w-full bg-primary hover:bg-primary/90 disabled:opacity-80 disabled:cursor-not-allowed disabled:hover:bg-primary text-text-primary py-3.5 rounded-xl font-medium tracking-wide transition shadow-xl active:scale-[0.99]"
             type="button"
           >
             {joinButtonLabel()}

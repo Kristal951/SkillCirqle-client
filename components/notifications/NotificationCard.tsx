@@ -1,51 +1,22 @@
-"use client";
-import {
-  MoreHorizontal,
-  Trash2,
-  User,
-  ArrowRight,
-  UserPlus,
-  Bell,
-  Check,
-} from "lucide-react";
 import React from "react";
 import { motion } from "framer-motion";
-import { Notification } from "@/types/NotificationStore";
 import { formatDistanceToNowStrict } from "date-fns";
-import { useRouter } from "next/navigation";
-import { getConversationById } from "@/utils/getConversationDetails";
+import {
+  Trash2,
+  Bell,
+  MessageCircle,
+  FileText,
+  CalendarDays,
+  Star,
+} from "lucide-react";
 import { useAuthStore } from "@/store/useAuthStore";
 import { useChatStore } from "@/store/useChatStore";
 import { useNotificationsStore } from "@/store/useNotificationsStore";
+import { getConversationById } from "@/utils/getConversationDetails";
+import { useRouter } from "next/navigation";
 import Spinner from "../ui/Spinner";
-import SwapHoriz from "@material-symbols/svg-400/outlined/swap_horiz.svg"
-import Chat from "@material-symbols/svg-400/outlined/chat.svg"
-import CalendarToday from "@material-symbols/svg-400/outlined/calendar_today.svg"
-import StarFill from "@material-symbols/svg-400/outlined/star-fill.svg"
 
-const NotificationCard = ({
-  notif,
-  index,
-}: {
-  notif: Notification;
-  index: number;
-}) => {
-  const formatTimeAgoShort = (dateString?: string) => {
-    if (!dateString) return "";
-    return (
-      formatDistanceToNowStrict(new Date(dateString), { addSuffix: false })
-        .replace("minutes", "m")
-        .replace("minute", "m")
-        .replace("hours", "h")
-        .replace("hour", "h")
-        .replace("seconds", "s")
-        .replace("second", "s")
-        .replace("days", "d")
-        .replace("day", "d") + " ago"
-    );
-  };
-
-  const firstName = notif?.data?.senderName?.trim().split(/\s+/)[0] || "User";
+const NotificationCard = ({ notif, index }: { notif: any; index: number }) => {
   const router = useRouter();
   const { user } = useAuthStore();
   const { setActiveChat } = useChatStore();
@@ -53,149 +24,91 @@ const NotificationCard = ({
     useNotificationsStore();
 
   const isDeleting = deletingIds.includes(notif.id);
+  const isRead = notif.is_read;
 
-  const handleDeleteNotification = async (
-    e: React.MouseEvent,
-    notifId: string,
-  ) => {
+  // Simplified category logic
+  const getCategoryInfo = () => {
+    if (notif.type.includes("proposal"))
+      return { Icon: FileText, color: "text-amber-500" };
+    if (notif.type.includes("message"))
+      return { Icon: MessageCircle, color: "text-blue-500" };
+    if (notif.type.includes("session"))
+      return { Icon: CalendarDays, color: "text-emerald-500" };
+    if (notif.type.includes("review"))
+      return { Icon: Star, color: "text-purple-500" };
+    return { Icon: Bell, color: "text-text-secondary" };
+  };
+
+  const { Icon, color } = getCategoryInfo();
+
+  const handleAction = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    await deleteNotification(notifId);
-  };
-
-  const getIcon = (type: string) => {
-    if (type.includes("message")) {
-      return (
-        <Chat className="text-[14px]!"/>
+    await markAsRead(notif.id);
+    if (notif.type.includes("message")) {
+      const conv = await getConversationById(
+        notif.data.conversationId,
+        user?.id || "",
       );
+      setActiveChat(conv);
     }
-
-    if (type === "proposal") {
-      return (
-        <SwapHoriz className="text-[14px]!"/>
-      );
-    }
-
-    if (type === "session") {
-      return (
-       <CalendarToday className="text-[14px]!"/>
-      );
-    }
-
-    if (type === "review") {
-      return (
-        <StarFill className="text-[14px]!"/>
-      );
-    }
-
-    return <Bell size={18} className="text-text-secondary" />;
-  };
-
-  const goToLink = async (
-    link: string,
-    type: string,
-    notifId: string,
-    convId?: string,
-  ) => {
-    await markAsRead(notifId);
-    if (type.includes("message")) {
-      const conversationId = convId || "";
-      const userId = user?.id || "";
-      const conversation = await getConversationById(conversationId, userId);
-      setActiveChat(conversation);
-    }
-    router.push(link);
+    router.push(notif.data.link);
   };
 
   return (
     <motion.div
-      initial={{ opacity: 0, x: -10 }}
-      animate={{ opacity: 1, x: 0 }}
-      exit={{ opacity: 0, scale: 0.95 }}
-      onClick={() =>
-        goToLink(
-          notif?.data.link,
-          notif?.type,
-          notif?.id,
-          notif?.data?.conversationId,
-        )
-      }
-      transition={{ delay: index * 0.04, ease: "easeOut" }}
-      className={`group cursor-pointer relative flex items-center gap-4 p-4 transition-all duration-300 ${
-        notif.is_read
-          ? "bg-surface/80"
-          : "bg-surface"
-      }`}
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: index * 0.03 }}
+      onClick={handleAction}
+      className={`relative flex gap-4 p-4 transition-all duration-200 cursor-pointer border-b border-border/50 last:border-0 hover:bg-surface/50 ${!isRead ? "bg-primary/10" : ""}`}
     >
-      {/* {!notif.is_read && (
-        <div className="absolute -left-px top-1/2 -translate-y-1/2 w-0.75 h-8 bg-primary rounded-r-full shadow-[0_0_15px_rgba(var(--primary-rgb),0.5)]" />
-      )} */}
-
-      <div className="relative shrink-0">
-        <div
-          className={`w-14 h-14 rounded-2xl overflow-hidden border-2 bg-background flex items-center justify-center transition-transform duration-500 group-hover:scale-105 ${
-            notif.is_read ? "border-border" : "border-primary/20"
-          }`}
-        >
-          {notif?.data?.senderImage ? (
+      <div className="relative shrink-0 mt-0.5">
+        <div className="w-10 h-10 rounded-full bg-background border border-border/50 flex items-center justify-center overflow-hidden">
+          {notif.data?.senderImage ? (
             <img
               src={notif.data.senderImage}
               alt=""
               className="w-full h-full object-cover"
             />
-          ) : notif.type.includes("session") ? (
-            <CalendarToday className="text-2xl"/>
           ) : (
-            <User size={24} className="text-text-secondary/40" />
+            <Icon size={18} className={color} />
           )}
         </div>
+      </div>
 
-        <div className="absolute -right-1 -bottom-1 w-6 h-6 bg-primary text-white rounded-lg flex items-center justify-center border-2 border-background shadow-lg scale-90 group-hover:scale-100 transition-transform">
-          {notif?.type.includes("proposal")
-            ? getIcon("proposal")
-            : notif?.type.includes("new_message")
-              ? getIcon("message")
-              : notif?.type.includes("session")
-                ? getIcon("session")
-                : getIcon("notification")}
+      <div className="flex-1 min-w-0">
+        <div className="flex justify-between items-start gap-2">
+          <h4
+            className={`text-sm truncate font-semibold ${isRead ? "text-text-secondary" : "text-text-primary"}`}
+          >
+            {notif.type.includes("_received")
+              ? `${notif.data.senderName} sent a proposal`
+              : notif.title}
+          </h4>
+          <span className="text-[10px] text-text-secondary shrink-0 font-medium">
+            {formatDistanceToNowStrict(new Date(notif.created_at), {
+              addSuffix: true,
+            })
+              .replace(" minutes", "m")
+              .replace(" hours", "h")
+              .replace(" days", "d")}
+          </span>
         </div>
+
+        <p className="text-sm text-text-secondary/80 mt-0.5 line-clamp-2 leading-relaxed">
+          {notif.data?.msgPrev || notif.message}
+        </p>
       </div>
 
-      <div className="flex-1 min-w-0 py-1">
-        <div className="flex flex-col gap-0.5">
-          <div className="flex justify-between items-center">
-            <h4
-              className={`text-base font-bold tracking-tight truncate ${
-                notif.is_read ? "text-text-primary/70" : "text-text-primary"
-              }`}
-            >
-              {notif?.type.includes("_received")
-                ? `${firstName} sent a Proposal`
-                : notif?.type?.includes("_updated")
-                  ? `${notif?.title}`
-                  : notif?.type.includes("message")
-                    ? `${firstName} sent a Message`
-                    : notif.title}
-            </h4>
-            <span className="text-[10px] font-black text-text-secondary uppercase tracking-tighter">
-              {formatTimeAgoShort(notif.created_at)}
-            </span>
-          </div>
-
-          <p className="text-sm font-medium text-text-secondary group-hover:text-text-primary/80 transition-colors">
-            {notif.data?.proposalMsg || notif?.data?.msgPrev || notif.message}
-          </p>
-        </div>
-      </div>
-
-      <div className="flex items-center gap-1 transition-all duration-300">
-        <button
-          onClick={(e) => handleDeleteNotification(e, notif?.id)}
-          disabled={isDeleting}
-          className="w-9 h-9 flex items-center justify-center hover:bg-red-500/10 rounded-xl text-text-secondary disabled:opacity-50 hover:text-red-500 transition-colors"
-        >
-          {isDeleting ? <Spinner size={20} /> : <Trash2 size={16} />}
-        </button>
-      </div>
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          deleteNotification(notif.id);
+        }}
+        className="opacity-0 group-hover:opacity-100 p-2 hover:bg-rose-500/10 rounded-full text-text-secondary hover:text-rose-500 transition-opacity"
+      >
+        {isDeleting ? <Spinner size={14} /> : <Trash2 size={14} />}
+      </button>
     </motion.div>
   );
 };

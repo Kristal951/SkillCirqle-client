@@ -45,6 +45,14 @@ export const initSocketEvents = () => {
     addTypingUser(conversationId, user);
   });
 
+  socket.on("participant:joined-preview", ({ user }) => {
+    console.log(`${user.name} joined the waiting room`);
+  });
+
+  socket.on("session-ended", ({ sessionId, reason }) => {
+    console.log(`Session ${sessionId} ended with reason: ${reason}`);
+  });
+
   socket.on("stop_typing", ({ conversationId, userId }) => {
     if (!conversationId || !userId) return;
     removeTypingUser(conversationId, userId);

@@ -1,4 +1,5 @@
 import { logActivity } from "@/lib/activity";
+import { emitNotification } from "@/lib/notification/notify";
 import { getSocket } from "@/lib/socket";
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
 import { toast } from "@/lib/toast";
@@ -81,7 +82,7 @@ export async function createSession({
   const track = skillTracks.find((t) => t.id === selectedTrackId);
   const isTeacher = track?.teacher_id === user?.id;
   const existing = rescheduleSession;
-  const userId = user?.id
+  const userId = user?.id;
   const trackName = track?.skills?.title;
 
   try {
@@ -175,7 +176,7 @@ export async function createSession({
         });
       }
 
-      await sendSessionNotification(data.id, {
+      sendSessionNotification(data.id, {
         receiverId:
           track?.teacher_id === userId
             ? track?.learner_id || ""
@@ -202,14 +203,10 @@ function sendSessionNotification(
   sessionId: string,
   payload: SessionNotificationPayload,
 ) {
-  const socket = getSocket();
-  if (!socket) return;
-
   const isRescheduled = payload.rescheduled;
   const skillPart = payload.trackName ? ` for ${payload.trackName}` : "";
-  console.log(payload, 'pay')
 
-  socket.emit("notification:send", {
+  emitNotification({
     userId: payload.receiverId,
     type: isRescheduled ? "session_rescheduled" : "session_scheduled",
     title: isRescheduled ? "Session Rescheduled" : "New Session Scheduled",

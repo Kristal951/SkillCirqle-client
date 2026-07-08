@@ -1,5 +1,5 @@
 "use client";
-import { use, useEffect, useRef, useState } from "react";
+import { use, useContext, useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Script from "next/script";
 import { useAuthStore } from "@/store/useAuthStore";
@@ -22,12 +22,41 @@ import BackHand from "@material-symbols/svg-400/outlined/back_hand.svg";
 import { useSessionStore } from "@/store/useSessionStore";
 import LocalVideoPreview from "@/components/sessions/LocalVideoPreview";
 import { toast } from "@/lib/toast";
+import { useSessionData } from "@/hooks/useSessionDataHook";
+import { getSocket, waitForSocket } from "@/lib/socket";
+import EndSessionModal from "@/components/sessions/EndSessionModal";
+import { ToolbarShadowLoader } from "@/components/sessions/ToolbarShadowLoader";
+import { SocketContext } from "@/providers/SocketContext";
 
 declare global {
   interface Window {
     JitsiMeetExternalAPI: any;
   }
 }
+
+type SocketResponse = {
+  success: boolean;
+  message?:
+    | string
+    | {
+        title: string;
+        desc: string;
+      };
+};
+
+const showSocketError = (message?: SocketResponse["message"]) => {
+  if (!message) {
+    toast.error("Something went wrong");
+    return;
+  }
+
+  if (typeof message === "string") {
+    toast.error(message);
+    return;
+  }
+
+  toast.error(message.title, message.desc);
+};
 
 const CallPage = ({ params }: { params: Promise<{ id: string }> }) => {
   const { id: sessionId } = use(params);
@@ -36,6 +65,7 @@ const CallPage = ({ params }: { params: Promise<{ id: string }> }) => {
   const jitsiRef = useRef<HTMLDivElement | null>(null);
   const apiRef = useRef<any>(null);
   const searchParams = useSearchParams();
+  const { socketReady } = useContext(SocketContext);
 
   const micOn = searchParams.get("mic") === "true";
   const camOn = searchParams.get("cam") === "true";
@@ -61,13 +91,33 @@ const CallPage = ({ params }: { params: Promise<{ id: string }> }) => {
   const isLocalHandRaised = localParticipantId
     ? raisedHands.includes(localParticipantId)
     : false;
+  const user = useAuthStore((state) => state.user);
 
   const [isJitsiLoaded, setIsJitsiLoaded] = useState(false);
   const [showWhiteBoard, setShowWhiteBoard] = useState(false);
   const [showNotesPanel, setShowNotesPanel] = useState(false);
-   const [showToolbar, setShowToolbar] = useState(true);
+  const [showToolbar, setShowToolbar] = useState(true);
+  const [showEndSessionModal, setShowEndSessionModal] = useState(false);
+  const [authorized, setAuthorized] = useState(false);
 
   const roomId = decodeURIComponent(sessionId).replace(/\s+/g, "-");
+  const { sessionData } = useSessionData(sessionId, user?.id);
+  const isHost = sessionData?.host?.id === user?.id;
+  const endingRef = useRef(false);
+
+  const endSession = (reason: string, details?: string) => {
+    const socket = getSocket();
+
+    socket?.emit(
+      "session:end",
+      { sessionId, reason, details },
+      (response: any) => {
+        if (!response?.success) {
+          toast.error("Unable to end session", response?.message);
+        }
+      },
+    );
+  };
 
   useEffect(() => {
     setMic(micOn);
@@ -75,7 +125,104 @@ const CallPage = ({ params }: { params: Promise<{ id: string }> }) => {
   }, [micOn, camOn, setMic, setCam]);
 
   useEffect(() => {
+    if (!socketReady) return;
+
+    const socket = getSocket();
+    if (!socket) return;
+
+    let settled = false;
+
+    const runVerifyAndJoin = () => {
+      socket.emit(
+        "session:verify-lobby-access",
+        { sessionId },
+        (verifyResponse: { success: boolean; message?: any }) => {
+          settled = true;
+
+          if (!verifyResponse.success) {
+            showSocketError(verifyResponse.message);
+            router.replace(`/sessions/video/${sessionId}/preview`);
+            return;
+          }
+
+          socket.emit(
+            "session:join",
+            { sessionId },
+            (joinResponse: { success: boolean; message?: string }) => {
+              if (!joinResponse?.success) {
+                toast.error(joinResponse?.message ?? "Unable to join session");
+                router.replace(`/sessions/video/${sessionId}/preview`);
+                return;
+              }
+              setAuthorized(true);
+            },
+          );
+        },
+      );
+    };
+
+    runVerifyAndJoin();
+
+    const timeout = setTimeout(() => {
+      if (!settled) {
+        toast.error(
+          "Connection timed out",
+          "Please try rejoining the session.",
+        );
+        router.replace(`/sessions/video/${sessionId}/preview`);
+      }
+    }, 12000);
+
+    return () => clearTimeout(timeout);
+  }, [socketReady, sessionId, router]);
+
+  useEffect(() => {
+    if (!socketReady) return;
+
+    const socket = getSocket();
+    if (!socket || !sessionId) return;
+
+    const finishSession = (
+      reason: "completed" | "host-ended",
+      incomingSessionId: string,
+    ) => {
+      if (incomingSessionId !== sessionId) return;
+
+      endingRef.current = true;
+
+      apiRef.current?.executeCommand("hangup");
+
+      router.replace(`/sessions/video/${sessionId}/ended?reason=${reason}`);
+    };
+
+    const handleSessionEnded = ({
+      sessionId: endedId,
+    }: {
+      sessionId: string;
+    }) => {
+      finishSession("host-ended", endedId);
+    };
+
+    const handleSessionCompleted = ({
+      sessionId: completedId,
+    }: {
+      sessionId: string;
+    }) => {
+      finishSession("completed", completedId);
+    };
+
+    socket.on("session-ended", handleSessionEnded);
+    socket.on("session-completed", handleSessionCompleted);
+
+    return () => {
+      socket.off("session-ended", handleSessionEnded);
+      socket.off("session-completed", handleSessionCompleted);
+    };
+  }, [socketReady, sessionId, router]);
+
+  useEffect(() => {
     if (
+      !authorized ||
       !isJitsiLoaded ||
       !roomId ||
       !window.JitsiMeetExternalAPI ||
@@ -160,14 +307,39 @@ const CallPage = ({ params }: { params: Promise<{ id: string }> }) => {
       api.on("videoConferenceJoined", ({ id }: { id: string }) =>
         setLocalParticipantId(id),
       );
-      api.on("readyToClose", () =>
-        router.push(`/sessions/video/${sessionId}/preview`),
-      );
+      api.on("readyToClose", () => {
+        if (endingRef.current) return;
+        router.push(`/sessions/video/${sessionId}/preview`);
+      });
       api.on(
         "raiseHandUpdated",
         ({ id, handRaised }: { id: string; handRaised: number | boolean }) =>
           setHandRaised(id, Boolean(handRaised)),
       );
+      api.on(
+        "participantJoined",
+        ({ id, displayName }: { id: string; displayName: string }) => {
+          setRemoteParticipant({
+            id,
+            name: displayName,
+            role: "participant",
+            micEnabled: true,
+            cameraEnabled: true,
+            screenSharing: false,
+            handRaised: false,
+            speaking: false,
+            joinedAt: new Date(),
+          });
+          api.executeCommand("pinParticipant", id);
+          toast.success(`${displayName || "Participant"} joined`, "");
+        },
+      );
+
+      api.on("participantLeft", ({ id }: { id: string }) => {
+        const leavingName = useSessionStore.getState().remoteParticipant?.name;
+        setRemoteParticipant(null);
+        toast.info(`${leavingName || "Participant"} left`, "");
+      });
     } catch (err) {
       console.error("Jitsi init error:", err);
       hasInitialized.current = false;
@@ -193,6 +365,7 @@ const CallPage = ({ params }: { params: Promise<{ id: string }> }) => {
     setScreenSharing,
     setHandRaised,
     setLocalParticipantId,
+    authorized
   ]);
 
   const toolbarButtonsConfig: ToolbarButtonConfig[] = [
@@ -232,7 +405,7 @@ const CallPage = ({ params }: { params: Promise<{ id: string }> }) => {
       onClick: () => {
         setShowNotesPanel(false);
         setShowWhiteBoard((p) => !p);
-        setShowToolbar(false)
+        setShowToolbar(false);
       },
       variant: showWhiteBoard ? "active-primary" : "standard",
     },
@@ -241,7 +414,7 @@ const CallPage = ({ params }: { params: Promise<{ id: string }> }) => {
       onClick: () => {
         setShowWhiteBoard(false);
         setShowNotesPanel((p) => !p);
-        setShowToolbar(false)
+        setShowToolbar(false);
       },
       variant: showNotesPanel ? "active-primary" : "standard",
     },
@@ -252,8 +425,16 @@ const CallPage = ({ params }: { params: Promise<{ id: string }> }) => {
     },
     {
       icon: CallEnd,
-      label: "End Session",
-      onClick: () => apiRef.current?.executeCommand("hangup"),
+      label: isHost ? "End Session" : "Leave Session",
+      onClick: () => {
+        if (isHost) {
+          setShowEndSessionModal(true);
+        } else {
+          endingRef.current = true;
+          apiRef.current?.executeCommand("hangup");
+          router.push(`/workspace/${sessionId}/`);
+        }
+      },
       variant: "hangup",
     },
   ];
@@ -262,44 +443,66 @@ const CallPage = ({ params }: { params: Promise<{ id: string }> }) => {
     <>
       <Script
         src={`${process.env.NEXT_PUBLIC_JITSI_URL}/external_api.js`}
-        strategy="lazyOnload"
-        onLoad={() => setIsJitsiLoaded(true)}
+        strategy="afterInteractive"
+         onLoad={() => {
+    console.log("✅ Jitsi external_api.js onLoad fired");
+    setIsJitsiLoaded(true);
+  }}
       />
       <div className="h-full w-full relative bg-background overflow-hidden">
         <div ref={jitsiRef} className="w-full h-full" />
-        <LocalVideoPreview cameraId={selectedCamera} />
 
-        <CallToolbar
-          buttons={toolbarButtonsConfig}
-          disableScreenTap={showWhiteBoard || showNotesPanel}
-          showToolbar={showToolbar}
-          setShowToolbar={setShowToolbar}
-        />
-        {showWhiteBoard && (
-          <div className="w-full h-full border-l absolute top-0 right-0 left-0 z-30">
-            <button
-              onClick={() => setShowWhiteBoard(false)}
-              aria-label="Close whiteboard"
-              className="absolute bottom-10 right-3 z-10 w-8 h-8 rounded-full bg-black/40 hover:bg-black/60 text-white flex items-center justify-center"
-            >
-              ✕
-            </button>
-            <Whiteboard sessionId={sessionId} />
-          </div>
-        )}
-        {showNotesPanel && (
-          <div className="w-full h-full absolute top-0 right-0 left-0 z-30">
-            <button
-              onClick={() => setShowNotesPanel(false)}
-              aria-label="Close notes"
-              className="absolute top-3 right-3 z-10 w-8 h-8 rounded-full bg-black/40 hover:bg-black/60 text-white flex items-center justify-center"
-            >
-              ✕
-            </button>
-            <Notes sessionId={sessionId} />
-          </div>
+        {!authorized ? (
+          <ToolbarShadowLoader showTimer={!!sessionData?.ends_at} />
+        ) : (
+          <>
+            <LocalVideoPreview cameraId={selectedCamera} />
+
+            <CallToolbar
+              buttons={toolbarButtonsConfig}
+              disableScreenTap={showWhiteBoard || showNotesPanel}
+              showToolbar={showToolbar}
+              setShowToolbar={setShowToolbar}
+              endsAt={sessionData?.ends_at}
+            />
+
+            {showWhiteBoard && (
+              <div className="w-full h-full border-l absolute top-0 right-0 left-0 z-100">
+                <button
+                  onClick={() => setShowWhiteBoard(false)}
+                  aria-label="Close whiteboard"
+                  className="absolute bottom-10 right-3 z-10 w-8 h-8 rounded-full bg-black/40 hover:bg-black/60 text-white flex items-center justify-center"
+                >
+                  ✕
+                </button>
+                <Whiteboard sessionId={sessionId} />
+              </div>
+            )}
+
+            {showNotesPanel && (
+              <div className="w-full h-full absolute top-0 right-0 left-0 z-100">
+                <button
+                  onClick={() => setShowNotesPanel(false)}
+                  aria-label="Close notes"
+                  className="absolute top-3 right-3 z-10 w-8 h-8 rounded-full bg-black/40 hover:bg-black/60 text-white flex items-center justify-center"
+                >
+                  ✕
+                </button>
+                <Notes sessionId={sessionId} />
+              </div>
+            )}
+          </>
         )}
       </div>
+
+      <EndSessionModal
+        isOpen={showEndSessionModal}
+        onClose={() => setShowEndSessionModal(false)}
+        onConfirm={(reason, details) => {
+          setShowEndSessionModal(false);
+          endSession(reason, details);
+        }}
+      />
     </>
   );
 };

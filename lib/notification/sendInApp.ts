@@ -1,11 +1,12 @@
 import { getSocket } from "../socket";
+import { emitNotification } from "./notify";
 
 interface sendInAppNotificationProps {
   userId: string;
   type: string;
   title: string;
   body: string;
-  data: Record<string, any>
+  data: Record<string, any>;
 }
 
 export function sendInAppNotification({
@@ -19,14 +20,13 @@ export function sendInAppNotification({
   if (!socket) return;
 
   try {
-    socket.emit("notification:send", {
+    emitNotification({
       userId,
       type,
       title,
       body,
       data,
     });
-    
   } catch (error) {
     console.log("send In app notification error", error);
   }

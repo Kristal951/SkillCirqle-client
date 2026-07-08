@@ -10,6 +10,8 @@ import PastSessionCard from "@/components/workspace/sessions/PastSessionCard";
 import { useAuthStore } from "@/store/useAuthStore";
 import { Plus } from "lucide-react";
 
+import CalendarAddOn from "@material-symbols/svg-400/outlined/calendar_add_on.svg"
+
 interface Session {
   id: string;
   title: string;
@@ -235,13 +237,8 @@ export default function SessionsPage() {
 
               {filtered.length === 0 && (
                 <div className="flex flex-col items-center justify-center p-8 py-16 text-center max-w-xl mx-auto w-full mt-6">
-                  <span
-                    className="material-symbols-outlined text-text-secondary mb-4 select-none"
-                    style={{ fontSize: "4rem" }}
-                    aria-hidden="true"
-                  >
-                    calendar_add_on
-                  </span>
+              
+                  <CalendarAddOn className="text-text-secondary mb-4 select-none" style={{ fontSize: "4rem" }}/>
 
                   <h3 className="text-xl font-bold text-text-primary mb-1">
                     You have no sessions yet
@@ -256,9 +253,7 @@ export default function SessionsPage() {
                     onClick={() => setShowModal(true)}
                     className="flex items-center justify-center gap-2 rounded-xl bg-primary text-text-primary px-5 py-3 text-sm font-semibold shadow-md transition-all hover:opacity-90 active:scale-95"
                   >
-                    <span className="material-symbols-outlined text-xl">
-                      calendar_add_on
-                    </span>
+                    <CalendarAddOn className="text-xl"/>
                     <span>Schedule Session</span>
                   </button>
                 </div>

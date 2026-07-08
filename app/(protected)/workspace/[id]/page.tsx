@@ -97,7 +97,6 @@ export default function WorkspaceOverview() {
   const completedSessions = sessions.filter((s) => s.status === "COMPLETED");
   const upcomingSessions = sessions.filter((s) => s.status === "SCHEDULED");
 
-  const isSwap = workspace?.proposal?.engagement_type === "swap";
   const expectedNumberOfSessions =
     workspace?.proposal?.expected_number_of_sessions;
 
@@ -260,7 +259,7 @@ export default function WorkspaceOverview() {
             </Link>
           </div>
         ) : (
-          <div className="flex flex-col divide-y divide-gray-50">
+          <div className="flex flex-col divide-y gap-6 divide-gray-50">
             {upcomingSessions.map((s) => {
               const date = new Date(s.scheduled_at);
               return (

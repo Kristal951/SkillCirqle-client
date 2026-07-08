@@ -21,21 +21,7 @@ export async function POST(request: Request) {
 
     const roomId = crypto.randomUUID(); 
 
-    // 4. DATABASE ACTION PLACEHOLDER
-    // This is where you run your Prisma, Supabase, or Mongoose query.
-    // Example:
-    // await db.callSession.create({
-    //   data: {
-    //     id: roomId,
-    //     chatId: chatId,
-    //     type: callType,
-    //     hostId: currentUserId,
-    //     guestId: recipientId,
-    //     status: "ACTIVE"
-    //   }
-    // });
-
-    // Return the room ID back to the client header component
+  
     return NextResponse.json({ roomId }, { status: 201 });
   } catch (error) {
     console.error("Session provisioning route error:", error);

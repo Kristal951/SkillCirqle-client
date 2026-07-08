@@ -4,6 +4,7 @@ import { Bell, Mail, Zap } from "lucide-react";
 import Spinner from "../ui/Spinner";
 import OneSignal from "react-onesignal";
 import { initOneSignal } from "@/lib/oneSignal";
+import BlockedNotificationsHelp from "./BlockedNotificationsHelp";
 
 type Settings = {
   in_app: boolean;
@@ -29,6 +30,7 @@ const NotificationSettings = () => {
   });
   const [saving, setSaving] = useState<keyof Settings | null>(null);
   const [loading, setLoading] = useState(true);
+  const [showBlockedHelp, setShowBlockedHelp] = useState(false);
 
   const persistSetting = async (key: keyof Settings, value: boolean) => {
     const res = await fetch("/api/user/notification-settings", {
@@ -43,23 +45,48 @@ const NotificationSettings = () => {
   };
 
   const updateSetting = async (key: keyof Settings) => {
-    if (saving) return; 
+    if (saving) return;
     setSaving(key);
     const previous = settings;
+
     try {
       let nextValue = !settings[key];
 
-      if (key === "push_notifications") {
-        await initOneSignal(); 
-        const granted = await OneSignal.Notifications.requestPermission();
+      if (key === "push_notifications" && nextValue) {
+        if (
+          typeof Notification !== "undefined" &&
+          Notification.permission === "denied"
+        ) {
+          setSaving(null);
+          setShowBlockedHelp(true);
+          return;
+        }
+
+        await initOneSignal();
+        await OneSignal.Notifications.requestPermission();
+
+        const granted = OneSignal.Notifications.permission;
+
         if (!granted) {
           nextValue = false;
           await OneSignal.User.PushSubscription.optOut();
           setSettings({ ...settings, push_notifications: false });
           await persistSetting("push_notifications", false);
+          setSaving(null);
+          
+          if (
+            typeof Notification !== "undefined" &&
+            Notification.permission === "denied"
+          ) {
+            setShowBlockedHelp(true);
+          }
           return;
         }
+
         await OneSignal.User.PushSubscription.optIn();
+      } else if (key === "push_notifications" && !nextValue) {
+        await initOneSignal();
+        await OneSignal.User.PushSubscription.optOut();
       }
 
       const updated = { ...settings, [key]: nextValue };
@@ -164,6 +191,10 @@ const NotificationSettings = () => {
           />
         </div>
       </div>
+
+      {showBlockedHelp && (
+        <BlockedNotificationsHelp onClose={() => setShowBlockedHelp(false)} />
+      )}
     </div>
   );
 };

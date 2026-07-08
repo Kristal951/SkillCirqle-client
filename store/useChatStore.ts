@@ -8,6 +8,7 @@ import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import { useAuthStore } from "./useAuthStore";
 import { useSocketStore } from "./useSocketStore";
 import { decryptMessage } from "@/lib/decryptMessage";
+import { emitNotification } from "@/lib/notification/notify";
 
 export type MessageStatus =
   | "sending"
@@ -351,7 +352,8 @@ export const useChatStore = create<ChatStore>((set, get) => ({
       tempId,
       reply_to: reply_to || null,
     });
-    socket?.emit("notification:send", {
+
+    emitNotification({
       userId: receiverId,
       type: "new_message",
       title: "New Message",
@@ -441,7 +443,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
         conversations: state.conversations.map((conv) => {
           if (conv.id === conversationId) {
             const isIncoming = msg.sender_id !== currentUserId;
-    
+
             return {
               ...conv,
               last_message: {

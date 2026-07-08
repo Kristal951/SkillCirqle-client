@@ -4,6 +4,8 @@ import React, { useEffect } from "react";
 import MaterialIcon from "./MaterialIcon";
 import { X } from "lucide-react";
 
+type IconName = 'check_circle' | 'error' | 'info' | 'warning';
+
 type ToastProps = {
   id: string;
   message: string;
@@ -13,42 +15,43 @@ type ToastProps = {
   duration?: number;
 };
 
+const isValidIcon = (icon: string): icon is IconName => {
+  return ['check_circle', 'error', 'info', 'warning'].includes(icon);
+};
+
 const Toast = ({
   id,
   message,
   description,
   type,
   onClose,
-  duration = 3000,
+  duration = 5000,
 }: ToastProps) => {
-  const styles = {
-    success: "glow-success border text-green-600 shadow-md",
-    error: "glow-error border text-red-600 shadow-md",
-    info: "glow-info border text-blue-600 shadow-md",
-    warning: "glow-warning border text-amber-600 shadow-md",
-  };
-
-  const iconContainerStyles = {
-    success: "bg-green-500/10 text-green-600",
-    error: "bg-red-500/20 text-red-600",
-    info: "bg-blue-500/10 text-blue-600",
-    warning: "bg-amber-500/10 text-amber-600",
+  
+  const borderStyles = {
+    success: "border-l-4 border-l-green-500",
+    error: "border-l-4 border-l-red-500",
+    info: "border-l-4 border-l-blue-500",
+    warning: "border-l-4 border-l-amber-500",
   };
 
   const IconMap = {
-    success: <MaterialIcon name="check_circle" className="text-green-400" fill />,
-    error: <MaterialIcon name="error" className="text-red-400" fill />,
-    info: <MaterialIcon name="info" className="text-blue-400" fill />,
-    warning: <MaterialIcon name="warning" className="text-amber-400" fill />,
+    success: "check_circle",
+    error: "error",
+    info: "info",
+    warning: "warning",
   };
 
-  const Icon = IconMap[type];
+  const iconColors = {
+    success: "text-green-500",
+    error: "text-red-500",
+    info: "text-blue-500",
+    warning: "text-amber-500",
+  };
+
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      onClose(id);
-    }, duration);
-
+    const timer = setTimeout(() => onClose(id), duration);
     return () => clearTimeout(timer);
   }, [id, onClose, duration]);
 
@@ -56,34 +59,29 @@ const Toast = ({
     <div
       role="alert"
       aria-live="assertive"
-      className={`bg-background p-3 z-100 rounded-md flex justify-between items-start gap-3 ${styles[type]}`}
+      className={`relative w-full max-w-sm overflow-hidden bg-surface shadow-xl rounded-xl border border-border backdrop-blur-md flex items-start gap-4 p-4 ${borderStyles[type]} animate-in slide-in-from-right-5 fade-in duration-300`}
     >
-      <div className="flex items-start gap-3 w-full">
-        <div
-          className={`p-2 rounded-full flex items-center justify-center shrink-0 ${iconContainerStyles[type]}`}
-        >
-          {Icon}
-        </div>
+      <div className={`mt-0.5 shrink-0 ${iconColors[type]}`}>
+        <MaterialIcon name={IconMap[type]} className="text-2xl" fill />
+      </div>
 
-        <div className={`flex flex-col gap-1 min-w-0 justify-center min-h-10`}>
-          <p className="text-sm sm:text-base font-semibold text-text-primary wrap-break-words">
-            {message}
+      <div className="flex-1 min-w-0">
+        <h4 className="text-base font-bold text-text-primary leading-tight">
+          {message}
+        </h4>
+        {description && (
+          <p className="mt-1 text-sm text-text-secondary leading-relaxed wrap-break-word">
+            {description}
           </p>
-
-          {description && (
-            <p className="text-xs sm:text-sm text-text-secondary wrap-break-words">
-              {description}
-            </p>
-          )}
-        </div>
+        )}
       </div>
 
       <button
         onClick={() => onClose(id)}
+        className="shrink-0 rounded-lg p-0.5 hover:bg-text-secondary/30 text-text-secondary transition-colors"
         aria-label="Close notification"
-        className="mt-1 shrink-0 text-gray-400 hover:text-gray-200 transition"
       >
-        <X size={16} />
+        <X size={16} strokeWidth={2.5} />
       </button>
     </div>
   );

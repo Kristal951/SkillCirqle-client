@@ -1,6 +1,6 @@
 "use client";
 import { IconType } from "@/utils/SvgType";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export interface ToolbarButtonConfig {
   icon: IconType;
@@ -13,6 +13,7 @@ interface CallToolbarProps {
   buttons: ToolbarButtonConfig[];
   showToolbar?: boolean;
   setShowToolbar?: (value: boolean) => void;
+  endsAt?: Date;
 }
 
 const MoreIcon = () => (
@@ -21,14 +22,44 @@ const MoreIcon = () => (
   </svg>
 );
 
+const getTimerStyles = (seconds: number) => {
+  if (seconds <= 60) {
+    return {
+      container: "bg-red-500/20 border-red-500/40",
+      text: "text-red-400 animate-pulse",
+    };
+  }
+
+  if (seconds <= 5 * 60) {
+    return {
+      container: "bg-orange-500/20 border-orange-500/40",
+      text: "text-orange-400",
+    };
+  }
+
+  if (seconds <= 10 * 60) {
+    return {
+      container: "bg-yellow-500/20 border-yellow-500/40",
+      text: "text-yellow-300",
+    };
+  }
+
+  return {
+    container: "bg-emerald-500/20 border-emerald-500/40",
+    text: "text-emerald-400",
+  };
+};
+
 export const CallToolbar = ({
   buttons,
   disableScreenTap,
   showToolbar: showToolbarProp,
   setShowToolbar: setShowToolbarProp,
+  endsAt,
 }: CallToolbarProps & { disableScreenTap?: boolean }) => {
   const [showMenu, setShowMenu] = useState(false);
   const [internalShowToolbar, setInternalShowToolbar] = useState(true);
+  const [timeLeft, setTimeLeft] = useState(0);
   const showToolbar = showToolbarProp ?? internalShowToolbar;
   const setShowToolbar = setShowToolbarProp ?? setInternalShowToolbar;
 
@@ -38,6 +69,11 @@ export const CallToolbar = ({
   const mobileVisibleBtns = regularBtns.slice(0, 3);
   const mobileOverflowBtns = regularBtns.slice(3);
   const needsMenu = mobileOverflowBtns.length > 0;
+  const timerStyle = getTimerStyles(timeLeft);
+
+  // New: session is winding down in the final seconds before completion.
+  const isEnding = endsAt !== undefined && timeLeft <= 3;
+  const isFinalCountdown = isEnding && timeLeft > 0;
 
   const getButtonClass = (
     variant: ToolbarButtonConfig["variant"] = "standard",
@@ -66,8 +102,58 @@ export const CallToolbar = ({
     }
   };
 
+  useEffect(() => {
+    if (!endsAt) return;
+
+    const interval = setInterval(() => {
+      const seconds = Math.max(
+        0,
+        Math.floor((new Date(endsAt).getTime() - Date.now()) / 1000),
+      );
+
+      setTimeLeft(seconds);
+    }, 1000);
+
+    setTimeLeft(
+      Math.max(0, Math.floor((new Date(endsAt).getTime() - Date.now()) / 1000)),
+    );
+
+    return () => clearInterval(interval);
+  }, [endsAt]);
+
+  const formatTime = (seconds: number) => {
+    const hrs = Math.floor(seconds / 3600);
+    const mins = Math.floor((seconds % 3600) / 60);
+    const secs = seconds % 60;
+
+    if (hrs > 0) {
+      return `${hrs}:${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
+    }
+
+    return `${mins}:${String(secs).padStart(2, "0")}`;
+  };
+
   return (
     <>
+      {/* New: full-screen countdown overlay for the final seconds */}
+      {isEnding && (
+        <div className="absolute inset-0 z-60 flex items-center justify-center bg-black/70 backdrop-blur-sm pointer-events-none">
+          <div className="text-center">
+            <p className="text-white/70 text-sm font-medium tracking-wide uppercase mb-2">
+              {isFinalCountdown ? "Ending session in" : "Ending session…"}
+            </p>
+            {isFinalCountdown && (
+              <p
+                key={timeLeft}
+                className="text-white text-7xl font-bold tabular-nums animate-[pulse_1s_ease-in-out]"
+              >
+                {timeLeft}
+              </p>
+            )}
+          </div>
+        </div>
+      )}
+
       <div className="absolute inset-0 z-40 flex items-end justify-center pb-8 pointer-events-none">
         {!disableScreenTap && (
           <div
@@ -76,6 +162,20 @@ export const CallToolbar = ({
               showToolbar ? "opacity-100" : "opacity-0"
             }`}
           />
+        )}
+
+        {endsAt && (
+          <div className="absolute top-5 right-5 z-50">
+            <div
+              className={`backdrop-blur-md px-4 py-1.5 rounded-full shadow-lg border transition-all duration-500 ${timerStyle.container}`}
+            >
+              <span
+                className={`font-mono text-sm font-semibold tabular-nums tracking-wide transition-colors duration-500 ${timerStyle.text}`}
+              >
+                {formatTime(timeLeft)}
+              </span>
+            </div>
+          </div>
         )}
 
         <div

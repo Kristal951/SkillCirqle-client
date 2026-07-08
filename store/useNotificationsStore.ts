@@ -167,9 +167,7 @@ export const useNotificationsStore = create<NotificationsState>((set, get) => ({
     socket.off("notification:all_read");
 
     socket.on("notification:new", (notification: Notification) => {
-
       get().addNotification(notification);
-
       toast.info(notification.title || "Notification", notification.message);
     });
 
@@ -185,7 +183,7 @@ export const useNotificationsStore = create<NotificationsState>((set, get) => ({
       set((state) => ({
         notifications: state.notifications.map((n) => ({
           ...n,
-          read: true,
+          is_read: true,
         })),
         unreadCount: 0,
       }));

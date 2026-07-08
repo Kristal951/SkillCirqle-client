@@ -22,65 +22,93 @@ const LocalVideoPreview = ({ cameraId }: LocalVideoPreviewProps) => {
   const { user } = useAuthStore();
 
   useEffect(() => {
-    if (!cameraEnabled) {
-      streamRef.current?.getTracks().forEach((track) => track.stop());
-      streamRef.current = null;
-      return;
-    }
+  if (!cameraEnabled) {
+    streamRef.current?.getTracks().forEach((track) => track.stop());
+    streamRef.current = null;
+    return;
+  }
 
-    let isMounted = true;
+  let isMounted = true;
+  let retryTimeout: ReturnType<typeof setTimeout> | null = null;
 
-    async function startPreview() {
+  async function startPreview(attempt = 0) {
+    try {
+      let stream: MediaStream;
+
       try {
-        let stream: MediaStream;
-
-        try {
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: cameraId ? { deviceId: { exact: cameraId } } : true,
+          audio: false,
+        });
+      } catch (constraintErr) {
+        if (
+          constraintErr instanceof DOMException &&
+          constraintErr.name === "OverconstrainedError"
+        ) {
           stream = await navigator.mediaDevices.getUserMedia({
-            video: cameraId ? { deviceId: { exact: cameraId } } : true,
+            video: true,
             audio: false,
           });
-        } catch (constraintErr) {
-          if (
-            constraintErr instanceof DOMException &&
-            constraintErr.name === "OverconstrainedError"
-          ) {
-            stream = await navigator.mediaDevices.getUserMedia({
-              video: true,
-              audio: false,
-            });
-          } else {
-            throw constraintErr;
-          }
+        } else {
+          throw constraintErr;
         }
-
-        if (!isMounted) {
-          stream.getTracks().forEach((track) => track.stop());
-          return;
-        }
-
-        streamRef.current = stream;
-        if (videoRef.current) {
-          videoRef.current.srcObject = stream;
-        }
-        setError(false);
-      } catch (err) {
-        console.error("Local preview camera error:", err);
-        setError(true);
-        toast.error(
-          "Camera unavailable",
-          "We couldn't access your camera for the self-preview.",
-        );
       }
+
+      if (!isMounted) {
+        stream.getTracks().forEach((track) => track.stop());
+        return;
+      }
+
+      // Fix: verify the track actually reports itself as live/unmuted.
+      // A track can be granted but "muted" (no frames) if the physical
+      // device is already held by another consumer (e.g. Jitsi's own
+      // getUserMedia call for the real conference feed).
+      const videoTrack = stream.getVideoTracks()[0];
+      const trackLooksDead =
+        !videoTrack || videoTrack.readyState !== "live" || videoTrack.muted;
+
+      if (trackLooksDead && attempt < 3) {
+        stream.getTracks().forEach((t) => t.stop());
+        retryTimeout = setTimeout(() => {
+          if (isMounted) startPreview(attempt + 1);
+        }, 500 * (attempt + 1)); // backoff: 500ms, 1000ms, 1500ms
+        return;
+      }
+
+      streamRef.current = stream;
+
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+
+        // Fix: explicit play() instead of relying solely on the
+        // autoPlay attribute, which can silently no-op in some browsers.
+        try {
+          await videoRef.current.play();
+        } catch (playErr) {
+          console.warn("Local preview play() failed:", playErr);
+        }
+      }
+
+      setError(false);
+    } catch (err) {
+      console.error("Local preview camera error:", err);
+      setError(true);
+      toast.error(
+        "Camera unavailable",
+        "We couldn't access your camera for the self-preview.",
+      );
     }
+  }
 
-    startPreview();
+  startPreview();
 
-    return () => {
-      isMounted = false;
-      streamRef.current?.getTracks().forEach((track) => track.stop());
-      streamRef.current = null;
-    };
-  }, [cameraEnabled, cameraId]);
+  return () => {
+    isMounted = false;
+    if (retryTimeout) clearTimeout(retryTimeout);
+    streamRef.current?.getTracks().forEach((track) => track.stop());
+    streamRef.current = null;
+  };
+}, [cameraEnabled, cameraId]);
 
   const showVideo = cameraEnabled && !error;
 

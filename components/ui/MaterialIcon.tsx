@@ -14,7 +14,7 @@ const ICONS: Record<IconName, React.FC<React.SVGProps<SVGSVGElement>>> = {
 };
 
 type MaterialIconProps = {
-  name: IconName;
+  name: IconName | (string & {});
   className?: string;
   size?: number;
   fill?: boolean;
@@ -26,7 +26,7 @@ const MaterialIcon = ({
   size = 20,
   fill = false,
 }: MaterialIconProps) => {
-  const Icon = ICONS[name];
+  const Icon = ICONS[name as IconName];
 
   if (!Icon) return null;
 

@@ -37,7 +37,7 @@ export default function SocketProvider({
 
         if (!token) return;
 
-        const socket = await connectSocket(token);
+        const socket = connectSocket(token);
 
         if (!socket) return;
 
@@ -64,15 +64,13 @@ export default function SocketProvider({
   useEffect(() => {
     if (!user) {
       const socket = getSocket();
-
       if (socket) {
         console.log("🔌 Cleaning up socket on logout");
-
         socket.removeAllListeners();
         socket.disconnect();
-
         connectedUserId.current = null;
       }
+      setSocketReady(false);
     }
   }, [user]);
 

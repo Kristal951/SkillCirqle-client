@@ -29,6 +29,8 @@ export interface SessionInfo {
 }
 
 export interface SessionState {
+  joinToken: string | null;
+  setJoinToken: (token: string | null) => void;
   session?: SessionInfo;
   localParticipant: SessionParticipant | null;
   remoteParticipant: SessionParticipant | null;
@@ -47,7 +49,7 @@ export interface SessionState {
 
 interface SessionActions {
   setSession: (session: SessionInfo) => void;
-  setLocalParticipantId: (id: string) => void; // Added missing action
+  setLocalParticipantId: (id: string) => void; 
   setLocalParticipant: (participant: SessionParticipant | null) => void;
   setRemoteParticipant: (participant: SessionParticipant | null) => void;
   updateLocalParticipant: (data: Partial<SessionParticipant>) => void;
@@ -62,6 +64,7 @@ interface SessionActions {
 }
 
 export const useSessionStore = create<SessionState & SessionActions>((set) => ({
+  joinToken: null,
   session: undefined,
   localParticipant: null,
   remoteParticipant: null,
@@ -78,6 +81,7 @@ export const useSessionStore = create<SessionState & SessionActions>((set) => ({
     handRaised: false,
   },
 
+  setJoinToken: (token) => set({ joinToken: token}),
   setSession: (session) => set({ session }),
 
   setLocalParticipantId: (id) => set({ localParticipantId: id }),

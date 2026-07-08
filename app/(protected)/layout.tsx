@@ -6,6 +6,7 @@ import Sidebar from "@/components/dashboard/Sidebar";
 import BottomBar from "@/components/ui/BottomBar";
 import Spinner from "@/components/ui/Spinner";
 import { useClearSessionCache } from "@/hooks/useSessions";
+import { logoutOneSignal } from "@/lib/oneSignal";
 import { useLogoutModal } from "@/providers/LogoutContext";
 import NotificationProvider from "@/providers/NotificationProvider";
 import OneSignalProvider from "@/providers/oneSignal";
@@ -40,7 +41,7 @@ export default function RootLayout({
   }, [pathname]);
   useEffect(() => {
     setIsInSessionPage(pathname.startsWith("/sessions"));
-      console.log(isInSessionPage, 'sess', pathname)
+    console.log(isInSessionPage, "sess", pathname);
   }, [pathname]);
 
   const clearSessionCache = useClearSessionCache();
@@ -58,6 +59,7 @@ export default function RootLayout({
 
     try {
       clearSessionCache();
+      await logoutOneSignal();
       await logout();
     } catch (error) {
       console.error("Logout failed:", error);
@@ -79,16 +81,18 @@ export default function RootLayout({
 
         <main
           className={`flex-1 overflow-y-auto ${isInSessionPage ? "mt-0" : "mt-17.5"} ${
-            (isInChatPage && activeChat) || isInSessionPage ? "mb-0" : "mb-13 md:mb-0"
+            (isInChatPage && activeChat) || isInSessionPage
+              ? "mb-0"
+              : "mb-13 md:mb-0"
           }`}
         >
-          <OneSignalProvider />
-          <NotificationProvider>
-            <SocketProvider>
+          <SocketProvider>
+            <NotificationProvider>
+              <OneSignalProvider />
               <OneSignalLoginSync />
               {children}
-            </SocketProvider>
-          </NotificationProvider>
+            </NotificationProvider>
+          </SocketProvider>
         </main>
       </div>
 

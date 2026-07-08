@@ -8,6 +8,7 @@ import Spinner from "@/components/ui/Spinner";
 import Sidebar from "@/components/workspace/Sidebar";
 import { useSidebarStore } from "@/store/useSidebarStore";
 import { useEffect } from "react";
+import FolderOff from "@material-symbols/svg-400/outlined/folder_off.svg";
 
 interface WorkspaceLayoutProps {
   children: React.ReactNode;
@@ -23,14 +24,13 @@ export default function WorkspaceLayout({
   const id = params.id as string;
   const { user } = useAuthStore();
   const { workspace, members, skillTracks, loading } = useWorkspace(id);
-  const {setCollapsed} = useSidebarStore()
+  const { setCollapsed } = useSidebarStore();
 
   const isSwap = workspace?.proposal?.engagement_type === "swap";
 
-   useEffect(()=> {
-    setCollapsed(true)
-  }, [setCollapsed])
-
+  useEffect(() => {
+    setCollapsed(true);
+  }, [setCollapsed]);
 
   if (loading) {
     return (
@@ -45,8 +45,22 @@ export default function WorkspaceLayout({
 
   if (!workspace) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <p className="text-text-secondary">Workspace not found.</p>
+      <div className="h-screen bg-background flex flex-col items-center justify-center p-6 text-center">
+        <div className="rounded-full">
+          <FolderOff className="text-8xl text-text-secondary" />
+        </div>
+        <h2 className="text-2xl font-bold text-text-primary">
+          Workspace not found
+        </h2>
+        <p className="mt-2 text-text-secondary max-w-sm">
+          The workspace you are looking for does not exist or has been removed.
+        </p>
+        <Link
+          href="/dashboard"
+          className="mt-8 px-6 py-3 bg-primary text-text-primary rounded-xl font-medium hover:opacity-90 transition"
+        >
+          Return to Dashboard
+        </Link>
       </div>
     );
   }
@@ -115,7 +129,9 @@ export default function WorkspaceLayout({
           userId={user?.id}
         />
 
-        <main className="flex-1 md:p-6 md:ml-72 px-4 py-6 overflow-auto">{children}</main>
+        <main className="flex-1 md:p-6 md:ml-72 px-4 py-6 overflow-auto">
+          {children}
+        </main>
       </div>
     </div>
   );

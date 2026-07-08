@@ -1,6 +1,7 @@
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
 import { CreateProposalInput } from "@/types/Proposal";
 import { getSocket } from "@/lib/socket";
+import { emitNotification } from "@/lib/notification/notify";
 
 export async function createProposal(data: CreateProposalInput) {
   const supabase = await getSupabaseBrowserClient();
@@ -68,7 +69,7 @@ function sendProposalNotification(
   if (!socket) return;
 
   try {
-    socket.emit("notification:send", {
+    emitNotification({
       userId: data.receiverId,
       type: "proposal_received",
       title: "New Skill Proposal",

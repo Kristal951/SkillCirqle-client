@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
 import { toast } from "@/lib/toast";
+import { getSocket } from "@/lib/socket";
 
 interface Participant {
   id: string;
@@ -19,7 +20,35 @@ interface SessionData {
   guest: Participant | null;
   isHost: boolean;
   status: string;
+  duration: number | null;
+  ends_at: Date;
+  workspaceId: string;
+  scheduledAt: string;
 }
+
+type SocketResponse = {
+  success: boolean;
+  message?:
+    | string
+    | {
+        title: string;
+        desc: string;
+      };
+};
+
+const showSocketError = (message?: SocketResponse["message"]) => {
+  if (!message) {
+    toast.error("Something went wrong");
+    return;
+  }
+
+  if (typeof message === "string") {
+    toast.error(message);
+    return;
+  }
+
+  toast.error(message.title, message.desc);
+};
 
 export function useSessionData(
   sessionId: string | null,
@@ -40,7 +69,7 @@ export function useSessionData(
         .from("skill_sessions")
         .select(
           `
-          title, host_id, guest_id, type, status,
+          title, host_id, guest_id, duration, type, ends_at, workspace_id, status, scheduled_at,
           host:profiles!skill_sessions_host_id_fkey ( id, name, avatar_url ),
           guest:profiles!skill_sessions_guest_id_fkey ( id, name, avatar_url )
         `,
@@ -98,8 +127,12 @@ export function useSessionData(
         type: data.type,
         host,
         guest,
+        duration: data.duration,
         isHost: data.host_id === userId,
-        status: data.status
+        status: data.status,
+        ends_at: data.ends_at || null,
+        workspaceId: data.workspace_id,
+        scheduledAt: data.scheduled_at,
       });
       setLoading(false);
     }
@@ -110,14 +143,59 @@ export function useSessionData(
     };
   }, [sessionId, userId]);
 
-  async function markSessionActive() {
-    if (!sessionId) return;
-    const supabase = getSupabaseBrowserClient();
-    await supabase
-      .from("skill_sessions")
-      .update({ status: "ACTIVE", started_at: new Date().toISOString() })
-      .eq("id", sessionId);
-  }
+  const markSessionActive = () => {
+    return new Promise<boolean>((resolve) => {
+      if (!sessionId) {
+        resolve(false);
+        return;
+      }
+
+      const socket = getSocket();
+
+      if (!socket?.connected) {
+        console.warn("Socket is not connected. Cannot mark session as active.");
+        resolve(false);
+        return;
+      }
+
+      const emitStart = () => {
+        socket.emit(
+          "session:start",
+          { sessionId },
+          (response: {
+            success: boolean;
+            message?: string;
+            requiresRating?: boolean;
+            unratedSessionId?: string;
+          }) => {
+            if (!response.success) {
+              if (response.requiresRating && response.unratedSessionId) {
+                showSocketError(response.message)
+                window.location.href = `/sessions/video/${response.unratedSessionId}/ended?reason=completed`;
+                resolve(false);
+                return;
+              }
+              showSocketError(response?.message);
+              resolve(false);
+              return;
+            }
+
+            resolve(true);
+          },
+        );
+      };
+
+      if (socket.connected) {
+        emitStart();
+      } else {
+        socket.once("connect", emitStart);
+        setTimeout(() => {
+          socket.off("connect", emitStart);
+          resolve(false);
+        }, 10000);
+      }
+    });
+  };
 
   return { sessionData, loading, markSessionActive };
 }

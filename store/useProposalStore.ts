@@ -3,6 +3,7 @@ import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
 import { ProposalStore } from "@/types/Proposal";
 import { getUserProposals } from "@/utils/getUserProposals";
 import { getSocket } from "@/lib/socket";
+import { emitNotification } from "@/lib/notification/notify";
 
 export const getErrorMessage = (err: unknown): string => {
   console.error(err);
@@ -25,7 +26,9 @@ export const useProposalStore = create<ProposalStore>((set, get) => ({
         ...p,
         sender: Array.isArray(p.sender) ? p.sender[0] : p.sender,
         receiver: Array.isArray(p.receiver) ? p.receiver[0] : p.receiver,
-        workspace: Array.isArray(p.proposal_workspaces) ? p.proposal_workspaces[0] : p.proposal_workspaces
+        workspace: Array.isArray(p.proposal_workspaces)
+          ? p.proposal_workspaces[0]
+          : p.proposal_workspaces,
       }));
 
       set({ proposals: formatted || [], loading: false });
@@ -111,7 +114,7 @@ export const useProposalStore = create<ProposalStore>((set, get) => ({
                 : "Rejected";
 
         try {
-          socket.emit("notification:send", {
+          emitNotification({
             userId: data.sender_id,
             type: "proposal_updated",
             title: `Proposal ${action}`,
