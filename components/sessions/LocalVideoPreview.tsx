@@ -59,10 +59,6 @@ const LocalVideoPreview = ({ cameraId }: LocalVideoPreviewProps) => {
         return;
       }
 
-      // Fix: verify the track actually reports itself as live/unmuted.
-      // A track can be granted but "muted" (no frames) if the physical
-      // device is already held by another consumer (e.g. Jitsi's own
-      // getUserMedia call for the real conference feed).
       const videoTrack = stream.getVideoTracks()[0];
       const trackLooksDead =
         !videoTrack || videoTrack.readyState !== "live" || videoTrack.muted;
@@ -71,7 +67,7 @@ const LocalVideoPreview = ({ cameraId }: LocalVideoPreviewProps) => {
         stream.getTracks().forEach((t) => t.stop());
         retryTimeout = setTimeout(() => {
           if (isMounted) startPreview(attempt + 1);
-        }, 500 * (attempt + 1)); // backoff: 500ms, 1000ms, 1500ms
+        }, 500 * (attempt + 1)); 
         return;
       }
 
@@ -80,8 +76,6 @@ const LocalVideoPreview = ({ cameraId }: LocalVideoPreviewProps) => {
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
 
-        // Fix: explicit play() instead of relying solely on the
-        // autoPlay attribute, which can silently no-op in some browsers.
         try {
           await videoRef.current.play();
         } catch (playErr) {

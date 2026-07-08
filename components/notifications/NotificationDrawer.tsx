@@ -174,7 +174,7 @@ const NotificationDrawer = ({
                     Notifications
                   </h2>
                   {unreadCount > 0 && (
-                    <span className="px-2 py-0.5 text-xs font-semibold bg-primary text-white rounded-full">
+                    <span className="px-2 py-0.5 text-xs font-semibold bg-primary text-text-primary rounded-full">
                       {unreadCount > 99 ? "99+" : unreadCount} new
                     </span>
                   )}
@@ -244,7 +244,7 @@ const NotificationDrawer = ({
 
               <div className="w-full flex items-center justify-between px-4 py-2 border-b border-border/50 shrink-0">
                 {(unreadCount > 0 || notifications.length > 0) && (
-                  <div className="w-full flex items-center justify-between px-4 py-2 border-b border-border/50 shrink-0">
+                  <div className="w-full flex items-center justify-between px-4 py-2 shrink-0">
                     <button
                       onClick={() => markAllAsRead(userId || "")}
                       disabled={unreadCount === 0}

@@ -4,13 +4,13 @@ export interface SessionParticipant {
   id: string;
   name: string;
   avatar?: string;
-  role: "host" | "participant";
-  micEnabled: boolean;
-  cameraEnabled: boolean;
-  screenSharing: boolean;
-  handRaised: boolean;
-  speaking: boolean;
-  joinedAt: Date;
+  role?: "host" | "participant";
+  micEnabled?: boolean;
+  cameraEnabled?: boolean;
+  screenSharing?: boolean;
+  handRaised?: boolean;
+  speaking?: boolean;
+  joinedAt?: Date;
   connectionQuality?: number;
 }
 

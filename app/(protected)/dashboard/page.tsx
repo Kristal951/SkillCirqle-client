@@ -5,10 +5,11 @@ import SkillCardSkeleton from "@/components/dashboard/SkillCardSkeletonLoader";
 import { useAuthStore } from "@/store/useAuthStore";
 import { createFetcherWithAuth } from "@/utils/fetcher";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowRight, Gift } from "lucide-react";
+import { ArrowRight, Coins, Gift } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo } from "react";
 import SwapHoriz from "@material-symbols/svg-400/outlined/swap_horiz.svg";
+import Link from "next/link";
 
 export default function Dashboard() {
   const { user } = useAuthStore();
@@ -242,45 +243,56 @@ export default function Dashboard() {
         </div>
       </section> */}
 
-      <section className="relative w-full p-4 z-50 gap-6 flex flex-col md:flex-row lg:flex-row justify-between items-center md:p-10 bg-primary border border-border rounded-md overflow-hidden">
-        <div className="flex items-center w-full gap-3">
-          <div className=" w-14 md:w-20 md:h-20 lg:w-20 lg:h-20 h-14 rounded-full flex items-center justify-center text-text-primary bg-background">
-            <SwapHoriz className="text-5xl text-text-primary font-extrabold"/>
+      <section className="relative w-full p-4 md:p-8 lg:p-10 rounded-2xl overflow-hidden bg-linear-to-br from-primary/10 to-primary/5 border border-primary/20 backdrop-blur-sm">
+        <div className="absolute -right-10 -bottom-10 w-40 h-40 bg-primary/10 rounded-full blur-3xl pointer-events-none" />
+
+        <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
+          <div className="flex items-center gap-5 w-full">
+            <div className="shrink-0 w-16 h-16 md:w-20 md:h-20 rounded-2xl bg-white dark:bg-background shadow-lg shadow-primary/10 flex items-center justify-center">
+              <SwapHoriz className="w-8 h-8 md:w-10 md:h-10 text-primary" />
+            </div>
+
+            <div className="flex flex-col gap-0.5">
+              <h1 className="text-xl md:text-3xl font-bold tracking-tight text-text-primary">
+                Find your skill swap
+              </h1>
+              <p className="text-sm md:text-base text-text-secondary max-w-lg">
+                Teach what you know, learn what you don't. Zero skill credits
+                needed.
+              </p>
+            </div>
           </div>
-          <div className="relative z-10 flex flex-col gap-1 text-primary-foreground">
-            <h1 className="md:text-3xl text-xl font-bold text-text-primary">
-              Find your skill swap
-            </h1>
-            <p className="text-lg text-text-secondary">
-              Teach what you know, learn what you don't. Zero credits needed
-            </p>
+
+          <div className="shrink-0 w-full md:w-auto">
+            <Link href="/search" className="w-full md:w-auto px-6 py-3 font-semibold bg-primary hover:bg-primary/90 text-white rounded-xl shadow-lg shadow-primary/20 transition-all hover:scale-[1.02] active:scale-[0.98]">
+              Find a swap Partner
+            </Link>
           </div>
-        </div>
-        <div className="h-full w-full flex md:items-center md:justify-end lg:items-center lg:justify-end">
-          <button className="px-3 py-2 w-full md:w-max lg:w-max hover:bg-accent/10 border border-accent rounded text-accent">
-            Explore Swaps
-          </button>
         </div>
       </section>
 
-      <section className="relative w-full p-4 gap-6 flex flex-col md:flex-row lg:flex-row justify-between items-center md:p-10 bg-surface/50 border border-border rounded-md overflow-hidden">
-        <div className="flex items-center w-full gap-3">
-          <div className=" w-14 md:w-20 md:h-20 lg:w-20 lg:h-20 h-14 rounded-full flex items-center justify-center text-accent bg-accent/20 border border-accent">
-           <SwapHoriz className="text-5xl"/>
+      <section className="relative w-full p-4 md:p-8 rounded-2xl border border-border/50 bg-surface/30 backdrop-blur-sm flex flex-col md:flex-row items-center justify-between gap-6 overflow-hidden">
+        <div className="absolute top-0 left-0 w-full h-1 bg-linear-to-r from-accent to-transparent opacity-50" />
+
+        <div className="flex items-center gap-5 w-full">
+          <div className="shrink-0 w-16 h-16 md:w-20 md:h-20 rounded-2xl flex items-center justify-center bg-accent/10 border border-accent/20 text-accent">
+            <Coins className="w-8 h-8 md:w-10 md:h-10" />
           </div>
-          <div className="relative z-10 flex flex-col md:gap-2 gap-1 text-primary-foreground">
-            <h1 className="md:text-3xl text-xl font-bold text-text-primary">
-              Want to save credits?
-            </h1>
-            <p className="text-lg text-text-secondary">
-              Swap skills with someone then.
+
+          <div className="flex flex-col gap-1">
+            <h2 className="text-xl md:text-2xl font-bold text-text-primary">
+              Can't find a swap match yet?
+            </h2>
+            <p className="text-sm md:text-base text-text-secondary">
+             Use your SkillCredits to learn from someone instead.
             </p>
           </div>
         </div>
-        <div className="h-full w-full flex md:items-center md:justify-end lg:items-center lg:justify-end">
-          <button className="px-3 py-2 w-full md:w-max lg:w-max hover:bg-accent/10 border border-accent rounded text-accent">
-            Explore Swaps
-          </button>
+
+        <div className="shrink-0 w-full md:w-auto">
+          <Link href="/search" className="w-full md:w-auto px-6 py-2.5 font-semibold text-sm rounded-xl border border-accent bg-accent/50 hover:bg-accent text-text-primary transition-all active:scale-[0.98]">
+            Browse with credits
+          </Link>
         </div>
       </section>
 
@@ -296,9 +308,8 @@ export default function Dashboard() {
               </h2>
             </div>
           </div>
-          <button className="text-primary flex gap-1 items-center text-sm hover:underline">
+          <button className="text-accent flex gap-1 items-center text-sm underline">
             See all
-            <ArrowRight className="text-sm" />
           </button>
         </div>
 

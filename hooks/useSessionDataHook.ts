@@ -167,11 +167,15 @@ export function useSessionData(
             message?: string;
             requiresRating?: boolean;
             unratedSessionId?: string;
+            unratedSessionType?: "VIDEO" | "AUDIO";
           }) => {
             if (!response.success) {
               if (response.requiresRating && response.unratedSessionId) {
-                showSocketError(response.message)
-                window.location.href = `/sessions/video/${response.unratedSessionId}/ended?reason=completed`;
+                const path =
+                  response.unratedSessionType === "AUDIO" ? "audio" : "video";
+
+                showSocketError(response.message);
+                window.location.href = `/sessions/${path}/${response.unratedSessionId}/ended?reason=completed`;
                 resolve(false);
                 return;
               }
