@@ -128,7 +128,7 @@ const SearchPage = () => {
         <div className="max-w-7xl mx-auto space-y-6">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
             <div className=" hidden md:flex flex-col space-y-1">
-              <h1 className="text-3xl font-bold tracking-tight">Explore</h1>
+              <h1 className="text-3xl font-bold tracking-tight">Search</h1>
               <p className="text-xs text-text-secondary font-medium">
                 Find the perfect partner to level up your skills.
               </p>
@@ -150,7 +150,7 @@ const SearchPage = () => {
             </div>
           </div>
 
-          <div className="flex gap-3 overflow-x-auto scrollbar-hide pb-1">
+          {/* <div className="flex gap-3 overflow-x-auto scrollbar-hide pb-1">
             {CATEGORY_DATA.map((cat) => {
               const active = selectedCategory === cat.id;
               return (
@@ -171,7 +171,7 @@ const SearchPage = () => {
                 </button>
               );
             })}
-          </div>
+          </div> */}
         </div>
       </section>
 

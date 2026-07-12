@@ -87,7 +87,6 @@ export default function SessionsPage() {
   const active = filtered.filter((s) =>
     ["ACTIVE", "RINGING"].includes(s.status),
   );
-  console.log(active, 'active')
   const upcoming = filtered.filter((s) => s.status === "SCHEDULED");
   const past = filtered.filter((s) =>
     ["COMPLETED", "MISSED", "REJECTED", "CANCELLED"].includes(s.status),

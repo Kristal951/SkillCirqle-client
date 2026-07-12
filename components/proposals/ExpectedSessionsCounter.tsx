@@ -1,8 +1,9 @@
-// components/proposal/ExpectedSessionsCounter.tsx
 "use client";
 
 import React from "react";
 import NumberRow from "./NumberRow";
+import Remove from "@material-symbols/svg-400/outlined/remove.svg"
+import Add from "@material-symbols/svg-400/outlined/add.svg"
 
 type Props = {
   value: number;
@@ -25,7 +26,7 @@ const ExpectedSessionsCounter = ({
           onClick={() => onChange(Math.max(1, value - 1))}
           className="w-10 h-10 rounded-xl border bg-background border-border flex items-center justify-center hover:bg-surface transition"
         >
-          <span className="material-symbols-outlined">remove</span>
+          <Remove/>
         </button>
         <div className="text-center">
           <p className="text-2xl font-bold">{value}</p>
@@ -38,7 +39,7 @@ const ExpectedSessionsCounter = ({
           onClick={() => onChange(Math.min(52, value + 1))}
           className="w-10 h-10 rounded-xl bg-background border border-border flex items-center justify-center hover:bg-surface transition"
         >
-          <span className="material-symbols-outlined">add</span>
+          <Add/>
         </button>
       </div>
       <p className="text-xs text-text-secondary">

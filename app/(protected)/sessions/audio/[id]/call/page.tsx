@@ -394,8 +394,6 @@ const AudioCallPage = ({ params }: { params: Promise<{ id: string }> }) => {
     (p): p is SessionParticipant => p !== null,
   );
 
-  console.log(participants, localParticipant, remoteParticipant)
-
   return (
     <>
       <Script

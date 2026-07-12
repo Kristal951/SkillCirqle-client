@@ -24,7 +24,7 @@ type Props = {
   statusStyles: Record<ProposalStatus, string>;
 };
 
-const ProposalCard = ({ p, statusStyles }: Props) => {
+const ProposalCard = ({ p, statusStyles, now }: Props) => {
   const { updateProposalStatus, updatingStatus } = useProposalStore();
   const { user } = useAuthStore();
   const router = useRouter();
@@ -48,7 +48,7 @@ const ProposalCard = ({ p, statusStyles }: Props) => {
       formatDistanceToNow(new Date(p.dateCreated), {
         addSuffix: true,
       }),
-    [p.dateCreated],
+    [p.dateCreated, now],
   );
   const firstName = p.partnerName?.trim().split(/\s+/)[0] || "User";
   const senderName = user?.name || "";
@@ -157,7 +157,7 @@ const ProposalCard = ({ p, statusStyles }: Props) => {
               <span className="text-primary text-xl">
                 <TeachIcon />
               </span>
-              <span className="font-semibold text-sm truncate">{p.iLearn}</span>
+              <span className="font-semibold text-sm truncate">{p.iLearn ?? p?.iTeach}</span>
             </div>
           </div>
 

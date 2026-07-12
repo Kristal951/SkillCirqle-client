@@ -79,7 +79,6 @@ export default function ResourcesPage() {
     if (!exists) return;
 
     const target = resources.find((r) => r.id === highlight);
-    console.log("target found:", target);
 
     if (
       target?.skill_track_id &&

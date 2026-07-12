@@ -16,6 +16,11 @@ import MessageSection from "@/components/proposals/MessageSection";
 import ProposalSidebar from "@/components/proposals/ProposalSidebar";
 import { useQuery } from "@tanstack/react-query";
 
+import PersonOff from "@material-symbols/svg-400/outlined/person_off.svg"
+import Swap_Horiz from "@material-symbols/svg-400/outlined/swap_horiz.svg"
+import School from "@material-symbols/svg-400/outlined/school.svg"
+import Bolt from "@material-symbols/svg-400/outlined/bolt.svg"
+
 type EngagementType = "learn" | "swap";
 type SessionType = "quick" | "standard";
 
@@ -24,13 +29,13 @@ const sessionTypeTabs = [
     id: "quick",
     label: "Quick Session",
     info: "Up to 20 minutes. Perfect for quick questions, reviews, and focused guidance.",
-    icon: "bolt",
+    icon: Bolt,
   },
   {
     id: "standard",
     label: "Standard Session",
     info: "30–60 minute sessions designed for structured teaching and long-term skill growth.",
-    icon: "school",
+    icon: School,
   },
 ];
 
@@ -94,13 +99,13 @@ export default function NewProposal() {
       {
         id: "swap",
         title: "Skill Swap",
-        icon: "swap_horiz",
+        icon: Swap_Horiz,
         desc: `Exchange skills with ${profile?.name} in a balanced partnership`,
       },
       {
         id: "learn",
         title: "Learn Skill",
-        icon: "school",
+        icon: School,
         desc: `Focus on skill acquisition directly from ${profile?.name}`,
       },
     ],
@@ -242,15 +247,7 @@ export default function NewProposal() {
       <div className="h-screen flex items-center justify-center px-6">
         <div className="flex flex-col items-center text-center space-y-3">
           <div className="bg-surface/50 p-4 rounded-xl">
-            <span
-              className="material-symbols-outlined "
-              style={{
-                fontVariationSettings: "'FILL' 0, 'wght' 200",
-                fontSize: "120px",
-              }}
-            >
-              person_off
-            </span>
+            <PersonOff className="text-text-secondary text-[120px]"/>
           </div>
 
           <h2 className="text-4xl font-semibold">Profile not found</h2>

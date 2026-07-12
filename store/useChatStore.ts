@@ -4,10 +4,8 @@ import { create } from "zustand";
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
 import { ActiveChat } from "@/types/AuthStore";
 import { getSocket } from "@/lib/socket";
-import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import { useAuthStore } from "./useAuthStore";
 import { useSocketStore } from "./useSocketStore";
-import { decryptMessage } from "@/lib/decryptMessage";
 import { emitNotification } from "@/lib/notification/notify";
 import { toast } from "@/lib/toast";
 

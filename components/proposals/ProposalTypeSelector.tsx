@@ -1,15 +1,15 @@
-// components/proposal/ProposalTypeSelector.tsx
 "use client";
 
 import React from "react";
 import NumberRow from "./NumberRow";
+import { IconType } from "@/utils/SvgType";
 
 type EngagementType = "learn" | "swap";
 
 type Option = {
   id: string;
   title: string;
-  icon: string;
+  icon: IconType;
   desc: string;
 };
 
@@ -33,6 +33,8 @@ const ProposalTypeSelector = ({
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         {options.map((item) => {
           const active = activeTab === item.id;
+          const Icon = item.icon
+
           return (
             <button
               key={item.id}
@@ -49,9 +51,7 @@ const ProposalTypeSelector = ({
                   <div className="w-2.5 h-2.5 rounded-full bg-primary" />
                 )}
               </div>
-              <span className="material-symbols-outlined text-3xl">
-                {item.icon}
-              </span>
+              <Icon className="text-3xl"/>
               <h4 className="font-bold mt-3">{item.title}</h4>
               <p className="text-sm text-text-secondary mt-2">{item.desc}</p>
             </button>

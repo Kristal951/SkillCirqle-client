@@ -123,7 +123,6 @@ export async function createSession({
       if (error) throw error;
       onCreated(data);
 
-       console.log(user?.id, 'user ID 3')
       if (userId) {
         await logActivity(workspaceId, userId, "session_rescheduled", {
           session_title: existing.title,
@@ -167,7 +166,6 @@ export async function createSession({
       if (error) throw error;
       onCreated(data);
 
-       console.log(user?.id, 'user ID 4')
       if (userId) {
         await logActivity(workspaceId, userId, "session_scheduled", {
           session_title: title.trim(),

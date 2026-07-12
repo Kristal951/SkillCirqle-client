@@ -50,7 +50,7 @@ const statusStyles: Record<ProposalStatus, string> = {
 const ProposalsPage = () => {
   const [activeTab, setActiveTab] = useState<ProposalTab>("received");
   const { user } = useAuthStore();
-  const { proposals, fetchProposals, loading } = useProposalStore();
+  const { proposals, fetchProposals, loading, listenForProposalUpdates } = useProposalStore();
 
   const userId = user?.id || "";
 
@@ -61,9 +61,23 @@ const ProposalsPage = () => {
     return () => clearInterval(interval);
   }, []);
 
-  useEffect(() => {
-    fetchProposals(userId);
-  }, []);
+ useEffect(() => {
+  if (!userId) return;
+  fetchProposals(userId);
+
+  let cleanup: (() => void) | undefined;
+  let cancelled = false;
+
+  listenForProposalUpdates().then((fn) => {
+    if (!cancelled) cleanup = fn;
+    else fn(); 
+  });
+
+  return () => {
+    cancelled = true;
+    cleanup?.();
+  };
+}, [userId]);
 
   const tabs: { id: ProposalTab; label: string }[] = [
     { id: "received", label: "Received" },
@@ -169,8 +183,8 @@ const ProposalsPage = () => {
         </div>
       </header>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-10 mt-8">
-        <div className="lg:col-span-2 space-y-6 order-2 lg:order-1 mb-10 md:mb-0">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-10 mt-8 mb-10">
+        <div className="lg:col-span-2 space-y-6 order-2 lg:order-1 mb-10">
           <AnimatePresence mode="wait">
             {loading ? (
               <ProposalCardSkeleton />

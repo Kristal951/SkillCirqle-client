@@ -26,7 +26,6 @@ const NotificationCard = ({ notif, index }: { notif: any; index: number }) => {
   const isDeleting = deletingIds.includes(notif.id);
   const isRead = notif.is_read;
 
-  // Simplified category logic
   const getCategoryInfo = () => {
     if (notif.type.includes("proposal"))
       return { Icon: FileText, color: "text-amber-500" };

@@ -117,7 +117,6 @@ export function useWorkspaceResources({
   async function handleDeleteResource(resource: Resource) {
     const supabase = getSupabaseBrowserClient();
     setDeletingResourceID(resource?.id);
-    console.log(resource);
 
     try {
       if (resource.storage_path) {

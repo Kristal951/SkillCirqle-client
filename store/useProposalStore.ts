@@ -2,7 +2,7 @@ import { create } from "zustand";
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
 import { ProposalStore } from "@/types/Proposal";
 import { getUserProposals } from "@/utils/getUserProposals";
-import { getSocket } from "@/lib/socket";
+import { getSocket, waitForSocket } from "@/lib/socket";
 import { emitNotification } from "@/lib/notification/notify";
 
 export const getErrorMessage = (err: unknown): string => {
@@ -10,6 +10,16 @@ export const getErrorMessage = (err: unknown): string => {
   if (err instanceof Error) return err.message;
   return "Something went wrong";
 };
+
+// add near the top of the store file, exported so ProposalsPage/others could reuse it if needed
+const formatProposal = (p: any) => ({
+  ...p,
+  sender: Array.isArray(p.sender) ? p.sender[0] : p.sender,
+  receiver: Array.isArray(p.receiver) ? p.receiver[0] : p.receiver,
+  workspace: Array.isArray(p.proposal_workspaces)
+    ? p.proposal_workspaces[0]
+    : p.proposal_workspaces,
+});
 
 export const useProposalStore = create<ProposalStore>((set, get) => ({
   proposals: [],
@@ -38,43 +48,6 @@ export const useProposalStore = create<ProposalStore>((set, get) => ({
     }
   },
 
-  createProposal: async (payload) => {
-    const supabase = getSupabaseBrowserClient();
-
-    try {
-      const { data, error } = await supabase
-        .from("proposals")
-        .insert([payload])
-        .select(
-          `
-          *,
-          sender:sender_id (
-            id,
-            username,
-            avatar_url
-          ),
-          receiver:receiver_id (
-            id,
-            username,
-            avatar_url
-          )
-        `,
-        )
-        .single();
-
-      if (error) throw error;
-
-      set((state) => ({
-        proposals: [data, ...state.proposals],
-      }));
-
-      return data;
-    } catch (err) {
-      console.error("Create proposal error:", getErrorMessage(err));
-      throw err;
-    }
-  },
-
   updateProposalStatus: async (
     proposalId,
     status,
@@ -94,6 +67,7 @@ export const useProposalStore = create<ProposalStore>((set, get) => ({
         .maybeSingle();
 
       if (error) throw error;
+      if (!data) throw new Error("Proposal not found or update was blocked.");
 
       set((state) => ({
         proposals: state.proposals.map((p) =>
@@ -104,37 +78,15 @@ export const useProposalStore = create<ProposalStore>((set, get) => ({
       const socket = getSocket();
 
       if (socket) {
-        const action =
-          status === "accepted"
-            ? "Accepted"
-            : status === "completed"
-              ? "Completed"
-              : status === "pending"
-                ? "Pending"
-                : "Rejected";
-
-        try {
-          emitNotification({
-            userId: data.sender_id,
-            type: "proposal_updated",
-            title: `Proposal ${action}`,
-            body: `${senderName || "Someone"} has ${action} your proposal.`,
-            data: {
-              proposalId: proposalId,
-              senderImage,
-              senderName,
-              proposalMsg: "",
-              link: link,
-            },
-          });
-        } catch (error) {
-          console.error(error, "notif error");
-        }
+        socket.emit("proposal:updated", {
+          receiverId: data.sender_id,
+          proposal: data,
+        });
       }
 
       return data;
     } catch (err) {
-      console.error("Update proposal error:", getErrorMessage(err));
+      set({ error: getErrorMessage(err) });
       throw err;
     } finally {
       set({ updatingStatus: false });
@@ -143,6 +95,45 @@ export const useProposalStore = create<ProposalStore>((set, get) => ({
 
   getProposalById: (id) => {
     return get().proposals.find((p) => p.id === id);
+  },
+
+  listenForProposalUpdates: async () => {
+    let socket;
+    try {
+      socket = await waitForSocket();
+      console.log(socket, "socket");
+    } catch (err) {
+      console.error("listenForProposalUpdates: socket not available", err);
+      return () => {};
+    }
+
+    const handleCreated = ({ proposal }: { proposal: any }) => {
+      console.log("[client] received proposal_created", proposal);
+      set((state) => {
+        if (state.proposals.some((p) => p.id === proposal.id)) return state;
+        return { proposals: [formatProposal(proposal), ...state.proposals] };
+      });
+    };
+
+    const handleUpdated = ({ proposal }: { proposal: any }) => {
+      console.log("[client] received proposal_updated", proposal);
+      set((state) => ({
+        proposals: state.proposals.map((p) =>
+          p.id === proposal.id ? formatProposal(proposal) : p,
+        ),
+      }));
+    };
+
+    socket.off("proposal_created", handleCreated);
+    socket.off("proposal_updated", handleUpdated);
+
+    socket.on("proposal_created", handleCreated);
+    socket.on("proposal_updated", handleUpdated);
+
+    return () => {
+      socket.off("proposal_created", handleCreated);
+      socket.off("proposal_updated", handleUpdated);
+    };
   },
 
   clearProposals: () => set({ proposals: [] }),

@@ -3,6 +3,7 @@
 
 import React from "react";
 import NumberRow from "./NumberRow";
+import { IconType } from "@/utils/SvgType";
 
 type SessionType = "quick" | "standard";
 
@@ -10,7 +11,7 @@ type Tab = {
   id: string;
   label: string;
   info: string;
-  icon: string;
+  icon: IconType;
 };
 
 type Props = {
@@ -33,6 +34,8 @@ const SessionDurationSelector = ({
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         {tabs.map((tab) => {
           const isActive = value === tab.id;
+          const Icon = tab.icon
+
           return (
             <button
               key={tab.id}
@@ -51,9 +54,7 @@ const SessionDurationSelector = ({
                     : "bg-surface border border-border"
                 }`}
               >
-                <span className="material-symbols-outlined text-xl">
-                  {tab.icon}
-                </span>
+                <Icon className="text-xl"/>
               </div>
               <div className="flex-1 min-w-0">
                 <h3 className="font-semibold text-sm md:text-base">

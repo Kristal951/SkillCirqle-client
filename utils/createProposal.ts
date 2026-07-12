@@ -31,8 +31,8 @@ export async function createProposal(data: CreateProposalInput) {
     .insert({
       sender_id: data.senderId,
       receiver_id: data.receiverId,
-      teach_skill_id: data.teachSkillId ?? null,
-      learn_skill_id: data.learnSkillId ?? null,
+      teach_skill_id: data.teachSkillId || null,
+      learn_skill_id: data.learnSkillId || null,
       message: data.message,
       engagement_type: data.engagementType,
       session_format: "one-on-one",
@@ -41,7 +41,7 @@ export async function createProposal(data: CreateProposalInput) {
       expected_number_of_sessions: data.expectedSessions,
       session_duration_minutes: durationMap[data.sessionDurationType] ?? 60,
     })
-    .select("id")
+    .select("*")
     .single();
 
   if (error) {
@@ -56,7 +56,16 @@ export async function createProposal(data: CreateProposalInput) {
     throw new Error("Failed to create proposal.");
   }
 
-  void sendProposalNotification(proposal.id, data);
+  const socket = getSocket();
+  if(!socket) return
+  if (socket) {
+    socket.emit("proposal:created", {
+      receiverId: data.receiverId,
+      proposal,
+    });
+  }
+
+  // void sendProposalNotification(proposal.id, data);
 
   return proposal;
 }

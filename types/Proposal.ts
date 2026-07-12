@@ -58,7 +58,7 @@ export type ProposalStore = {
   updatingStatus: boolean;
 
   fetchProposals: (userId: string) => Promise<void>;
-  createProposal: (payload: Partial<Proposal>) => Promise<Proposal>;
+
   updateProposalStatus: (
     proposalId: string,
     status: ProposalStatus,
@@ -68,4 +68,5 @@ export type ProposalStore = {
   ) => Promise<null>;
   getProposalById: (id: string) => Proposal | undefined;
   clearProposals: () => void;
+  listenForProposalUpdates: () => Promise<() => void>;
 };

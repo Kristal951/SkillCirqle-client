@@ -41,7 +41,6 @@ export default function RootLayout({
   }, [pathname]);
   useEffect(() => {
     setIsInSessionPage(pathname.startsWith("/sessions"));
-    console.log(isInSessionPage, "sess", pathname);
   }, [pathname]);
 
   const clearSessionCache = useClearSessionCache();
