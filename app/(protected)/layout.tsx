@@ -69,74 +69,80 @@ export default function RootLayout({
     }
   };
 
+  const isAdmin = pathname.startsWith("/admin");
+
   return (
-    <div className="flex relative flex-col h-screen">
-      {!isInSessionPage && <Navbar setIsSideBarOpen={setIsSideBarOpen} />}
+    <SocketProvider>
+      <NotificationProvider>
+        <OneSignalProvider />
+        <OneSignalLoginSync />
+        <div className="flex relative flex-col h-screen">
+          {!isAdmin && !isInSessionPage && (
+            <Navbar setIsSideBarOpen={setIsSideBarOpen} />
+          )}
 
-      <div className="flex flex-1 overflow-hidden">
-        <Sidebar
-          isSideBarOpen={isSideBarOpen}
-          setIsSideBarOpen={setIsSideBarOpen}
-        />
+          <div className="flex flex-1 overflow-hidden">
+            {!isAdmin && (
+              <Sidebar
+                isSideBarOpen={isSideBarOpen}
+                setIsSideBarOpen={setIsSideBarOpen}
+              />
+            )}
 
-        <main
-          className={`flex-1 overflow-y-auto ${isInSessionPage ? "mt-0" : "mt-17.5"} ${
-            (isInChatPage && activeChat) || isInSessionPage
-              ? "mb-0"
-              : "mb-13 md:mb-0"
-          }`}
-        >
-          <SocketProvider>
-            <NotificationProvider>
-              <OneSignalProvider />
-              <OneSignalLoginSync />
+            <main
+              className={`flex-1 overflow-y-auto ${isInSessionPage || isAdmin ? "mt-0" : "mt-17.5"} ${
+                (isInChatPage && activeChat) || isInSessionPage
+                  ? "mb-0"
+                  : "mb-13 md:mb-0"
+              }`}
+            >
               {children}
-            </NotificationProvider>
-          </SocketProvider>
-        </main>
-      </div>
-
-      {loggingOut && (
-        <div className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center">
-          <Spinner size={48} />
-        </div>
-      )}
-
-      <MediaViewer />
-
-      {showLogoutModal && (
-        <div className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center p-4">
-          <div className="bg-surface rounded-xl shadow-2xl max-w-sm w-full p-6 space-y-4">
-            <div className="text-center">
-              <h3 className="text-2xl font-bold text-primary">
-                Confirm Logout
-              </h3>
-              <p className="text-text-secondary mt-2">
-                Are you sure you want to log out? You will need to sign in again
-                to access your account.
-              </p>
-            </div>
-
-            <div className="flex flex-col sm:flex-row gap-3 py-4">
-              <button
-                onClick={closeLogoutModal}
-                className="flex-1 px-4 py-2 rounded-lg bg-text-primary text-primary font-medium transition-colors"
-              >
-                Cancel
-              </button>
-
-              <button
-                onClick={handleLogout}
-                className="flex-1 px-4 py-2 text-secondary hover:text-white rounded-lg font-medium transition-colors"
-              >
-                Sign Out
-              </button>
-            </div>
+            </main>
           </div>
-        </div>
-      )}
 
-      <BottomBar />
-    </div>
+          {loggingOut && (
+            <div className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center">
+              <Spinner size={48} />
+            </div>
+          )}
+
+          {!isAdmin && <MediaViewer />}
+
+          {showLogoutModal && (
+            <div className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center p-4">
+              <div className="bg-surface rounded-xl shadow-2xl max-w-sm w-full p-6 space-y-4">
+                <div className="text-center">
+                  <h3 className="text-2xl font-bold text-primary">
+                    Confirm Logout
+                  </h3>
+                  <p className="text-text-secondary mt-2">
+                    Are you sure you want to log out? You will need to sign in
+                    again to access your account.
+                  </p>
+                </div>
+
+                <div className="flex flex-col sm:flex-row gap-3 py-4">
+                  <button
+                    onClick={closeLogoutModal}
+                    className="flex-1 px-4 py-2 rounded-lg bg-text-primary text-primary font-medium transition-colors"
+                  >
+                    Cancel
+                  </button>
+
+                  <button
+                    onClick={handleLogout}
+                    className="flex-1 px-4 py-2 text-secondary hover:text-white rounded-lg font-medium transition-colors"
+                  >
+                    Sign Out
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {!isAdmin && <BottomBar />}
+        </div>
+      </NotificationProvider>
+    </SocketProvider>
   );
 }

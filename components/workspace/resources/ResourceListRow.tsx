@@ -2,15 +2,16 @@
 import { ExternalLink, Trash2 } from "lucide-react";
 import Image from "next/image";
 import React from "react";
-import ImageIcon from "@material-symbols/svg-400/outlined/image.svg"
-import Video from "@material-symbols/svg-400/outlined/video_camera_back.svg"
-import Pdf from "@material-symbols/svg-400/outlined/picture_as_pdf.svg"
-import TableChart from "@material-symbols/svg-400/outlined/table_chart.svg"
-import SlideShow from "@material-symbols/svg-400/outlined/slideshow.svg"
-import FolderZip from "@material-symbols/svg-400/outlined/folder_zip.svg"
-import Description from "@material-symbols/svg-400/outlined/description.svg"
-import StickyNote from "@material-symbols/svg-400/outlined/sticky_note_2.svg"
-import Link from "@material-symbols/svg-400/outlined/link.svg"
+import ImageIcon from "@material-symbols/svg-400/outlined/image.svg";
+import Video from "@material-symbols/svg-400/outlined/video_camera_back.svg";
+import Pdf from "@material-symbols/svg-400/outlined/picture_as_pdf.svg";
+import TableChart from "@material-symbols/svg-400/outlined/table_chart.svg";
+import SlideShow from "@material-symbols/svg-400/outlined/slideshow.svg";
+import FolderZip from "@material-symbols/svg-400/outlined/folder_zip.svg";
+import Description from "@material-symbols/svg-400/outlined/description.svg";
+import StickyNote from "@material-symbols/svg-400/outlined/sticky_note_2.svg";
+import Link from "@material-symbols/svg-400/outlined/link.svg";
+import Spinner from "@/components/ui/Spinner";
 
 type ResourceType = "file" | "link" | "note";
 
@@ -20,6 +21,7 @@ interface Resource {
   skill_track_id: string | null;
   file_name: string | null;
   file_size: number | null;
+  file_title?: string | null;
   file_mime_type: string | null;
   storage_path: string | null;
   url: string | null;
@@ -56,6 +58,7 @@ export function ResourceRow({
   isOwner,
   onOpen,
   onDelete,
+  deletingResourceID,
 }: {
   resource: Resource;
   color: string;
@@ -63,6 +66,7 @@ export function ResourceRow({
   isOwner: boolean;
   onOpen: () => void;
   onDelete: () => void;
+  deletingResourceID: string;
 }) {
   const Icon =
     r.type === "link"
@@ -73,7 +77,9 @@ export function ResourceRow({
 
   const title =
     r.type === "file"
-      ? r.file_name
+      ? r.file_title
+        ? r.file_title
+        : r.file_name
       : r.type === "link"
         ? r.link_title || r.url
         : r.note_title;
@@ -81,7 +87,10 @@ export function ResourceRow({
   const showSize = r.type === "file" && r.file_size;
 
   return (
-    <div className="flex items-center justify-between gap-4 md:px-5 px-2 py-3.5 group hover:bg-text-primary/2 border-b border-text-primary/3 last:border-0 transition-colors duration-200">
+    <div
+      onClick={r.type === "link" ? () => window.open(r.url!, "_blank") : onOpen}
+      className="flex items-center cursor-pointer justify-between gap-4 md:px-5 px-2 py-3.5 group hover:bg-text-primary/2 border-b border-text-primary/3 last:border-0 transition-colors duration-200"
+    >
       <div className="flex items-center gap-3 min-w-0 flex-1">
         <div
           className={`w-9 h-9 rounded-xl flex items-center justify-center border shrink-0
@@ -92,10 +101,10 @@ export function ResourceRow({
                 ? "bg-amber-500/10 text-amber-400 border-amber-500/20"
                 : r.type === "file"
                   ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
-                  :  "bg-text-primary/5 text-text-secondary border-text-primary/10"
+                  : "bg-text-primary/5 text-text-secondary border-text-primary/10"
           }`}
         >
-          <Icon className="text-base"/>
+          <Icon className="text-base" />
         </div>
 
         <div className="flex-1 min-w-0">
@@ -143,35 +152,32 @@ export function ResourceRow({
       </div>
 
       <div className="flex items-center gap-4 md:opacity-0 md:group-hover:opacity-100 focus-within:opacity-100 transition-opacity duration-200 shrink-0">
-        {(r.type === "file" || r.type === "note") && (
-          <button
-            type="button"
-            onClick={onOpen}
-            className="inline-flex items-center gap-1 text-xs font-semibold text-accent hover:underline transition-all focus:outline-none focus:ring-1 focus:ring-accent rounded px-1"
-          >
-            <ExternalLink className="w-4 h-4" />
-          </button>
-        )}
-
-        {r.type === "link" && r.url && (
-          <a
-            href={r.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-xs font-semibold text-blue-400 hover:underline transition-all flex items-center gap-0.5"
-          >
-            <ExternalLink className="w-4 h-4" />
-          </a>
-        )}
+        <button
+          type="button"
+          onClick={
+            r.type === "link" ? () => window.open(r.url!, "_blank") : onOpen
+          }
+          className="text-xs text-accent font-semibold hover:text-accent/80 transition-colors shrink-0 flex items-center gap-0.5"
+        >
+          <ExternalLink className="w-4 h-4" />
+        </button>
 
         {isOwner && (
           <button
             type="button"
-            onClick={onDelete}
-            aria-label="Delete item"
-            className="p-2 text-red-400/70 hover:text-red-500 hover:bg-red-500/10 active:bg-red-500/20 rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-red-400/50"
+            disabled={deletingResourceID === r.id}
+            onClick={(e) => {
+              e.stopPropagation();
+              onDelete();
+            }}
+            className="p-1.5 rounded-lg flex items-center justify-center text-red-400/70 hover:text-red-400 hover:bg-red-500/10 md:opacity-0 md:group-hover:opacity-100 md:focus-within:opacity-100 md:text-text-secondary/40 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-red-400/40"
+            aria-label="Delete resource"
           >
-            <Trash2 className="w-4 h-4" />
+            {deletingResourceID === r.id ? (
+              <Spinner size={15} />
+            ) : (
+              <Trash2 className="w-4 h-4" />
+            )}
           </button>
         )}
       </div>

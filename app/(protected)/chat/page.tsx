@@ -10,10 +10,11 @@ import {
 import { useAuthStore } from "@/store/useAuthStore";
 import { getSocket } from "@/lib/socket";
 import MessageBubble from "@/components/chat/MessageBubble";
-import Spinner from "@/components/ui/Spinner";
-import { ArrowDown, ChevronDown } from "lucide-react";
+import { ArrowDown } from "lucide-react";
 import { useSocketStore } from "@/store/useSocketStore";
 import ChatBubbleOff from "@material-symbols/svg-400/outlined/chat_bubble_off.svg";
+import ChatSkeleton from "@/components/chat/ChatMessageSkeleton";
+import { useSidebarStore } from "@/store/useSidebarStore";
 
 export type UIMessage = {
   id: string;
@@ -50,11 +51,6 @@ export type UIMessage = {
   status?: MessageStatus;
 };
 
-type GroupedMessages = {
-  date: string;
-  messages: UIMessage[];
-};
-
 const Chat = () => {
   const { user } = useAuthStore();
 
@@ -73,6 +69,7 @@ const Chat = () => {
   const messageRefs = useRef<Record<string, HTMLDivElement | null>>({});
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
   const [showScrollButton, setShowScrollButton] = useState(false);
+  const { setCollapsed } = useSidebarStore();
 
   const typingUsers =
     useSocketStore((s) => s.typingUsers[activeChat?.id || ""]) || [];
@@ -122,6 +119,10 @@ const Chat = () => {
       behavior: "smooth",
     });
   };
+
+  useEffect(() => {
+    setCollapsed(true);
+  }, [setCollapsed]);
 
   useEffect(() => {
     const socket = getSocket();
@@ -287,14 +288,13 @@ const Chat = () => {
 
   if (!activeChat) {
     return (
-      <div className="w-full h-full flex items-center justify-center text-gray-400">
+      <div className="w-full h-full flex items-center justify-center text-text-secondary">
         <div className="text-center flex flex-col items-center">
-          {/* <span className="material-symbols-outlined text-[100px]">
-            chat_bubble_off
-          </span> */}
-          <ChatBubbleOff className="material-symbols-outlined text-[100px]"/>
-          <h2 className="text-2xl mt-2 text-white">No chat selected</h2>
-          <p className="text-sm text-text-secondary">Select a conversation to start messaging</p>
+          <ChatBubbleOff className="material-symbols-outlined text-[100px]" />
+          <h2 className="text-2xl mt-2 text-text-primary">No chat selected</h2>
+          <p className="text-sm text-text-secondary">
+            Select a conversation to start messaging
+          </p>
         </div>
       </div>
     );
@@ -302,18 +302,18 @@ const Chat = () => {
 
   if (fetchingMessages) {
     return (
-      <div className="w-full h-full flex items-center justify-center">
-        <Spinner size={30} />
+      <div className="relative flex flex-col h-full w-full">
+        <ChatSkeleton />
       </div>
     );
   }
 
   if (rawMessages.length === 0 && !fetchingMessages) {
     return (
-      <div className="w-full h-full flex items-center justify-center text-gray-400">
+      <div className="w-full h-full flex items-center justify-center text-text-secondary">
         <div className="text-center flex flex-col items-center">
-         <ChatBubbleOff className="material-symbols-outlined text-[100px]"/>
-          <h2 className="text-2xl mt-2 text-white">No messages yet</h2>
+          <ChatBubbleOff className="material-symbols-outlined text-[100px]" />
+          <h2 className="text-2xl mt-2 text-text-primary">No messages yet</h2>
           <p className="text-sm">Start the conversation</p>
         </div>
       </div>
@@ -332,7 +332,7 @@ const Chat = () => {
               <div className="flex items-center justify-center gap-4 my-8 select-none">
                 <div className="h-px flex-1 bg-linear-to-r from-transparent via-border/60 to-border/60" />
                 <div className="relative group">
-                  <span className="relative z-10 text-[8px] font-black uppercase tracking-[0.2em] px-4 py-1.5 rounded-full text-text-secondary shadow-sm whitespace-nowrap">
+                  <span className="relative z-10 text-[9px] font-semibold uppercase tracking-[0.2em] px-4 py-1.5 rounded-full text-text-secondary shadow-sm whitespace-nowrap">
                     {group.date}
                   </span>
                 </div>
@@ -355,14 +355,14 @@ const Chat = () => {
 
           <div className="w-full py-4">
             {typingUsers.length > 0 && (
-              <div className="w-full flex items-center gap-2 px-4 py-2 text-xs text-gray-400">
+              <div className="w-full flex items-center gap-2 px-4 py-2 text-xs text-text-secondary">
                 <div className="flex -space-x-2">
                   {typingUsers.slice(0, 3).map((user) => (
                     <img
                       key={user.id}
                       src={user.avatar}
                       alt={user.name}
-                      className="w-6 h-6 rounded-full border border-gray-800 object-cover"
+                      className="w-6 h-6 rounded-full border border-border object-cover"
                     />
                   ))}
                 </div>
@@ -383,7 +383,7 @@ const Chat = () => {
       {showScrollButton && (
         <button
           onClick={scrollToBottom}
-          className="absolute bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center justify-center px-3 py-2 gap-1 rounded-full bg-surface text-white shadow-xl hover:scale-105 transition-all duration-200"
+          className="absolute bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center justify-center px-3 py-2 gap-1 rounded-full bg-surface text-text-primary shadow-xl hover:scale-105 transition-all duration-200"
         >
           <ArrowDown size={22} />
           <p>Scroll to bottom</p>

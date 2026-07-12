@@ -5,11 +5,9 @@ import { ThemeProvider } from "next-themes";
 import ToastContainer from "./ui/ToastContainer";
 import { Analytics } from "@vercel/analytics/next";
 import AuthProvider from "@/providers/AuthProvider";
-import SocketProvider from "@/providers/SocketProvider";
-import NotificationProvider from "@/providers/NotificationProvider";
 import { LogoutModalProvider } from "@/providers/LogoutContext";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import OneSignalLoginSync from "@/providers/OneSignalLoginSync";
+import AuthErrorToast from "@/providers/AuthErrorToast";
 
 export default function Providers({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(
@@ -28,6 +26,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
     <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
       <ToastContainer />
       <AuthProvider>
+        <AuthErrorToast />
         <Analytics />
         <LogoutModalProvider>
           <QueryClientProvider client={queryClient}>

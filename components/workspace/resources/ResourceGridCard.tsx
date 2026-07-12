@@ -2,15 +2,16 @@
 import React from "react";
 import Image from "next/image";
 import { ExternalLink, Trash2 } from "lucide-react";
-import ImageIcon from "@material-symbols/svg-400/outlined/image.svg"
-import Video from "@material-symbols/svg-400/outlined/video_camera_back.svg"
-import Pdf from "@material-symbols/svg-400/outlined/picture_as_pdf.svg"
-import TableChart from "@material-symbols/svg-400/outlined/table_chart.svg"
-import SlideShow from "@material-symbols/svg-400/outlined/slideshow.svg"
-import FolderZip from "@material-symbols/svg-400/outlined/folder_zip.svg"
-import Description from "@material-symbols/svg-400/outlined/description.svg"
-import StickyNote from "@material-symbols/svg-400/outlined/sticky_note_2.svg"
-import Link from "@material-symbols/svg-400/outlined/link.svg"
+import ImageIcon from "@material-symbols/svg-400/outlined/image.svg";
+import Video from "@material-symbols/svg-400/outlined/video_camera_back.svg";
+import Pdf from "@material-symbols/svg-400/outlined/picture_as_pdf.svg";
+import TableChart from "@material-symbols/svg-400/outlined/table_chart.svg";
+import SlideShow from "@material-symbols/svg-400/outlined/slideshow.svg";
+import FolderZip from "@material-symbols/svg-400/outlined/folder_zip.svg";
+import Description from "@material-symbols/svg-400/outlined/description.svg";
+import StickyNote from "@material-symbols/svg-400/outlined/sticky_note_2.svg";
+import Link from "@material-symbols/svg-400/outlined/link.svg";
+import Spinner from "@/components/ui/Spinner";
 
 type ResourceType = "file" | "link" | "note";
 
@@ -19,6 +20,7 @@ interface Resource {
   type: ResourceType;
   skill_track_id: string | null;
   file_name: string | null;
+  file_title?: string | null;
   file_size: number | null;
   file_mime_type: string | null;
   storage_path: string | null;
@@ -56,6 +58,7 @@ export function ResourceCard({
   isOwner,
   onOpen,
   onDelete,
+  deletingResourceID
 }: {
   resource: Resource;
   color: string;
@@ -63,6 +66,7 @@ export function ResourceCard({
   isOwner: boolean;
   onOpen: () => void;
   onDelete: () => void;
+  deletingResourceID: string;
 }) {
   const Icon =
     r.type === "link"
@@ -73,13 +77,18 @@ export function ResourceCard({
 
   const title =
     r.type === "file"
-      ? r.file_name
+      ? r.file_title
+        ? r.file_title
+        : r.file_name
       : r.type === "link"
         ? r.link_title || r.url
         : r.note_title;
 
   return (
-    <div className="group relative flex flex-col justify-between p-4 rounded-2xl bg-surface/50 border border-text-primary/5 hover:border-text-primary/10 hover:bg-surface/80 hover:shadow-xl hover:shadow-primary/5 transition-all duration-300 min-h-40">
+    <div
+      onClick={r.type === "link" ? () => window.open(r.url!, "_blank") : onOpen}
+      className="group relative cursor-pointer flex flex-col justify-between p-4 rounded-2xl bg-surface/50 border border-text-primary/5 hover:border-text-primary/10 hover:bg-surface/80 hover:shadow-xl hover:shadow-primary/5 transition-all duration-300 min-h-40"
+    >
       <div className="flex items-start justify-between w-full">
         <div
           className={`w-9 h-9 rounded-xl flex items-center justify-center border shrink-0
@@ -93,17 +102,27 @@ export function ResourceCard({
                   : "bg-text-primary/5 text-text-secondary border-text-primary/10"
           }`}
         >
-          <Icon className="text-base"/>
+          <Icon className="text-base" />
         </div>
 
         {isOwner && (
           <button
             type="button"
-            onClick={onDelete}
+            disabled={deletingResourceID === r.id}
+            onClick={(e) => {
+              e.stopPropagation();
+              onDelete();
+            }}
             className="p-1.5 rounded-lg flex items-center justify-center text-red-400/70 hover:text-red-400 hover:bg-red-500/10 md:opacity-0 md:group-hover:opacity-100 md:focus-within:opacity-100 md:text-text-secondary/40 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-red-400/40"
             aria-label="Delete resource"
           >
-            <Trash2 className="w-4 h-4" />
+            {
+              deletingResourceID === r.id ? (
+                <Spinner size={15}/>
+              ) : (
+                <Trash2 className="w-4 h-4" />
+              )
+            }
           </button>
         )}
       </div>
@@ -154,21 +173,15 @@ export function ResourceCard({
           </div>
         </div>
 
-        {r.type === "file" || r.type === "link" ? (
-          <button
-            type="button"
-            onClick={
-              r.type === "link" ? () => window.open(r.url!, "_blank") : onOpen
-            }
-            className="text-xs text-accent font-semibold hover:text-accent/80 transition-colors shrink-0 flex items-center gap-0.5"
-          >
-            <ExternalLink className="w-4 h-4" />
-          </button>
-        ) : (
-          <span className="text-[10px] uppercase font-bold tracking-wider text-text-secondary/40 shrink-0">
-            Note
-          </span>
-        )}
+        <button
+          type="button"
+          onClick={
+            r.type === "link" ? () => window.open(r.url!, "_blank") : onOpen
+          }
+          className="text-xs text-accent font-semibold hover:text-accent/80 transition-colors shrink-0 flex items-center gap-0.5"
+        >
+          <ExternalLink className="w-4 h-4" />
+        </button>
       </div>
     </div>
   );

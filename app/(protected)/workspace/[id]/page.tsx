@@ -15,6 +15,7 @@ import CalendarToday from "@material-symbols/svg-400/outlined/calendar_today.svg
 import MilitaryTech from "@material-symbols/svg-400/outlined/military_tech.svg";
 import CalendarAddOn from "@material-symbols/svg-400/outlined/calendar_add_on.svg";
 import Resources from "@/components/workspace/overview/Resources";
+import { getSocket } from "@/lib/socket";
 
 interface Session {
   id: string;
@@ -55,12 +56,6 @@ export default function WorkspaceOverview() {
   const [milestones, setMilestones] = useState<RecentMilestone[]>([]);
   const [overviewLoading, setOverviewLoading] = useState(false);
 
-  function getTrackColor(trackId: string | null) {
-    if (!trackId) return "gray";
-    const idx = skillTracks.findIndex((t) => t.id === trackId);
-    return idx === 0 ? "primary" : "accent";
-  }
-
   function getTrackName(trackId: string | null) {
     return skillTracks.find((t) => t.id === trackId)?.skills?.title ?? null;
   }
@@ -80,7 +75,7 @@ export default function WorkspaceOverview() {
       .from("skill_sessions")
       .select("id, title, scheduled_at, status, skill_track_id, duration, type")
       .eq("workspace_id", id)
-      .order("scheduled_at", { ascending: true })
+      .order("scheduled_at", { ascending: true });
 
     const { data: miles } = await supabase
       .from("workspace_milestones")
@@ -265,6 +260,7 @@ export default function WorkspaceOverview() {
               return (
                 <UpcomingSessionsCard
                   showRescheduleBtn={false}
+                  workspaceId={id}
                   s={s}
                   date={date}
                   getTrackName={getTrackName}

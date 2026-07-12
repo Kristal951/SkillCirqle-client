@@ -7,8 +7,10 @@ import { useAuthStore } from "@/store/useAuthStore";
 import Spinner from "@/components/ui/Spinner";
 import Sidebar from "@/components/workspace/Sidebar";
 import { useSidebarStore } from "@/store/useSidebarStore";
-import { useEffect } from "react";
+import { useContext, useEffect } from "react";
 import FolderOff from "@material-symbols/svg-400/outlined/folder_off.svg";
+import { getSocket } from "@/lib/socket";
+import { SocketContext } from "@/providers/SocketContext";
 
 interface WorkspaceLayoutProps {
   children: React.ReactNode;
@@ -21,16 +23,41 @@ export default function WorkspaceLayout({
   children: React.ReactNode;
 }) {
   const params = useParams();
-  const id = params.id as string;
+  const workspaceId = params.id as string;
   const { user } = useAuthStore();
-  const { workspace, members, skillTracks, loading } = useWorkspace(id);
+  const { workspace, members, skillTracks, loading } = useWorkspace(workspaceId);
   const { setCollapsed } = useSidebarStore();
+  const { socketReady } = useContext(SocketContext);
 
   const isSwap = workspace?.proposal?.engagement_type === "swap";
+  const userId = user?.id;
 
   useEffect(() => {
     setCollapsed(true);
   }, [setCollapsed]);
+
+  useEffect(() => {
+    if (!socketReady || !workspaceId || !userId) return;
+
+    const socket = getSocket();
+    if (!socket) return;
+
+    socket.emit(
+      "workspace:join",
+      {workspaceId },
+      (response: { success: boolean; message?: string }) => {
+        if (!response.success) {
+          console.error(response.message);
+        }
+      },
+    );
+
+    return () => {
+      socket.emit("workspace:leave", {
+        workspaceId: workspaceId,
+      });
+    };
+  }, [socketReady, workspaceId, userId]);
 
   if (loading) {
     return (
@@ -125,7 +152,7 @@ export default function WorkspaceLayout({
         <Sidebar
           skillTracks={skillTracks}
           members={members}
-          id={id}
+          id={workspaceId}
           userId={user?.id}
         />
 

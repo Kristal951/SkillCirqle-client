@@ -1,6 +1,6 @@
-// hooks/useWorkspaceActivity.ts
 import { useEffect, useState } from "react";
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
+import { getSocket } from "@/lib/socket";
 
 export type ActivityType =
   | "session_scheduled"
@@ -40,11 +40,37 @@ export function useWorkspaceActivity(
     fetch();
   }, [workspaceId]);
 
+  useEffect(() => {
+    const socket = getSocket();
+
+    if (!socket || !workspaceId) return;
+
+    const handleActivity = (activity: Activity) => {
+      
+      setActivity((prev) => {
+        if (prev.some((a) => a.id === activity.id)) {
+          return prev;
+        }
+
+        return [activity, ...prev].slice(0, limit);
+      });
+    };
+
+    socket.on("workspace:activity-created", handleActivity);
+
+    return () => {
+      socket.off("workspace:activity-created", handleActivity);
+    };
+  }, [workspaceId, limit]);
+
   async function fetch() {
     const supabase = getSupabaseBrowserClient();
     setLoading(true);
 
-    const { data, error } = await supabase.from("workspace_activity").select(`
+    const { data, error } = await supabase
+      .from("workspace_activity")
+      .select(
+        `
       id,
       type,
       metadata,
@@ -54,7 +80,17 @@ export function useWorkspaceActivity(
         name,
         avatar_url
       )
-  `).limit(limit)
+  `,
+      )
+      .eq("workspace_id", workspaceId)
+      .order("created_at", { ascending: false })
+      .limit(limit);
+
+    if (error) {
+      console.error(error);
+      setLoading(false);
+      return;
+    }
 
     const activities: Activity[] = (data ?? []).map((row) => {
       const profile = first(row.profiles);

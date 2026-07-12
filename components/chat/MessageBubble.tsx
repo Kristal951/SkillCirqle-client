@@ -14,7 +14,6 @@ import {
   Trash2,
 } from "lucide-react";
 import { useMediaViewer } from "@/store/useMediaViewer";
-import VoicePlayer from "./VoicePlayer";
 import { AnimatePresence, motion } from "framer-motion";
 import { useMessageActionsStore } from "@/store/useMessageStore";
 import { useChatStore } from "@/store/useChatStore";

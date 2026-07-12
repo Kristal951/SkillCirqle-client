@@ -19,6 +19,7 @@ import VolumeUp from "@material-symbols/svg-400/outlined/volume_up.svg";
 import CustomSelect from "@/components/sessions/preview/CustomSelect";
 import { getSocket } from "@/lib/socket";
 import { toast } from "@/lib/toast";
+import { useWorkspaceResources } from "@/hooks/useWorkspaceResources";
 
 type SocketResponse = {
   success: boolean;
@@ -84,6 +85,10 @@ const VideoPreview = () => {
     loading: sessionLoading,
     markSessionActive,
   } = useSessionData(sessionId, user?.id);
+  const { resources, loading: resourcesLoading } = useWorkspaceResources({
+    workspaceId: sessionData?.workspaceId || "",
+    sessionId: sessionId || undefined,
+  });
 
   const isHost = !!sessionData?.isHost;
 
@@ -611,6 +616,31 @@ const VideoPreview = () => {
               {sessionData?.duration || "00:00"} minutes
             </h2>
           </div>
+
+          {resources.length > 0 && (
+            <div className="space-y-2">
+              <span className="text-[10px] tracking-wider uppercase font-bold text-text-secondary block">
+                Resources for this session
+              </span>
+              <div className="space-y-2">
+                {resources.map((r) => (
+                  <a
+                    key={r.id}
+                    href={r.type === "link" ? r.url! : `#`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2 p-2.5 rounded-lg bg-surface border border-border/50 hover:border-primary/30 transition-colors text-sm text-text-primary truncate"
+                  >
+                    {r.type === "link"
+                      ? r.link_title
+                      : r.type === "file"
+                        ? r.file_name
+                        : r.note_title}
+                  </a>
+                ))}
+              </div>
+            </div>
+          )}
 
           <div className="w-full space-y-2">
             <span className="text-[10px] tracking-wider uppercase font-bold text-text-secondary block">

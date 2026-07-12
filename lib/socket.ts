@@ -32,7 +32,6 @@ export const connectSocket = (token: string) => {
       console.error("❌ Connection Error:", err.message);
     });
 
-    // Fix: resolve anyone who was waiting on the instance to exist.
     readyResolvers.forEach((resolve) => resolve(socket!));
     readyResolvers = [];
   } else {

@@ -170,6 +170,7 @@ export default function SessionsPage() {
                       s={s}
                       date={date}
                       isHost={s.host_id === user?.id}
+                      workspaceId={workspaceId}
                       getTrackName={getTrackName}
                       showRescheduleBtn={false}
                       onJoin={(id) => {
@@ -204,6 +205,7 @@ export default function SessionsPage() {
                           isHost={s.host_id === user?.id}
                           getTrackName={getTrackName}
                           onReschedule={handleReschedule}
+                          workspaceId={workspaceId}
                           onJoin={(id) => {
                             const route =
                               s.type === "VIDEO" ? "video" : "audio";

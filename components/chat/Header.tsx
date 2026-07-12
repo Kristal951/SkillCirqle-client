@@ -3,20 +3,56 @@
 import { useChatStore } from "@/store/useChatStore";
 import { useSocketStore } from "@/store/useSocketStore";
 import { formatLastSeenShort } from "@/utils/formatTime";
-import { EllipsisVertical, Phone, Video, ChevronLeft } from "lucide-react";
+import {
+  EllipsisVertical,
+  ChevronLeft,
+  Image as ImageIcon,
+  User,
+  BellOff,
+  Bell,
+  Trash2,
+  Ban,
+} from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { getSocket } from "@/lib/socket";
+import { toast } from "@/lib/toast";
+import { useMediaViewer } from "@/store/useMediaViewer";
 
 const Header = () => {
-  const { activeChat, setActiveChat } = useChatStore();
+  const { activeChat, setActiveChat, messages } = useChatStore();
+  const lastSeenMap = useChatStore((s) => s.lastSeen);
   const [tick, setTick] = useState(0);
-
-  const [isInitializing, setIsInitializing] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [muted, setMuted] = useState(false);
+  const [confirmingClear, setConfirmingClear] = useState(false);
+  const [confirmingBlock, setConfirmingBlock] = useState(false);
 
   const onlineUsers = useSocketStore((s) => s.onlineUsers);
   const typingUsers = useSocketStore((s) => s.typingUsers);
-
+  const menuRef = useRef<HTMLDivElement | null>(null);
   const router = useRouter();
+  const { openViewer } = useMediaViewer();
+
+  useEffect(() => {
+    const interval = setInterval(() => setTick((t) => t + 1), 15000);
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    if (!menuOpen) return;
+
+    const handleClickOutside = (e: MouseEvent) => {
+      if (!menuRef.current?.contains(e.target as Node)) {
+        setMenuOpen(false);
+        setConfirmingClear(false);
+        setConfirmingBlock(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [menuOpen]);
 
   if (!activeChat) return null;
 
@@ -28,39 +64,7 @@ const Header = () => {
     ? typingList.some((user) => user.id === otherUserId)
     : false;
 
-  const lastSeenMap = useChatStore((s) => s.lastSeen);
   const lastSeen = lastSeenMap[otherUserId];
-
-  const startSession = async (type: "audio" | "video") => {
-    if (isInitializing) return;
-    
-    try {
-      setIsInitializing(true);
-      const response = await fetch("/api/sessions/create", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          chatId: activeChat.id,
-          callType: type,
-          recipientId: otherUserId,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to create call session record");
-      }
-
-      const data = await response.json();
-      router.push(`/sessions/video/${data.roomId}`);
-    } catch (err) {
-      console.error("Could not provision live session hardware link:", err);
-      // Optional: Trigger a toast notification to the user here
-    } finally {
-      setIsInitializing(false);
-    }
-  };
 
   const getStatus = () => {
     if (isOnline) return "online";
@@ -73,13 +77,86 @@ const Header = () => {
     return "last_seen";
   };
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setTick((t) => t + 1);
-    }, 15000);
+  const chatMedia = (messages[activeChat.id] || [])
+    .flatMap((msg) => msg.metadata?.media || [])
+    .filter((m) => m.type === "image")
+    .map((m) => ({ url: m.url, name: m.name }));
 
-    return () => clearInterval(interval);
-  }, []);
+  const handleViewMedia = () => {
+    setMenuOpen(false);
+    if (chatMedia.length === 0) {
+      toast.info("No media yet", "No images have been shared in this conversation.");
+      return;
+    }
+    openViewer({ images: chatMedia, index: 0 });
+  };
+
+  const handleViewProfile = () => {
+    setMenuOpen(false);
+    router.push(`/profile/${otherUserId}`);
+  };
+
+  const handleToggleMute = async () => {
+    const next = !muted;
+    setMuted(next);
+    setMenuOpen(false);
+
+    try {
+      const res = await fetch(`/api/user/conversations/${activeChat.id}/mute`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ muted: next }),
+      });
+      if (!res.ok) throw new Error();
+      toast.success(next ? "Notifications muted" : "Notifications unmuted", "");
+    } catch {
+      setMuted(!next);
+      toast.error("Unable to update mute setting", "Please try again.");
+    }
+  };
+
+  const handleClearChat = async () => {
+    if (!confirmingClear) {
+      setConfirmingClear(true);
+      return;
+    }
+
+    try {
+      const res = await fetch(`/api/user/conversations/${activeChat.id}/messages`, {
+        method: "DELETE",
+      });
+      if (!res.ok) throw new Error();
+      toast.success("Chat cleared", "");
+    } catch {
+      toast.error("Unable to clear chat", "Please try again.");
+    } finally {
+      setMenuOpen(false);
+      setConfirmingClear(false);
+    }
+  };
+
+  const handleBlockUser = async () => {
+    if (!confirmingBlock) {
+      setConfirmingBlock(true);
+      return;
+    }
+
+    try {
+      const res = await fetch(`/api/user/block`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId: otherUserId }),
+      });
+      if (!res.ok) throw new Error();
+      toast.success("User blocked", "");
+      setActiveChat(null);
+    } catch {
+      toast.error("Unable to block user", "Please try again.");
+    } finally {
+      setMenuOpen(false);
+      setConfirmingBlock(false);
+    }
+  };
 
   return (
     <div className="w-full sticky top-0 z-50 bg-background/80 backdrop-blur-md flex items-center justify-between p-3 border-b border-border">
@@ -87,7 +164,6 @@ const Header = () => {
         <button
           onClick={() => setActiveChat(null)}
           className="md:hidden p-1 -ml-1 hover:bg-surface rounded-full transition"
-          disabled={isInitializing}
         >
           <ChevronLeft className="w-6 h-6" />
         </button>
@@ -129,26 +205,78 @@ const Header = () => {
         </div>
       </div>
 
-      <div className="flex gap-1 md:gap-2 items-center">
+      <div className="relative" ref={menuRef}>
         <button
-          onClick={() => startSession("video")}
-          disabled={isInitializing}
-          className={`p-2 rounded-lg hover:bg-surface transition ${isInitializing ? "opacity-40 cursor-not-allowed" : ""}`}
+          onClick={() => setMenuOpen((v) => !v)}
+          aria-label="Conversation options"
+          aria-expanded={menuOpen}
+          className="p-2 rounded-lg hover:bg-surface transition"
         >
-          <Video className="w-5 h-5 text-text-secondary" />
-        </button>
-
-        <button
-          onClick={() => startSession("audio")}
-          disabled={isInitializing}
-          className={`p-2 rounded-lg hover:bg-surface transition ${isInitializing ? "opacity-40 cursor-not-allowed" : ""}`}
-        >
-          <Phone className="w-5 h-5 text-text-secondary" />
-        </button>
-
-        <button className="p-2 rounded-lg hover:bg-surface transition">
           <EllipsisVertical className="w-5 h-5 text-text-secondary" />
         </button>
+
+        {menuOpen && (
+          <div className="absolute right-0 top-full mt-2 w-56 rounded-xl border border-border bg-surface shadow-2xl overflow-hidden z-50">
+            <button
+              onClick={handleViewMedia}
+              className="w-full flex items-center gap-3 px-4 py-3 text-sm text-text-primary hover:bg-background transition-colors"
+            >
+              <ImageIcon className="w-4 h-4 text-text-secondary" />
+              View media
+              {chatMedia.length > 0 && (
+                <span className="ml-auto text-xs text-text-secondary">
+                  {chatMedia.length}
+                </span>
+              )}
+            </button>
+
+            <button
+              onClick={handleViewProfile}
+              className="w-full flex items-center gap-3 px-4 py-3 text-sm text-text-primary hover:bg-background transition-colors"
+            >
+              <User className="w-4 h-4 text-text-secondary" />
+              View profile
+            </button>
+
+            <button
+              onClick={handleToggleMute}
+              className="w-full flex items-center gap-3 px-4 py-3 text-sm text-text-primary hover:bg-background transition-colors"
+            >
+              {muted ? (
+                <Bell className="w-4 h-4 text-text-secondary" />
+              ) : (
+                <BellOff className="w-4 h-4 text-text-secondary" />
+              )}
+              {muted ? "Unmute notifications" : "Mute notifications"}
+            </button>
+
+            <div className="h-px bg-border/60 my-1" />
+
+            <button
+              onClick={handleClearChat}
+              className={`w-full flex items-center gap-3 px-4 py-3 text-sm transition-colors ${
+                confirmingClear
+                  ? "bg-red-500/10 text-red-500"
+                  : "text-text-primary hover:bg-background"
+              }`}
+            >
+              <Trash2 className="w-4 h-4" />
+              {confirmingClear ? "Click again to confirm" : "Clear chat"}
+            </button>
+
+            <button
+              onClick={handleBlockUser}
+              className={`w-full flex items-center gap-3 px-4 py-3 text-sm transition-colors ${
+                confirmingBlock
+                  ? "bg-red-500/10 text-red-500"
+                  : "text-red-500 hover:bg-red-500/5"
+              }`}
+            >
+              <Ban className="w-4 h-4" />
+              {confirmingBlock ? "Click again to confirm" : "Block user"}
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -1,5 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextRequest, NextResponse } from "next/server";
+import { checkIsAdminWithClient } from "./utils/isAdmin";
 
 export async function middleware(request: NextRequest) {
   let response = NextResponse.next();
@@ -41,11 +42,30 @@ export async function middleware(request: NextRequest) {
     path.startsWith("/auth") &&
     !path.startsWith("/auth/mfa") &&
     !isUpdatePasswordPage;
+  const isAdminPage = path.startsWith("/admin");
   const isVerifyEmailPage = path.startsWith("/auth/verify-email");
   const isMfaRoute = path.startsWith("/auth/mfa");
   const isProtectedRoute = ["/dashboard", "/onboarding"].some((p) =>
     path.startsWith(p),
   );
+
+  if (isAdminPage) {
+    if (!user) {
+      const url = new URL("/auth/signin", request.url);
+      url.searchParams.set("error", "unauthorized");
+      url.searchParams.set("redirect", request.nextUrl.pathname);
+
+      return NextResponse.redirect(url);
+    }
+
+    const { isAdmin } = await checkIsAdminWithClient(supabase, user.id);
+
+    if (!isAdmin) {
+      const url = new URL("/dashboard", request.url);
+      url.searchParams.set("error", "admin_required");
+      return NextResponse.redirect(url);
+    }
+  }
 
   if (!user && isProtectedRoute) {
     const url = request.nextUrl.clone();
@@ -106,5 +126,8 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico|api/auth|$).*)"],
+  matcher: [
+    "/admin/:path*",
+    "/((?!_next/static|_next/image|favicon.ico|api/auth|$).*)",
+  ],
 };

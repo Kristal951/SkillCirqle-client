@@ -2,9 +2,7 @@
 
 import React from "react";
 import { useParams } from "next/navigation";
-import Link from "next/link";
 import { useWorkspaceResources } from "@/hooks/useWorkspaceResources";
-import Spinner from "@/components/ui/Spinner";
 import { ResourceRow } from "../resources/ResourceListRow";
 import { useWorkspace } from "@/hooks/useWorkspace";
 import { useAuthStore } from "@/store/useAuthStore";
@@ -14,10 +12,16 @@ const Resources = () => {
   const params = useParams();
   const workspaceId = params.id as string;
 
-  const { resources, loading, error, handleDeleteResource } =
-    useWorkspaceResources({
-      workspaceId,
-    });
+  const {
+    resources,
+    loading,
+    error,
+    handleDeleteResource,
+    deletingResourceID,
+  } = useWorkspaceResources({
+    workspaceId,
+    limit: 5,
+  });
   const { skillTracks } = useWorkspace(workspaceId);
   const { user } = useAuthStore();
 
@@ -79,6 +83,7 @@ const Resources = () => {
             key={resource.id}
             resource={resource}
             color={getTrackColor(resource.skill_track_id)}
+            deletingResourceID={deletingResourceID}
             trackName={getTrackName(resource.skill_track_id)}
             isOwner={resource.uploaded_by === user?.id}
             onOpen={() =>

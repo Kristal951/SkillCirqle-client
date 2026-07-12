@@ -2,7 +2,6 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import React from "react";
 import Dashboard from '@material-symbols/svg-400/outlined/dashboard.svg'
 import CalendarToday from '@material-symbols/svg-400/outlined/calendar_today.svg'
 import FolderOpen from '@material-symbols/svg-400/outlined/folder_open.svg'

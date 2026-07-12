@@ -1,22 +1,22 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
 import { useWorkspace } from "@/hooks/useWorkspace";
 import { useWorkspaceResources } from "@/hooks/useWorkspaceResources";
 import { toast } from "@/lib/toast";
 import { useAuthStore } from "@/store/useAuthStore";
-import { useParams } from "next/navigation";
+import { useParams, useSearchParams, useRouter } from "next/navigation";
 import { AddResourceModal } from "@/components/workspace/resources/AddResourceModal";
 import { ResourceRow } from "@/components/workspace/resources/ResourceListRow";
 import { ResourceCard } from "@/components/workspace/resources/ResourceGridCard";
 import { GridSkeleton } from "@/components/workspace/resources/GridSkeleton";
 import { ListSkeleton } from "@/components/workspace/resources/ListSkeleton";
 import { EmptyState } from "@/components/workspace/resources/EmptyState";
-import { logActivity } from "@/lib/activity";
 import { Plus } from "lucide-react";
 import GridView from "@material-symbols/svg-400/outlined/grid_view.svg";
 import ViewList from "@material-symbols/svg-400/outlined/view_list.svg";
 import Add from "@material-symbols/svg-400/outlined/add.svg";
+import NoteResourceFullScreenEditor from "@/components/workspace/resources/NoteResourceEditor";
 
 type ResourceType = "file" | "link" | "note";
 type ViewMode = "grid" | "list";
@@ -41,16 +41,70 @@ interface Resource {
 
 export default function ResourcesPage() {
   const params = useParams();
+  const searchParams = useSearchParams();
+  const router = useRouter();
   const workspaceId = params.id as string;
   const { user } = useAuthStore();
   const { skillTracks } = useWorkspace(workspaceId);
 
-  const { resources, loading, error, addResource, handleDeleteResource } =
-    useWorkspaceResources({ workspaceId });
+  const {
+    resources,
+    loading,
+    error,
+    addResource,
+    handleDeleteResource,
+    updateResource,
+    deletingResourceID,
+  } = useWorkspaceResources({ workspaceId, limit: 0 });
 
   const [activeTrack, setActiveTrack] = useState<string | "all">("all");
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
   const [showModal, setShowModal] = useState(false);
+  const [openNote, setOpenNote] = useState<Resource | null>(null);
+  const [highlightedId, setHighlightedId] = useState<string | null>(null);
+
+  const resourceRefs = useRef<Record<string, HTMLDivElement | null>>({});
+
+  useEffect(() => {
+    if (error) {
+      toast.error("Couldn't load resources", error);
+    }
+  }, [error]);
+
+  useEffect(() => {
+    const highlight = searchParams.get("highlight");
+    if (!highlight || loading || resources.length === 0) return;
+
+    const exists = resources.some((r) => r.id === highlight);
+    if (!exists) return;
+
+    const target = resources.find((r) => r.id === highlight);
+    console.log("target found:", target);
+
+    if (
+      target?.skill_track_id &&
+      activeTrack !== "all" &&
+      activeTrack !== target.skill_track_id
+    ) {
+      setActiveTrack("all");
+      return;
+    }
+
+    setHighlightedId(highlight);
+
+    const el = resourceRefs.current[highlight];
+
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+
+    const timeout = setTimeout(() => {
+      setHighlightedId(null);
+      router.replace(`/workspace/${workspaceId}/resources`, { scroll: false });
+    }, 2500);
+
+    return () => clearTimeout(timeout);
+  }, [searchParams, loading, resources, activeTrack, workspaceId, router]);
 
   async function getSignedUrl(storagePath: string) {
     const supabase = getSupabaseBrowserClient();
@@ -70,14 +124,18 @@ export default function ResourcesPage() {
     return skillTracks.find((t) => t.id === trackId)?.skills?.title ?? null;
   }
 
+  const handleOpenResource = (r: Resource) => {
+    if (r.type === "note") {
+      setOpenNote(r);
+    } else if (r.type === "file") {
+      r.storage_path && getSignedUrl(r.storage_path);
+    }
+  };
+
   const filtered =
     activeTrack === "all"
       ? resources
       : resources.filter((r) => r.skill_track_id === activeTrack);
-
-  if (error) {
-    toast.error("Couldn't load resources", error);
-  }
 
   return (
     <>
@@ -167,29 +225,51 @@ export default function ResourcesPage() {
           ) : viewMode === "grid" ? (
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
               {filtered.map((r) => (
-                <ResourceCard
+                <div
                   key={r.id}
-                  resource={r}
-                  color={getTrackColor(r.skill_track_id)}
-                  trackName={getTrackName(r.skill_track_id)}
-                  isOwner={r.uploaded_by === user?.id}
-                  onOpen={() => r.storage_path && getSignedUrl(r.storage_path)}
-                  onDelete={() => handleDeleteResource(r)}
-                />
+                  ref={(el) => {
+                    resourceRefs.current[r.id] = el;
+                  }}
+                  className={`rounded-2xl transition-all duration-500 ${
+                    highlightedId === r.id ? "animate-highlight-pulse" : ""
+                  }`}
+                >
+                  <ResourceCard
+                    resource={r}
+                    color={getTrackColor(r.skill_track_id)}
+                    trackName={getTrackName(r.skill_track_id)}
+                    isOwner={r.uploaded_by === user?.id}
+                    onOpen={() => handleOpenResource(r)}
+                    onDelete={() => handleDeleteResource(r)}
+                    deletingResourceID={deletingResourceID}
+                  />
+                </div>
               ))}
             </div>
           ) : (
             <div className="bg-surface/50 rounded-2xl flex flex-col gap-2 border border-text-primary/5 divide-y divide-text-primary/5">
               {filtered.map((r) => (
-                <ResourceRow
+                <div
                   key={r.id}
-                  resource={r}
-                  color={getTrackColor(r.skill_track_id)}
-                  trackName={getTrackName(r.skill_track_id)}
-                  isOwner={r.uploaded_by === user?.id}
-                  onOpen={() => r.storage_path && getSignedUrl(r.storage_path)}
-                  onDelete={() => handleDeleteResource(r)}
-                />
+                  ref={(el) => {
+                    resourceRefs.current[r.id] = el;
+                  }}
+                  className={`transition-all duration-500 ${
+                    highlightedId === r.id
+                      ? "animate-highlight-pulse bg-primary/5"
+                      : ""
+                  }`}
+                >
+                  <ResourceRow
+                    resource={r}
+                    color={getTrackColor(r.skill_track_id)}
+                    trackName={getTrackName(r.skill_track_id)}
+                    isOwner={r.uploaded_by === user?.id}
+                    onOpen={() => handleOpenResource(r)}
+                    onDelete={() => handleDeleteResource(r)}
+                    deletingResourceID={deletingResourceID}
+                  />
+                </div>
               ))}
             </div>
           )}
@@ -212,6 +292,21 @@ export default function ResourcesPage() {
           skillTracks={skillTracks}
           onClose={() => setShowModal(false)}
           onAdded={(resource) => addResource(resource)}
+        />
+      )}
+
+      {openNote && (
+        <NoteResourceFullScreenEditor
+          initialTitle={openNote.note_title || ""}
+          initialContent={openNote.note_body || ""}
+          onSave={async (title, content) => {
+            await updateResource(openNote.id, {
+              note_title: title,
+              note_body: content,
+            });
+            setOpenNote(null);
+          }}
+          onCancel={() => setOpenNote(null)}
         />
       )}
     </>

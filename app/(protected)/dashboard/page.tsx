@@ -5,7 +5,7 @@ import SkillCardSkeleton from "@/components/dashboard/SkillCardSkeletonLoader";
 import { useAuthStore } from "@/store/useAuthStore";
 import { createFetcherWithAuth } from "@/utils/fetcher";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowRight, Coins, Gift } from "lucide-react";
+import { Coins, Gift } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo } from "react";
 import SwapHoriz from "@material-symbols/svg-400/outlined/swap_horiz.svg";
@@ -213,7 +213,7 @@ export default function Dashboard() {
             <button
               disabled={isCompleted}
               onClick={() => router.push("/onboarding")}
-              className="w-full py-2.5 bg-accent/90 disabled:cursor-not-allowed disabled:bg-accent/30 text-white rounded-lg text-sm font-semibold hover:opacity-90 transition"
+              className="w-full py-2.5 bg-accent/90 disabled:cursor-not-allowed disabled:bg-accent/30 text-text-primary rounded-lg text-sm font-semibold hover:opacity-90 transition"
             >
               Finish Setup
             </button>
@@ -263,8 +263,8 @@ export default function Dashboard() {
             </div>
           </div>
 
-          <div className="shrink-0 w-full md:w-auto">
-            <Link href="/search" className="w-full md:w-auto px-6 py-3 font-semibold bg-primary hover:bg-primary/90 text-white rounded-xl shadow-lg shadow-primary/20 transition-all hover:scale-[1.02] active:scale-[0.98]">
+          <div className="shrink-0 flex w-full md:w-auto">
+            <Link href="/search" className="w-full md:w-auto px-6 flex items-center justify-center py-3 font-semibold bg-primary hover:bg-primary/90 text-white rounded-xl shadow-lg shadow-primary/20 transition-all hover:scale-[1.02] active:scale-[0.98]">
               Find a swap Partner
             </Link>
           </div>
@@ -290,7 +290,7 @@ export default function Dashboard() {
         </div>
 
         <div className="shrink-0 w-full md:w-auto">
-          <Link href="/search" className="w-full md:w-auto px-6 py-2.5 font-semibold text-sm rounded-xl border border-accent bg-accent/50 hover:bg-accent text-text-primary transition-all active:scale-[0.98]">
+          <Link href="/search" className="w-full md:w-auto flex items-center justify-center px-6 py-2.5 font-semibold text-sm rounded-xl border border-accent bg-accent/50 hover:bg-accent text-text-primary transition-all active:scale-[0.98]">
             Browse with credits
           </Link>
         </div>

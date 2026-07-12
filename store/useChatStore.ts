@@ -9,6 +9,7 @@ import { useAuthStore } from "./useAuthStore";
 import { useSocketStore } from "./useSocketStore";
 import { decryptMessage } from "@/lib/decryptMessage";
 import { emitNotification } from "@/lib/notification/notify";
+import { toast } from "@/lib/toast";
 
 export type MessageStatus =
   | "sending"
@@ -344,14 +345,31 @@ export const useChatStore = create<ChatStore>((set, get) => ({
       },
     }));
 
-    socket?.emit("send_message", {
-      conversationId,
-      content,
-      message_type: type,
-      metadata,
-      tempId,
-      reply_to: reply_to || null,
-    });
+    socket?.emit(
+      "send_message",
+      {
+        conversationId,
+        content,
+        message_type: type,
+        metadata,
+        tempId,
+        reply_to: reply_to || null,
+      },
+      (response: { success: boolean; message?: string }) => {
+        if (!response?.success) {
+          toast.error(response?.message ?? "Unable to send message");
+          set((state) => {
+            const updated: Record<string, Message[]> = {};
+            for (const cid in state.messages) {
+              updated[cid] = state.messages[cid].map((m) =>
+                m.id === tempId ? { ...m, status: "failed" } : m,
+              );
+            }
+            return { messages: updated };
+          });
+        }
+      },
+    );
 
     emitNotification({
       userId: receiverId,
