@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { Suspense, useEffect } from "react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { toast } from "@/lib/toast";
 
@@ -21,6 +21,14 @@ const ERROR_MESSAGES: Record<string, ToastError> = {
 };
 
 export default function AuthErrorToast() {
+  return (
+    <Suspense fallback={null}>
+      <AuthErrorToastInner />
+    </Suspense>
+  );
+}
+
+function AuthErrorToastInner() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
