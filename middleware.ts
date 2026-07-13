@@ -1,6 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextRequest, NextResponse } from "next/server";
 import { checkIsAdminWithClient } from "./utils/isAdmin";
+import { getSessionIdFromAccessToken } from "./lib/auth/session-claims";
 
 export async function middleware(request: NextRequest) {
   let response = NextResponse.next();
@@ -48,6 +49,25 @@ export async function middleware(request: NextRequest) {
   const isProtectedRoute = ["/dashboard", "/onboarding"].some((p) =>
     path.startsWith(p),
   );
+
+  if (session) {
+    const sessionId = getSessionIdFromAccessToken(session.access_token);
+
+    if (sessionId) {
+      const { data: sessionRow } = await supabase
+        .from("user_sessions")
+        .select("revoked")
+        .eq("session_id", sessionId)
+        .maybeSingle();
+
+      if (sessionRow?.revoked) {
+        await supabase.auth.signOut();
+        const url = new URL("/auth/signin", request.url);
+        url.searchParams.set("error", "session_revoked");
+        return NextResponse.redirect(url);
+      }
+    }
+  }
 
   if (isAdminPage) {
     if (!user) {

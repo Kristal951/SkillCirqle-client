@@ -2,7 +2,7 @@
 import ProfileQR from "@/components/profile/ProfileQR";
 import SharePopoverModal from "@/components/profile/SharePopOverModal";
 import SkillsCard from "@/components/profile/SkillsCard";
-import { toast } from "@/lib/toast";
+// import { toast } from "@/lib/toast";
 import { useAuthStore } from "@/store/useAuthStore";
 import { Coins } from "lucide-react";
 import { useTheme } from "next-themes";
@@ -13,15 +13,15 @@ import Settings from "@material-symbols/svg-400/outlined/settings.svg";
 import Share from "@material-symbols/svg-400/outlined/share.svg";
 import KeyboardArrowUp from "@material-symbols/svg-400/outlined/keyboard_arrow_up.svg";
 import KeyboardArrowDown from "@material-symbols/svg-400/outlined/keyboard_arrow_down.svg";
-import StarFill from "@material-symbols/svg-400/outlined/star-fill.svg";
+// import StarFill from "@material-symbols/svg-400/outlined/star-fill.svg";
 import Star from "@material-symbols/svg-400/outlined/star.svg";
 import Psychology from "@material-symbols/svg-400/outlined/psychology.svg";
 import School from "@material-symbols/svg-400/outlined/school.svg";
 import Reviews from "@material-symbols/svg-400/outlined/reviews.svg";
-import LocalFireDepartment from "@material-symbols/svg-400/outlined/local_fire_department.svg";
-import LocalFireDepartmentFill from "@material-symbols/svg-400/outlined/local_fire_department-fill.svg";
-import Check from "@material-symbols/svg-400/outlined/check.svg";
-import History from "@material-symbols/svg-400/outlined/history.svg"
+// import LocalFireDepartment from "@material-symbols/svg-400/outlined/local_fire_department.svg";
+// import LocalFireDepartmentFill from "@material-symbols/svg-400/outlined/local_fire_department-fill.svg";
+// import Check from "@material-symbols/svg-400/outlined/check.svg";
+// import History from "@material-symbols/svg-400/outlined/history.svg";
 
 const ProfilePage = () => {
   const { user } = useAuthStore();
@@ -78,21 +78,16 @@ const ProfilePage = () => {
                 href="/settings"
                 className="md:px-4 px-2 flex items-center justify-center gap-2 py-2 md:py-3 bg-primary dark:text-white rounded-md border-border border text-primary font-bold shadow-lg hover:scale-105 transition-transform"
               >
-                <Settings/>
+                <Settings />
                 Profile Settings
               </Link>
               <button
                 onClick={() => setShowShareModal(!showShareModal)}
                 className="md:px-4 px-2 md:py-3 py-2 rounded-md border gap-2 border-border flex items-center justify-center text-text-primary font-bold hover:bg-primary/10 transition-colors"
               >
-               <Share/>
+                <Share />
                 Share
-                {showShareModal ? (
-                  <KeyboardArrowUp/>
-                ) : (
-                 
-                    <KeyboardArrowDown/>
-                )}
+                {showShareModal ? <KeyboardArrowUp /> : <KeyboardArrowDown />}
               </button>
 
               {showShareModal && (
@@ -122,11 +117,11 @@ const ProfilePage = () => {
               >
                 {info.icon}
               </span> */}
-              <info.icon className="text-2xl"/>
+              <info.icon className="text-2xl" />
             </div>
             <div>
               <h2
-                className={`text-3xl font-bold ${theme === "light" ? "" : "text-white"}`}
+                className={`text-3xl font-bold ${theme === "light" ? "" : "text-text-primary"}`}
               >
                 {info.title === "Rating"
                   ? (info?.value ?? 0).toFixed(2)
@@ -177,10 +172,7 @@ const ProfilePage = () => {
               <h3 className="text-[10px] uppercase tracking-wider font-semibold">
                 Credits
               </h3>
-              <p className="text-xl font-bold">
-                {" "}
-                {user?.skill_tokens || 0}
-              </p>
+              <p className="text-xl font-bold"> {user?.skill_tokens || 0}</p>
             </div>
           </div>
         </div>
@@ -205,7 +197,7 @@ const ProfilePage = () => {
         <div className="col-span-2 md:col-span-1 lg:col-span-1 bg-surface/50 p-4 h-90 rounded-md">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 flex items-center bg-background rounded-xl justify-center border border-border shadow-inner">
-              <Reviews className="text-text-primary"/>
+              <Reviews className="text-text-primary" />
             </div>
             <h1 className="text-xl font-bold tracking-tight">Reviews</h1>
           </div>
@@ -230,7 +222,7 @@ const ProfilePage = () => {
         </div>
       </div>
 
-      <div className="w-full grid lg:grid-cols-2 md:grid-cols-2 gap-8 py-8">
+      {/* <div className="w-full grid lg:grid-cols-2 md:grid-cols-2 gap-8 py-8">
         <div className="col-span-1 md:p-6 p-4 bg-surface/50 rounded-md flex flex-col gap-6">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 flex items-center bg-background rounded-xl justify-center border border-border shadow-inner">
@@ -291,7 +283,7 @@ const ProfilePage = () => {
             </div>
 
             <div className="px-1">
-              {/* {user?.streaks > 0 ? (
+              {user?.streaks > 0 ? (
                 <p className="text-sm text-text-secondary">
                   <span className="text-accent font-medium">Keep it up!</span>{" "}
                   You haven't missed a beat this week.
@@ -300,7 +292,7 @@ const ProfilePage = () => {
                 <p className="text-sm text-text-secondary">
                   Start a swap today to kickstart your streak!
                 </p>
-              )} */}
+              )}
               <p className="text-sm font-medium text-text-secondary">
                 <span className="text-text-accent font-bold">+0</span> credits
                 today
@@ -351,21 +343,21 @@ const ProfilePage = () => {
                       <>
                         {
                           index < rating ? (
-                            <StarFill/>
+                            <StarFill key={index}/>
                           ) : (
-                            <Star/>
+                            <Star key={}/>
                           )
                         }
                       </>
-                      // <span
-                      //   key={index}
-                      //   className="material-symbols-outlined text-lg!"
-                      //   style={{
-                      //     fontVariationSettings: `'FILL' ${index < rating ? 1 : 0}`,
-                      //   }}
-                      // >
-                      //   star
-                      // </span>
+                      <span
+                        key={index}
+                        className="material-symbols-outlined text-lg!"
+                        style={{
+                          fontVariationSettings: `'FILL' ${index < rating ? 1 : 0}`,
+                        }}
+                      >
+                        star
+                      </span>
                     );
                   })}
                 </div>
@@ -373,9 +365,11 @@ const ProfilePage = () => {
             ))}
           </div>
         </div>
-      </div>
+      </div> */}
 
-      {showQrModal && <ProfileQR id={user?.id || ""} setShowQrModal={setShowQrModal}/>}
+      {showQrModal && (
+        <ProfileQR id={user?.id || ""} setShowQrModal={setShowQrModal} />
+      )}
     </section>
   );
 };

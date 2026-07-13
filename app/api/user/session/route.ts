@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { getUser } from "@/lib/getUser";
 import { createSupabaseServer } from "@/lib/supabaseServer";
+import { getSessionIdFromAccessToken } from "@/lib/auth/session-claims";
 
 type Geo = {
   country: string | null;
@@ -73,13 +74,20 @@ export async function POST(req: NextRequest) {
     const supabase = await createSupabaseServer();
     const user = await getUser();
 
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+    const sessionId = session
+      ? getSessionIdFromAccessToken(session.access_token)
+      : null;
+
     if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const { error } = await supabase.rpc("set_current_session", {
       p_user_id: user.id,
-      p_session_id: body.session_id,
+      p_session_id: sessionId,
       p_device_name: body.device_name,
       p_browser: body.browser,
       p_os: body.os,
@@ -114,6 +122,13 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+    const currentSessionId = session
+      ? getSessionIdFromAccessToken(session.access_token)
+      : null;
+
     const { data, error } = await supabase
       .from("user_sessions")
       .select("*")
@@ -129,7 +144,12 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    return NextResponse.json({ sessions: data });
+    const sessionsWithCurrent = (data ?? []).map((s) => ({
+      ...s,
+      is_current: s.session_id === currentSessionId,
+    }));
+
+    return NextResponse.json({ sessions: sessionsWithCurrent });
   } catch (err) {
     return NextResponse.json({ error: "Server error" }, { status: 500 });
   }

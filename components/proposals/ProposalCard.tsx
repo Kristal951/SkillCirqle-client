@@ -33,7 +33,7 @@ const ProposalCard = ({ p, statusStyles, now }: Props) => {
     {
       learn: {
         icon: Psychology,
-        label: "MentorShip",
+        label: "Learn",
       },
       swap: {
         icon: SwapHoriz,

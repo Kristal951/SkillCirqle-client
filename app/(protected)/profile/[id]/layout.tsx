@@ -14,7 +14,14 @@ export default async function UserProfileLayout({
     { cache: "no-store" }
   );
 
-  const { user } = await res.json();
+  const data = await res.json()
+  console.log(data)
+
+  const { user } = data
+
+  if(!user || !data){
+    return
+  }
 
   return (
     <UserProfileProvider user={user}>

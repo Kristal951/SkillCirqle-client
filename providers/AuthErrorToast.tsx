@@ -18,6 +18,10 @@ const ERROR_MESSAGES: Record<string, ToastError> = {
     title: "Access denied",
     description: "You don't have permission to access the admin dashboard.",
   },
+  session_revoked: {
+    title: "Session ended",
+    description: "This device was signed out remotely.",
+  },
 };
 
 export default function AuthErrorToast() {

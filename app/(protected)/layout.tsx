@@ -5,7 +5,7 @@ import Navbar from "@/components/dashboard/Navbar";
 import Sidebar from "@/components/dashboard/Sidebar";
 import BottomBar from "@/components/ui/BottomBar";
 import Spinner from "@/components/ui/Spinner";
-import { useClearSessionCache } from "@/hooks/useSessions";
+import { useClearSessionCache } from "@/hooks/useUserAccountSessions";
 import { logoutOneSignal } from "@/lib/oneSignal";
 import { useLogoutModal } from "@/providers/LogoutContext";
 import NotificationProvider from "@/providers/NotificationProvider";

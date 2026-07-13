@@ -17,7 +17,7 @@ import { useMediaViewer } from "@/store/useMediaViewer";
 import { AnimatePresence, motion } from "framer-motion";
 import { useMessageActionsStore } from "@/store/useMessageStore";
 import { useChatStore } from "@/store/useChatStore";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useAuthStore } from "@/store/useAuthStore";
 
 const MessageBubble = ({
@@ -42,6 +42,8 @@ const MessageBubble = ({
   const { activeChat } = useChatStore();
   const { user } = useAuthStore();
 
+  const [loadedImages, setLoadedImages] = useState<Set<string>>(new Set());
+
   const isOpen = activeMessageId === msg.id;
   const containerRef = useRef<HTMLDivElement | null>(null);
   const menuRef = useRef<HTMLDivElement | null>(null);
@@ -64,6 +66,10 @@ const MessageBubble = ({
       minute: "2-digit",
     });
   }
+
+  const handleImageLoad = (url: string) => {
+    setLoadedImages((prev) => new Set(prev).add(url));
+  };
 
   const handleToggle = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -105,15 +111,10 @@ const MessageBubble = ({
 
   const getStatus = () => {
     if (!isMe) return null;
-
-    const receipt = msg as any;
-
-    if (receipt.status === "sending") return "sending";
-    if (receipt.status === "failed") return "failed";
-    if (receipt.status === "read") return "read";
-    if (receipt.status === "delivered") return "delivered";
-    return "sent";
+    return msg.status ?? "sent";
   };
+
+  const status = getStatus();
 
   const renderStatus = () => {
     if (!isMe) return null;
@@ -122,6 +123,7 @@ const MessageBubble = ({
       case "sending":
         return <Clock size={12} className="text-gray-300 animate-pulse" />;
       case "sent":
+        status;
         return <Check size={14} className="text-gray-300" />;
       case "delivered":
         return <CheckCheck size={14} className="text-gray-400" />;
@@ -232,16 +234,14 @@ const MessageBubble = ({
             msg.sender?.avatar ||
             `https://i.pravatar.cc/150?u=${msg.sender?.id}`
           }
+          alt={msg.sender?.name || "User"}
           className="w-8 h-8 rounded-full object-cover"
         />
       )}
 
       <div
         className="flex flex-col md:max-w-[55%] max-w-[70%] cursor-pointer"
-        onClick={(e) => {
-          e.stopPropagation();
-          handleToggle(e);
-        }}
+        onClick={handleToggle}
       >
         <div className="relative h-0">
           <AnimatePresence>
@@ -262,8 +262,11 @@ const MessageBubble = ({
                   },
                   {
                     icon: Edit2,
-                    action: () =>
-                      handleEditMsg(msg.id, msg.message, activeChat?.id || ""),
+                    action: () => {
+                      if (!activeChat?.id) return;
+                      handleEditMsg(msg.id, msg.message, activeChat?.id || "");
+                    },
+
                     show: isMe,
                   },
                   {
@@ -272,7 +275,10 @@ const MessageBubble = ({
                   },
                   {
                     icon: Trash2,
-                    action: () => deleteMessage(msg.id, activeChat?.id || ""),
+                    action: () => {
+                      if (!activeChat?.id) return;
+                      deleteMessage(msg.id, activeChat?.id || "");
+                    },
                     danger: true,
                     show: isMe,
                   },
@@ -336,7 +342,7 @@ const MessageBubble = ({
 
           {images.length > 0 && !msg?.deleted && (
             <div
-              className={`grid gap-1 rounded-xl overflow-hidden ${
+              className={`grid gap-1 rounded-xl overflow-hidden w-64 sm:w-72 h-40 ${
                 images.length === 1
                   ? "grid-cols-1"
                   : images.length === 2
@@ -346,12 +352,20 @@ const MessageBubble = ({
             >
               {images.slice(0, 4).map((img, index) => {
                 const isLast = index === 3 && images.length > 4;
+                const isLoaded = loadedImages.has(img.url);
 
                 return (
                   <div key={img.url} className="relative">
+                    {!isLoaded && (
+                      <div className="absolute inset-0 animate-pulse bg-linear-to-br from-black/10 to-black/20" />
+                    )}
                     <img
                       src={img.url}
-                      className="w-full h-40 object-cover cursor-pointer"
+                      className={`w-full h-40 object-cover cursor-pointer absolute inset-0 transition-opacity duration-300 ${
+                        isLoaded ? "opacity-100" : "opacity-0"
+                      }`}
+                      alt="Shared image"
+                      onLoad={() => handleImageLoad(img.url)}
                       onClick={() =>
                         openViewer({
                           images,
@@ -385,7 +399,9 @@ const MessageBubble = ({
                   <FileText className="w-5 h-5" />
 
                   <div className="flex-1 text-left">
-                    <p className="text-xs md:text-sm lg:text-sm font-medium">{file.name || "File"}</p>
+                    <p className="text-xs md:text-sm lg:text-sm font-medium">
+                      {file.name || "File"}
+                    </p>
                     <p className="text-xs opacity-60">Click to open</p>
                   </div>
 
@@ -419,7 +435,7 @@ const MessageBubble = ({
         </div>
 
         <div
-          className={`flex items-center gap-2 text-[10px] mt-1 text-gray-400 ${
+          className={`flex items-center gap-2 text-[10px] mt-1 text-text-secondary ${
             isMe ? "justify-end" : "justify-start"
           }`}
         >

@@ -15,7 +15,7 @@ import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
 import { User } from "@/types/AuthStore";
 import { useAuthStore } from "@/store/useAuthStore";
 import { useRouter } from "next/navigation";
-import ProfileGridSkeleton from "@/components/search/SkeletonLoader";
+import { SearchCardSkeleton } from "@/components/search/SkeletonLoader";
 import { SearchCard } from "@/components/search/SearchResultCard";
 
 type CategoryId =
@@ -52,6 +52,17 @@ const SearchPage = () => {
     }, 100);
 
     return () => clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 20) {
+        inputRef.current?.blur();
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   useEffect(() => {
@@ -143,7 +154,14 @@ const SearchPage = () => {
                 value={searchQuery}
                 ref={inputRef}
                 autoFocus
+                type="search"
+                enterKeyHint="search"
                 onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.currentTarget.blur();
+                  }
+                }}
                 placeholder="Search a skill or user..."
                 className="w-full bg-background/50 border border-border rounded-2xl py-3.5 pl-12 pr-4 outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary/40 transition-all text-sm font-medium"
               />
@@ -175,7 +193,10 @@ const SearchPage = () => {
         </div>
       </section>
 
-      <main className="w-full max-w-7xl mx-auto">
+      <main
+        className="w-full max-w-7xl mx-auto mb-5"
+        onScroll={() => inputRef.current?.blur()}
+      >
         {!loading && filteredProfiles.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-32 text-center">
             <div className="w-24 h-24 bg-surface rounded-[2.5rem] flex items-center justify-center border border-border mb-6 shadow-inner">
@@ -191,13 +212,17 @@ const SearchPage = () => {
                 setSearchQuery("");
                 setSelectedCategory("All");
               }}
-              className="mt-8 px-8 py-3 bg-primary text-white text-xs font-black uppercase tracking-widest rounded-2xl hover:scale-105 active:scale-95 transition-all shadow-xl shadow-primary/20"
+              className="mt-8 px-8 py-3 bg-primary text-text-primary text-xs font-black uppercase tracking-widest rounded-2xl hover:scale-105 active:scale-95 transition-all shadow-xl shadow-primary/20"
             >
               Reset Filters
             </button>
           </div>
         ) : loading && filteredProfiles.length === 0 ? (
-          <ProfileGridSkeleton />
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-8">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <SearchCardSkeleton key={i} />
+            ))}
+          </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-8">
             {filteredProfiles.map((mentor) => (
