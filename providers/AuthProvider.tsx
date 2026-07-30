@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useCallback, useState, useRef } from "react";
+import { useEffect, useCallback, useState, useRef, Suspense } from "react";
 import { useAuthStore } from "@/store/useAuthStore";
 import { getUserProfile } from "@/hooks/useGetProfile";
 import { useTokenStore } from "@/store/useTokenStore";
@@ -8,11 +8,7 @@ import Spinner from "@/components/ui/Spinner";
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
-export default function AuthProvider({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+function AuthProviderInner({ children }: { children: React.ReactNode }) {
   const supabase = getSupabaseBrowserClient();
   const pathname = usePathname();
   const router = useRouter();
@@ -69,6 +65,7 @@ export default function AuthProvider({
 
           if (isOAuthLogin) {
             await fetchUser();
+
             const url = new URL(window.location.href);
             url.searchParams.delete("login");
             router.replace(url.pathname + url.search);
@@ -135,4 +132,22 @@ export default function AuthProvider({
   }
 
   return <>{children}</>;
+}
+
+export default function AuthProvider({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex min-h-screen items-center justify-center">
+          <Spinner size={40} />
+        </div>
+      }
+    >
+      <AuthProviderInner>{children}</AuthProviderInner>
+    </Suspense>
+  );
 }

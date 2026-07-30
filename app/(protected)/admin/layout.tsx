@@ -19,7 +19,6 @@ export default function AdminLayout({
   useEffect(() => {
     if (!socketReady) return;
     const socket = getSocket();
-    console.log(socket, 'socket2')
     if (!socket) return;
 
     const joinAdmin = () => {
