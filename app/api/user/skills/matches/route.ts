@@ -15,7 +15,6 @@ export async function GET(req: NextRequest) {
 
   const skillData = await getUserSkillsFromTable(user.id);
   const userSkills = skillData?.success ? skillData?.skills : [];
-  console.log(userSkills)
 
   const result = await runSkillSuggestionEngine({
     userId: user.id,

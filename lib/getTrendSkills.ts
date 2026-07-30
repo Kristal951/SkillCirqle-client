@@ -8,7 +8,8 @@ export async function getTrendingSkills(page = 1, limit = 10) {
       skills (
         id,
         title,
-        slug
+        slug,
+        image_url
       )
     `)
     .eq("type", "teach");
@@ -27,6 +28,7 @@ export async function getTrendingSkills(page = 1, limit = 10) {
       id: skill.id,
       title: skill.title,
       slug: skill.slug,
+      image: skill.image_url,
       count: existing ? existing.count + 1 : 1,
     });
   }

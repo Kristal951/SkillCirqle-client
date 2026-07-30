@@ -1,6 +1,5 @@
 import { getTrendingSkills } from "@/lib/getTrendSkills";
 import { getUsersBySkill } from "./getSkillUsers";
-import { getSkillImage } from "@/lib/getSkillImage";
 
 export async function getTrendingSkillCards(page = 1, limit = 10) {
   const trending = await getTrendingSkills(page, limit);
@@ -21,7 +20,7 @@ export async function getTrendingSkillCards(page = 1, limit = 10) {
         slug: skill.slug,
         desc: `People who can teach ${skill.title}`,
         usersAmount: skill.count,
-        image: getSkillImage(skill.title),
+        image: skill.image,
         avatars,
       };
     }),

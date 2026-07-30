@@ -15,7 +15,7 @@ export const getUserSkillsFromTable = async (userId: string, type?: string) => {
   try {
     let query = supabase
       .from("user_skills")
-      .select("type, verified, skills(id, title)")
+      .select("type, verified, skills(id, title, image_url)")
       .eq("user_id", userId);
 
     if (type) {
@@ -35,6 +35,7 @@ export const getUserSkillsFromTable = async (userId: string, type?: string) => {
 
     const skills = (data || []).map((row: any) => ({
       skill_id: row.skills?.id,
+      skillImage: row.skills?.image_url,
       name: row.skills?.title,
       type: row.type,
       verified: row.verified ?? false,

@@ -2,14 +2,10 @@
 
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import Groq from "groq-sdk";
-import { GoogleGenAI } from "@google/genai";
+import { generateImage } from "ai";
 
 const groq = new Groq({
   apiKey: process.env.GROQ_API_KEY!,
-});
-
-const gemini = new GoogleGenAI({
-  apiKey: process.env.GOOGLE_API_KEY!,
 });
 
 type StepName = "brain" | "image-generation" | "storage" | "db-update";
@@ -37,28 +33,20 @@ function extractJson(raw: string): Record<string, string> {
 
 async function generateDescription(skillTitle: string): Promise<{
   description: string;
-  style: string;
+  visualConcept: string;
 }> {
   const response = await groq.chat.completions.create({
     model: "llama-3.1-8b-instant",
-
     temperature: 0.7,
-
+    response_format: { type: "json_object" },
     messages: [
       {
         role: "user",
-
-        content: `
-Visual Director Mode.
-
-Skill: "${skillTitle}"
-
-Return STRICT JSON only.
-
-{
-"description":"one sentence description",
-"style":"single visual style"
-}
+        content: ` Visual Director Mode. Skill: "${skillTitle}" Return STRICT JSON only. 
+        {
+           "description":"one sentence description",
+            "visualConcept":"a concrete, literal object or small scene that visually represents this specific skill (e.g. for "Guitar Lessons" → "a sunburst acoustic guitar resting at a slight angle with a pick beside it"; for "Watercolor Painting" → "a wooden palette with dabs of colorful watercolor paint and a wet brush"). Avoid abstract shapes — describe a real, recognizable object tied to this skill."
+        }
         `,
       },
     ],
@@ -71,64 +59,48 @@ Return STRICT JSON only.
 
     return {
       description: data.description || `${skillTitle} skill`,
-
-      style: data.style || "Glassmorphism",
+      visualConcept:
+        data.visualConcept || `an object representing ${skillTitle}`,
     };
   } catch (err) {
     console.warn("[brain] Failed parsing JSON", err);
 
     return {
       description: `${skillTitle} skill`,
-      style: "Glassmorphism",
+      visualConcept: `an object representing ${skillTitle}`,
     };
   }
 }
 
-async function generateImage(
+async function generateSkillImage(
   skillTitle: string,
-  style: string,
+  visualConcept: string,
 ): Promise<Buffer> {
   const prompt = `
-Professional 3D asset representing "${skillTitle}"
+A professional 3D rendered icon depicting: ${visualConcept}
+
+This represents the skill "${skillTitle}" — the object(s) should be immediately recognizable and directly tied to this skill, not abstract.
 
 Style:
-${style}
-
-Requirements:
-
-- Modern
-- Premium
-- Minimal
-- Centered object
-- White background
-- Soft shadows
-- High quality render
+- Clean 3D render, soft studio lighting
+- Centered composition, single focal object or small grouped scene
+- Background: soft gradient (muted pastel or cool neutral tones), subtle depth — NOT flat white or pure white
+- Soft ambient shadow beneath the object
+- Modern, premium, minimal aesthetic
 - Square aspect ratio
-- No text
-- No watermark
-`;
+- No text, no logos, no watermark
+- No people, no hands
+`.trim();
 
-  const response = await gemini.models.generateContent({
-    model: "gemini-2.5-flash-image-preview",
-
-    contents: prompt,
+  const result = await generateImage({
+    model: "xai/grok-imagine-image",
+    prompt,
+    aspectRatio: "1:1",
   });
 
-  const parts = response.candidates?.[0]?.content?.parts;
+  const imageData = result.images[0];
 
-  if (!parts) {
-    throw new Error("Gemini returned no content");
-  }
-
-  const imagePart = parts.find((part) =>
-    part.inlineData?.mimeType?.startsWith("image/"),
-  );
-
-  if (!imagePart?.inlineData?.data) {
-    throw new Error("Gemini returned no image");
-  }
-
-  return Buffer.from(imagePart.inlineData.data, "base64");
+  return Buffer.from(imageData.base64, "base64");
 }
 
 async function uploadToStorage(
@@ -139,16 +111,10 @@ async function uploadToStorage(
 
   const { error } = await supabaseAdmin.storage
     .from("skill-assets")
-
-    .upload(
-      path,
-      imageBuffer,
-
-      {
-        upsert: true,
-        contentType: "image/png",
-      },
-    );
+    .upload(path, imageBuffer, {
+      upsert: true,
+      contentType: "image/png",
+    });
 
   if (error) {
     throw error;
@@ -163,21 +129,15 @@ async function uploadToStorage(
 
 async function updateSkillRecord(
   skillId: string,
-
   description: string,
-
   imageUrl: string,
 ): Promise<void> {
   const { error } = await supabaseAdmin
-
     .from("skills")
-
     .update({
       description,
-
       image_url: imageUrl,
     })
-
     .eq("id", skillId);
 
   if (error) {
@@ -187,43 +147,22 @@ async function updateSkillRecord(
 
 export async function generateSkillAssets(
   skillId: string,
-
   skillTitle: string,
 ): Promise<Result> {
   let step: StepName = "brain";
 
   try {
-    // Step 1
-    const { description, style } = await generateDescription(skillTitle);
+    const { description, visualConcept } =
+      await generateDescription(skillTitle);
 
-    // Step 2
     step = "image-generation";
+    const imageBuffer = await generateSkillImage(skillTitle, visualConcept);
 
-    const imageBuffer = await generateImage(
-      skillTitle,
-
-      style,
-    );
-
-    // Step 3
     step = "storage";
+    const imageUrl = await uploadToStorage(skillId, imageBuffer);
 
-    const imageUrl = await uploadToStorage(
-      skillId,
-
-      imageBuffer,
-    );
-
-    // Step 4
     step = "db-update";
-
-    await updateSkillRecord(
-      skillId,
-
-      description,
-
-      imageUrl,
-    );
+    await updateSkillRecord(skillId, description, imageUrl);
 
     return {
       success: true,

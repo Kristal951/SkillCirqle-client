@@ -1,7 +1,6 @@
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import { getSkillCandidatesForEngine } from "@/utils/getSkillCandidatesForEngine";
 import { scoreMatch } from "@/utils/getSkillScoreMatchesForEngine";
-import { getSkillImage } from "./getSkillImage";
 import { getOrSetCache } from "@/utils/cacheHelper";
 
 export async function runSkillSuggestionEngine({
@@ -86,7 +85,7 @@ export async function runSkillSuggestionEngine({
 
     const { data: skillRows } = await supabaseAdmin
       .from("skills")
-      .select("id, title, slug")
+      .select("id, title, slug, image_url, description")
       .in("id", Array.from(allSkillIds));
 
     const skillTitleMap = new Map(skillRows?.map((s) => [s.id, s.title]) || []);
@@ -94,7 +93,7 @@ export async function runSkillSuggestionEngine({
     const skillLookup = new Map(
       skillRows?.map((skill) => [
         skill.id,
-        { title: skill.title, slug: skill.slug },
+        { title: skill.title, slug: skill.slug, image: skill.image_url, desc: skill.description },
       ]) || [],
     );
 
@@ -136,8 +135,8 @@ export async function runSkillSuggestionEngine({
       return {
         title: skill?.title ?? "Unknown Skill",
         slug: skill?.slug ?? "",
-        image: getSkillImage(skill?.title ?? ""),
-        desc: `People who can teach you ${skill?.title ?? "this skill"}`,
+        image: skill?.image,
+        desc: skill?.desc || `People who can teach you ${skill?.title ?? "this skill"}`,
         usersAmount: data.count,
         avatars: [...new Set(data.avatars)].slice(0, 4),
       };
