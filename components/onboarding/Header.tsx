@@ -1,14 +1,13 @@
 import { useOnboardingStore } from "@/store/useOnboardingStore";
 import Image from "next/image";
-import Link from "next/link";
 import React from "react";
 
 const Header = ({ userOnboarded }: { userOnboarded?: boolean }) => {
-  // const { step, totalSteps } = useOnboardingStore();
-  // const safeStep = step ?? 0;
-  // const safeTotal = totalSteps ?? 0;
+  const { step, totalSteps } = useOnboardingStore();
+  const safeStep = step ?? 0;
+  const safeTotal = totalSteps ?? 0;
 
-  // const progress = safeTotal ? (safeStep / safeTotal) * 100 : 0;
+  const progress = safeTotal ? (safeStep / safeTotal) * 100 : 0;
 
   return (
     <div className="w-full bg-background flex justify-between items-center px-6 py-4">
@@ -26,42 +25,27 @@ const Header = ({ userOnboarded }: { userOnboarded?: boolean }) => {
         </h1>
       </div>
 
-      {/* {!userOnboarded && (
-        <>
-          {safeStep > 0 ? (
-            <div className="md:flex hidden items-center gap-4">
-              <span className="text-sm text-gray-400">
-                Step <span className="font-bold text-white">{step}</span> of{" "}
-                {totalSteps}
-              </span>
+      {!userOnboarded && safeTotal > 0 && (
+        <div className="md:flex hidden items-center gap-4">
+          <span className="text-sm text-text-secondary">
+            Step <span className="font-bold text-text-primary">{safeStep}</span> of{" "}
+            {totalSteps}
+          </span>
 
-              <div className="flex items-center gap-2 w-40">
-                <div className="flex-1 h-2 bg-white/10 rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-text-primary transition-all duration-500 ease-out rounded-full"
-                    style={{ width: `${progress}%` }}
-                  />
-                </div>
-
-                <span className="text-xs text-text-primary font-semibold">
-                  {Math.round(progress)}%
-                </span>
-              </div>
+          <div className="flex items-center gap-2 w-40">
+            <div className="flex-1 h-2 bg-white/10 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-text-primary transition-all duration-500 ease-out rounded-full"
+                style={{ width: `${(safeStep / safeTotal) * 100}%` }}
+              />
             </div>
-          ) : ( */}
 
-      {!userOnboarded && (
-        <Link
-          href="/dashboard"
-          className="text-sm font-medium text-text-primary/40 hover:text-text-primary"
-        >
-          Skip for now
-        </Link>
+            <span className="text-xs text-text-primary font-semibold">
+              {Math.round((safeStep / safeTotal) * 100)}%
+            </span>
+          </div>
+        </div>
       )}
-
-      {/* )} */}
-      {/* </> */}
-      {/* )} */}
     </div>
   );
 };

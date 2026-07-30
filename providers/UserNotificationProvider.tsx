@@ -6,8 +6,9 @@ import { useEffect } from "react";
 import { getSocket } from "@/lib/socket";
 import { useSocketContext } from "./SocketContext";
 import { Rss } from "lucide-react";
+import { usePathname } from "next/navigation";
 
-export default function NotificationProvider({
+export default function UserNotificationProvider({
   children,
 }: {
   children: React.ReactNode;
@@ -15,6 +16,7 @@ export default function NotificationProvider({
   const { user } = useAuthStore();
   const { listenToNotifications, cleanup, fetchNotifications } =
     useNotificationsStore();
+  const pathname = usePathname();
 
   const { socketReady } = useSocketContext();
 
@@ -23,8 +25,10 @@ export default function NotificationProvider({
     await fetchNotifications(user.id);
   };
 
+  const isAdminRoute = pathname.startsWith("/admin");
+
   useEffect(() => {
-    if (!user?.id || !socketReady) return;
+    if (!user?.id || !socketReady || isAdminRoute) return;
 
     const socket = getSocket();
     if (!socket) return;

@@ -189,6 +189,13 @@ const VerifyMFA = ({ reason: reasonProp, next: nextProp, onSuccess, onClose }: V
         </button>
       )}
 
+      <Link
+        href="/auth/signin"
+        className="absolute top-4 right-4 text-text-secondary hover:text-text-primary transition"
+      >
+        <X size={18} />
+      </Link>
+
       {!success ? (
         <>
           <div className="flex flex-col w-full items-center text-center gap-3">

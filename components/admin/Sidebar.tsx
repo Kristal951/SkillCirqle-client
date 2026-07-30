@@ -19,6 +19,7 @@ import {
   MoreVerticalIcon,
   ArrowRightLeft,
   ArrowRightLeftIcon,
+  BadgeCheck,
 } from "lucide-react";
 import { useAdminSidebarStore } from "@/store/useAdminStore";
 import Image from "next/image";
@@ -51,6 +52,11 @@ const NAV_SECTIONS: NavSection[] = [
       { label: "Users", href: "/admin/users", icon: Users },
       { label: "Sessions", href: "/admin/sessions", icon: Calendar },
       { label: "Ratings", href: "/admin/ratings", icon: Star },
+      {
+        label: "Skill Verifications",
+        href: "/admin/skill-verifications",
+        icon: BadgeCheck,
+      },
     ],
   },
   {
@@ -181,7 +187,7 @@ export default function AdminSidebar({ onLogout }: AdminSidebarProps) {
           </button>
         </div>
 
-        <nav className="flex-1 overflow-y-auto px-4 py-4 space-y-8">
+        <nav className="flex-1 overflow-y-auto px-4 py-4 space-y-8 scrollbar-hide">
           {NAV_SECTIONS.map((section) => (
             <div key={section.title}>
               <p
@@ -200,25 +206,25 @@ export default function AdminSidebar({ onLogout }: AdminSidebarProps) {
                         href={item.href}
                         onClick={() => setShowMobileSidebar(false)}
                         className={`
-                          group relative flex items-center gap-4 px-4 py-3 text-sm font-medium transition-all rounded-xl
+                          group relative flex items-center gap-4 ${isCollapsed ? 'px-3' : 'px-4'} py-3 text-sm font-medium transition-all
                           ${
                             active
-                              ? "bg-primary/10 text-text-primary"
+                              ? "bg-primary/10 text-text-primary border-l-2 border-text-primary"
                               : "text-text-secondary hover:bg-background-hover hover:text-text-primary"
                           }
                           ${isCollapsed ? "md:justify-center" : ""}
                         `}
                       >
-                        {active && (
-                          <span className="absolute left-0 w-1 h-6 bg-primary rounded-r-full" />
-                        )}
+                        {/* {active && (
+                          <span className="absolute left-0 w-1 h-6 bg-text-primary rounded-r-full" />
+                        )} */}
                         <Icon
-                          size={20}
-                          className={
-                            active
+                          // size={isColl}
+                          className={`
+                            ${active
                               ? "text-text-primary"
-                              : "text-text-secondary group-hover:text-text-primary"
-                          }
+                              : "text-text-secondary group-hover:text-text-primary"}
+                          `}
                         />
                         <span className={`${isCollapsed ? "md:hidden" : ""}`}>
                           {item.label}

@@ -39,16 +39,22 @@ export async function GET(request: Request) {
 
   const user = data.user;
 
+  const appendOAuthMarker = (destination: URL) => {
+    destination.searchParams.set("login", "oauth");
+    return destination;
+  };
+
   if (user) {
     const isNewGoogleUser =
       user.app_metadata.provider === "google" &&
       user.created_at === user.last_sign_in_at;
 
     if (isNewGoogleUser) {
-      return NextResponse.redirect(new URL("/onboarding", url.origin));
+      return NextResponse.redirect(
+        appendOAuthMarker(new URL("/onboarding", url.origin)),
+      );
     }
   }
 
-  return NextResponse.redirect(new URL(next, url.origin));
-  // Todo: redirect to a success page for session storage. reference: chatgpt chat, email verifcation supabase
+  return NextResponse.redirect(appendOAuthMarker(new URL(next, url.origin)));
 }

@@ -28,6 +28,10 @@ export const initSocketEvents = () => {
   socket.off("typing");
   socket.off("stop_typing");
 
+  socket.onAny((event, ...args) => {
+    console.log(event, args);
+  });
+
   socket.on("online_users", (users: string[]) => {
     setOnlineUsers(users);
   });

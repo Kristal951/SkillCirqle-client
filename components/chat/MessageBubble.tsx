@@ -73,6 +73,7 @@ const MessageBubble = ({
 
   const handleToggle = (e: React.MouseEvent) => {
     e.stopPropagation();
+    if (msg?.deleted) return;
     toggleMessageMenu(msg.id);
   };
 
@@ -100,11 +101,13 @@ const MessageBubble = ({
   const handleEditMsg = (
     msgId: string,
     content: string,
+    isMediaMessage: boolean,
     conversationId: string,
   ) => {
     setEditingMessage({
       id: msgId,
       content: content,
+      isMediaMessage,
       conversationId: conversationId,
     });
   };
@@ -119,11 +122,10 @@ const MessageBubble = ({
   const renderStatus = () => {
     if (!isMe) return null;
 
-    switch (getStatus()) {
+    switch (status) {
       case "sending":
         return <Clock size={12} className="text-gray-300 animate-pulse" />;
       case "sent":
-        status;
         return <Check size={14} className="text-gray-300" />;
       case "delivered":
         return <CheckCheck size={14} className="text-gray-400" />;
@@ -251,7 +253,7 @@ const MessageBubble = ({
                 initial={{ opacity: 0, scale: 0.9, y: 10 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.9, y: 10 }}
-                className={` ${msg?.deleted ? "hidden" : "absolute"} -top-12 z-100 flex items-center gap-1 p-1 bg-surface/80 backdrop-blur-md border border-border shadow-xl rounded-2xl ${
+                className={` absolute -top-12 z-100 flex items-center gap-1 p-1 bg-surface/80 backdrop-blur-md border border-border shadow-xl rounded-2xl ${
                   isMe ? "right-0" : "left-0"
                 }`}
               >
@@ -259,15 +261,20 @@ const MessageBubble = ({
                   {
                     icon: Copy,
                     action: () => copyMessage(msg),
+                    show: !isMediaMessage || !!msg?.caption,
                   },
                   {
                     icon: Edit2,
                     action: () => {
                       if (!activeChat?.id) return;
-                      handleEditMsg(msg.id, msg.message, activeChat?.id || "");
+                      handleEditMsg(
+                        msg.id,
+                        isMediaMessage ? (msg?.caption ?? "") : msg.message,
+                        isMediaMessage,
+                        activeChat?.id || "",
+                      );
                     },
-
-                    show: isMe,
+                    show: isMe && (!isMediaMessage || !!msg?.caption),
                   },
                   {
                     icon: Reply,
@@ -287,7 +294,11 @@ const MessageBubble = ({
                   .map((item, i) => (
                     <button
                       key={i}
-                      onClick={item.action}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        item.action();
+                        toggleMessageMenu("");
+                      }}
                       className={`p-2  rounded-xl transition-colors hover:bg-background flex items-center gap-2 ${
                         item.danger
                           ? "hover:bg-red-500/10 text-red-500"
@@ -324,8 +335,12 @@ const MessageBubble = ({
                       ? "You"
                       : msg?.reply?.metadata?.sender_name || "User"}
                   </p>
-                  <p className="text-xs text-text-secondary truncate">
-                    {msg?.reply?.content}
+                  <p
+                    className={`text-xs truncate ${msg?.reply?.is_deleted ? "italic text-text-secondary/60" : "text-text-secondary"}`}
+                  >
+                    {msg?.reply?.is_deleted
+                      ? "Original message was deleted"
+                      : msg?.reply?.content}
                   </p>
                 </div>
               </div>

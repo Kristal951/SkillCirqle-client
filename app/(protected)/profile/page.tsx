@@ -7,7 +7,7 @@ import { useAuthStore } from "@/store/useAuthStore";
 import { Coins } from "lucide-react";
 import { useTheme } from "next-themes";
 import Link from "next/link";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import SwapHoriz from "@material-symbols/svg-400/outlined/swap_horiz-fill.svg";
 import Settings from "@material-symbols/svg-400/outlined/settings.svg";
 import Share from "@material-symbols/svg-400/outlined/share.svg";
@@ -18,16 +18,26 @@ import Star from "@material-symbols/svg-400/outlined/star.svg";
 import Psychology from "@material-symbols/svg-400/outlined/psychology.svg";
 import School from "@material-symbols/svg-400/outlined/school.svg";
 import Reviews from "@material-symbols/svg-400/outlined/reviews.svg";
+import { getUserSkillsFromTable } from "@/utils/getUserSkillsFromTable";
 // import LocalFireDepartment from "@material-symbols/svg-400/outlined/local_fire_department.svg";
 // import LocalFireDepartmentFill from "@material-symbols/svg-400/outlined/local_fire_department-fill.svg";
 // import Check from "@material-symbols/svg-400/outlined/check.svg";
 // import History from "@material-symbols/svg-400/outlined/history.svg";
+
+interface UserSkillRow {
+  skill_id: string;
+  name: string;
+  type: "teach" | "learn";
+  verified: boolean;
+}
 
 const ProfilePage = () => {
   const { user } = useAuthStore();
   const { theme } = useTheme();
   const [showShareModal, setShowShareModal] = useState(false);
   const [showQrModal, setShowQrModal] = useState(false);
+  const [userSkills, setUserSkills] = useState<UserSkillRow[]>([]);
+  const [loadingSkills, setLoadingSkills] = useState(true);
 
   const statCardData = [
     {
@@ -41,6 +51,29 @@ const ProfilePage = () => {
       value: user?.rating,
     },
   ];
+
+  useEffect(() => {
+    const fetchSkills = async () => {
+      setLoadingSkills(true);
+      try {
+        const res = await fetch("/api/user/skills/skill-with-id");
+        const data = await res.json();
+
+        if (res.ok) {
+          setUserSkills(data.skills || []);
+        }
+      } catch (err) {
+        console.error("Failed to fetch skills:", err);
+      } finally {
+        setLoadingSkills(false);
+      }
+    };
+
+    fetchSkills();
+  }, []);
+
+  const teachSkills = userSkills.filter((s) => s.type === "teach");
+  const learnSkills = userSkills.filter((s) => s.type === "learn");
 
   return (
     <section className="relative w-full md:px-4 h-full flex flex-col py-6 px-4">
@@ -67,9 +100,15 @@ const ProfilePage = () => {
                 >
                   {user?.name}
                 </h2>
-                <p className="max-w-lg text-base text-center md:text-center lg:text-left leading-relaxed text-text-secondary line-clamp-3">
-                  {user?.bio}
-                </p>
+                {user?.bio ? (
+                  <p className="max-w-lg text-base text-center md:text-center lg:text-left leading-relaxed text-text-secondary line-clamp-3">
+                    {user?.bio}
+                  </p>
+                ) : (
+                  <p className="max-w-lg text-base text-center md:text-center lg:text-left leading-relaxed text-text-secondary line-clamp-3">
+                    No Bio yet
+                  </p>
+                )}
               </div>
             </div>
 
@@ -182,15 +221,20 @@ const ProfilePage = () => {
         <div className="col-span-2 grid gap-8">
           <SkillsCard
             title="Skills i can teach"
-            skills={user?.skills_to_teach || []}
+            skills={teachSkills.map((s) => ({
+              name: s.name,
+              verified: s.verified,
+            }))}
             icon={Psychology}
             color="primary"
+            loading={loadingSkills}
           />
           <SkillsCard
             title="Skills i want to learn"
-            skills={user?.skills_to_learn || []}
+            skills={learnSkills.map((s) => s.name)}
             icon={School}
             color="accent"
+            loading={loadingSkills}
           />
         </div>
 

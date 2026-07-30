@@ -4,9 +4,11 @@ import Sidebar from "@/components/chat/Sidebar";
 import Input from "@/components/chat/Input";
 import { useChatStore } from "@/store/useChatStore";
 import Chat from "@material-symbols/svg-400/outlined/chat.svg";
+import { useAuthStore } from "@/store/useAuthStore";
 
 export default function ChatShell({ children }: { children: React.ReactNode }) {
   const { activeChat } = useChatStore();
+  const {user} = useAuthStore()
 
   return (
     <main className="flex h-screen w-full bg-background overflow-hidden relative">

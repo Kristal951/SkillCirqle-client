@@ -26,6 +26,10 @@ export const connectSocket = (token: string) => {
 
     socket.on("disconnect", (reason) => {
       console.log("❌ Socket disconnected:", reason);
+
+      if (reason === "io server disconnect") {
+        socket?.connect();
+      }
     });
 
     socket.on("connect_error", (err) => {

@@ -6,6 +6,7 @@ export type EditingMessageState = {
   id: string;
   content: string;
   conversationId: string;
+  isMediaMessage: boolean;
 } | null;
 export type SetEditingMessage = Dispatch<SetStateAction<EditingMessageState>>;
 

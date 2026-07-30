@@ -71,23 +71,30 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const geo = await getGeo(req);
 
+    console.log(body, geo, 'sess')
+
     const supabase = await createSupabaseServer();
     const user = await getUser();
-
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
-    const sessionId = session
-      ? getSessionIdFromAccessToken(session.access_token)
-      : null;
 
     if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+
+    const currentSessionId = session
+      ? getSessionIdFromAccessToken(session.access_token)
+      : null;
+
+    if (!currentSessionId) {
+      return NextResponse.json({ error: "No active session" }, { status: 401 });
+    }
+
     const { error } = await supabase.rpc("set_current_session", {
       p_user_id: user.id,
-      p_session_id: sessionId,
+      p_session_id: currentSessionId,
       p_device_name: body.device_name,
       p_browser: body.browser,
       p_os: body.os,
@@ -98,7 +105,6 @@ export async function POST(req: NextRequest) {
 
     if (error) {
       console.error(error);
-
       return NextResponse.json(
         { error: "RPC failed", details: error },
         { status: 500 },
@@ -108,7 +114,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error(error);
-
     return NextResponse.json({ error: "Failed" }, { status: 500 });
   }
 }
@@ -143,6 +148,8 @@ export async function GET(req: NextRequest) {
         { status: 500 },
       );
     }
+
+    console.log(data, 'session')
 
     const sessionsWithCurrent = (data ?? []).map((s) => ({
       ...s,

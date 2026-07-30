@@ -10,16 +10,32 @@ if (!secret) {
 
 const KEY = Buffer.from(secret, "hex");
 
-export const decryptMessage = (encryptedText: string): string => {
-  const [ivHex, encrypted] = encryptedText.split(":");
+export const decryptMessage = (
+  encryptedText: string,
+  fallback = "[unable to decrypt message]",
+): string => {
+  console.log(encryptedText)
+  try {
+    const [ivHex, encrypted] = encryptedText.split(":");
 
-  const iv = Buffer.from(ivHex, "hex");
+    if (!ivHex || !encrypted) {
+      throw new Error("Malformed encrypted content");
+    }
 
-  const decipher = crypto.createDecipheriv(ALGORITHM, KEY, iv);
+    const iv = Buffer.from(ivHex, "hex");
 
-  let decrypted = decipher.update(encrypted, "hex", "utf8");
+    if (iv.length !== 16) {
+      throw new Error("Invalid IV length");
+    }
 
-  decrypted += decipher.final("utf8");
+    const decipher = crypto.createDecipheriv(ALGORITHM, KEY, iv);
 
-  return decrypted;
+    let decrypted = decipher.update(encrypted, "hex", "utf8");
+    decrypted += decipher.final("utf8");
+
+    return decrypted;
+  } catch (err) {
+    console.error("❌ decryptMessage failed:", (err as Error).message);
+    return fallback;
+  }
 };

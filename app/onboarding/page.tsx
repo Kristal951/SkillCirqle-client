@@ -1,14 +1,18 @@
 "use client";
 
 import { useAuthStore } from "@/store/useAuthStore";
-import { ArrowRight, ShieldCheck, Globe, User, Coins } from "lucide-react";
 import { useOnboardingNavigation } from "@/lib/onboarding";
 import Spinner from "@/components/ui/Spinner";
-import { useOnboardingStore } from "@/store/useOnboardingStore";
 import { KeyboardEvent, MouseEvent, useState } from "react";
 import { toast } from "@/lib/toast";
 import { useRouter } from "next/navigation";
 import { addUserSkillsToRequiredTables } from "@/lib/addUserSkillsToRequiredTables";
+import Psychology from "@material-symbols/svg-400/outlined/psychology.svg";
+import School from "@material-symbols/svg-400/outlined/school.svg";
+import Close from "@material-symbols/svg-400/outlined/close.svg";
+import Verified from "@material-symbols/svg-400/outlined/verified.svg";
+import { VerifySkillModal } from "@/components/VerifySkillModal";
+import { ArrowRight } from "lucide-react";
 
 const Onboarding = () => {
   const { user } = useAuthStore();
@@ -20,6 +24,7 @@ const Onboarding = () => {
   const firstName = displayName.split(" ")[0];
   const { updateUser } = useAuthStore();
   const router = useRouter();
+  const { handleMoveToNextOnboardingStep } = useOnboardingNavigation();
 
   const [teachInput, setTeachInput] = useState("");
   const [learnInput, setLearnInput] = useState("");
@@ -33,7 +38,7 @@ const Onboarding = () => {
     setSkills: React.Dispatch<React.SetStateAction<string[]>>,
     setInput: React.Dispatch<React.SetStateAction<string>>,
   ) => {
-    const val = value.trim().replace(/,/g, "")
+    const val = value.trim().replace(/,/g, "");
 
     if (!val) return;
     const exists = skills.some(
@@ -100,7 +105,7 @@ const Onboarding = () => {
       const success = await updateUser({
         skills_to_teach: teachSkills,
         skills_to_learn: learnSkills,
-        has_onboarded: true,
+        has_onboarded: false,
       });
 
       if (!success) {
@@ -108,13 +113,17 @@ const Onboarding = () => {
         return;
       }
 
-      router.replace("/onboarding/onboardingCompleted");
+      await handleMoveToNextOnboardingStep(2);
     } catch (error) {
       console.error(error);
       toast.error("Something went wrong");
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleSkip = () => {
+    router.push("/dashboard");
   };
 
   return (
@@ -212,16 +221,17 @@ const Onboarding = () => {
     // </div>
     <div className="w-full h-full p-6 flex flex-col gap-10">
       <div className="flex flex-col gap-1 mb-4 items-center justify-center">
-        <h1 className="text-4xl font-bold text-text-primary">
-          Define your curriculum
+        <h1 className="text-3xl text-center font-bold text-text-primary">
+          What do you bring to the Cirqle?
         </h1>
         <p className="text-text-secondary text-sm">
-          Connect your experience with your learning goals.
+          Share your skills and set your learning goals to get matched with the
+          right people.
         </p>
       </div>
 
       <div className="w-full flex items-start justify-center gap-8 flex-col lg:flex-row">
-        <div className="max-w-xl w-full bg-surface/50 p-6 border border-border/50 rounded-xl">
+        <div className="md:max-w-xl w-full bg-surface/50 p-6 border border-border/50 rounded-xl">
           <div className="w-full">
             <div className="w-full flex items-end justify-between">
               <div className="flex w-full flex-col gap-1">
@@ -242,9 +252,7 @@ const Onboarding = () => {
             <div className="w-full flex flex-col mt-6">
               <div className="w-full flex bg-surface/50 items-center rounded-xl pl-3 pr-1 py-1 border border-transparent focus-within:border-primary/50 transition-all overflow-hidden">
                 <div className="w-8 h-8 flex items-center justify-center shrink-0">
-                  <span className="material-symbols-outlined text-muted text-xl">
-                    psychology
-                  </span>
+                  <Psychology className="text-text-secondary text-xl" />
                 </div>
 
                 <input
@@ -297,25 +305,13 @@ const Onboarding = () => {
                     <div className="w-max flex gap-3 items-center shrink-0">
                       <button
                         type="button"
-                        className="text-xs flex items-center gap-1.5 bg-background border border-border hover:bg-muted/10 text-text-primary px-2.5 py-1 rounded-md font-medium transition-colors"
-                      >
-                        <span className="material-symbols-outlined icon-filled text-[14px]!">
-                          verified
-                        </span>
-                        Verify
-                      </button>
-
-                      <button
-                        type="button"
                         onClick={() =>
                           removeSkill(i, teachSkills, setTeachSkills)
                         }
                         className="w-7 h-7 flex items-center justify-center rounded-full group hover:bg-rose-500/10 text-muted transition-colors"
                         aria-label={`Remove ${skill}`}
                       >
-                        <span className="material-symbols-outlined text-base group-hover:text-rose-500 transition-colors">
-                          close
-                        </span>
+                        <Close className="text-base group-hover:text-rose-500 transition-colors" />
                       </button>
                     </div>
                   </div>
@@ -325,7 +321,7 @@ const Onboarding = () => {
           </div>
         </div>
 
-        <div className="max-w-xl w-full bg-surface/50 p-6 border border-border/50 rounded-xl">
+        <div className="md:max-w-xl w-full bg-surface/50 p-6 border border-border/50 rounded-xl">
           <div className="w-full">
             <div className="w-full flex items-end justify-between">
               <div className="flex flex-col gap-1">
@@ -346,9 +342,7 @@ const Onboarding = () => {
             <div className="w-full flex flex-col mt-6">
               <div className="w-full flex bg-surface/50 items-center rounded-xl pl-3 pr-1 py-1 border border-transparent focus-within:border-accent/50 transition-all overflow-hidden">
                 <div className="w-8 h-8 flex items-center justify-center shrink-0">
-                  <span className="material-symbols-outlined text-muted text-xl">
-                    school
-                  </span>
+                  <School className="text-text-secondary text-xl" />
                 </div>
 
                 <input
@@ -406,9 +400,7 @@ const Onboarding = () => {
                       className="w-7 h-7 flex items-center justify-center rounded-full group hover:bg-rose-500/10 text-muted transition-colors"
                       aria-label={`Remove ${skill}`}
                     >
-                      <span className="material-symbols-outlined text-base group-hover:text-rose-500 transition-colors">
-                        close
-                      </span>
+                      <Close className="text-base group-hover:text-rose-500 transition-colors" />
                     </button>
                   </div>
                 ))}
@@ -418,14 +410,30 @@ const Onboarding = () => {
         </div>
       </div>
 
-      <div className="w-full flex items-center justify-end mt-auto pt-4 border-t border-border/30">
+      <div className="w-full flex items-center justify-between mt-auto pt-4 border-t border-border/30">
+        <button
+          type="button"
+          onClick={handleSkip}
+          disabled={loading}
+          className="text-sm font-medium text-text-secondary hover:text-text-primary transition-colors disabled:opacity-50"
+        >
+          Skip for now
+        </button>
+
         <button
           type="button"
           onClick={(e) => handleSubmit(e)}
           disabled={loading}
-          className="bg-primary disable:opacity-50 text-primary-foreground hover:bg-primary/90 px-6 py-2.5 rounded-xl font-medium text-sm transition-colors shadow-sm"
+          className="bg-primary disabled:opacity-50 text-primary-foreground hover:bg-primary/90 px-6 py-2.5 rounded-xl font-medium text-sm transition-colors shadow-sm"
         >
-          {loading ? <Spinner size={20} /> : "Finish"}
+          {loading ? (
+            <Spinner size={20} />
+          ) : (
+            <>
+              Continue
+              <ArrowRight size={16} />
+            </>
+          )}
         </button>
       </div>
     </div>

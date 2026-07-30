@@ -26,18 +26,16 @@ const SESSIONS_PER_PAGE = 5;
 
 const ActiveSessionsPanel = () => {
   const { data: sessions = [], isLoading } = useSessions();
+  console.log(sessions, 'sessi')
   const { mutate: revokeSession, isPending: isRevoking } = useRevokeSession();
   const { mutate: revokeAll, isPending: isRevokingAll } = useRevokeAllSessions();
   const [expandedDevice, setExpandedDevice] = useState<string | null>(null);
   const [devicePage, setDevicePage] = useState(0);
   const [sessionPage, setSessionPage] = useState(0);
-
+  
   const groupedSessions = groupSessionsByDevice(sessions);
   const otherDeviceCount = sessions.filter((s) => !s.is_current).length;
 
-  // One representative row per device: prefer the current session if present,
-  // otherwise the most recently active one. Revoking acts on every session
-  // under that device group at once.
   const deviceCards = Object.entries(groupedSessions).map(([device, deviceSessions]) => {
     const current = deviceSessions.find((s) => s.is_current);
     const mostRecent = [...deviceSessions].sort(
@@ -75,8 +73,7 @@ const ActiveSessionsPanel = () => {
   };
 
   return (
-    <div className="col-span-2 md:bg-surface/50 lg:bg-surface/50 rounded-2xl flex flex-col md:p-8 md:border md:border-border/10">
-      {/* Header */}
+    <div className="col-span-2 bg-surface/40 p-6 rounded-2xl flex flex-col md:p-8 md:border md:border-border/10">
       <div className="w-full pb-6 px-1 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-border/10">
         <div className="flex items-center gap-4">
           <div className="w-12 h-12 bg-linear-to-br from-primary/15 to-primary/5 border border-primary/10 text-primary rounded-2xl md:flex items-center justify-center shrink-0 shadow-sm hidden sm:flex">
@@ -114,7 +111,6 @@ const ActiveSessionsPanel = () => {
         )}
       </div>
 
-      {/* Body */}
       <div className="w-full py-6">
         {isLoading && sessions.length === 0 ? (
           <div className="w-full flex flex-col gap-4">

@@ -15,13 +15,18 @@ export async function GET(
       .select(
         `
     *,
-    sender:profiles(*),
+    sender:profiles(
+        id,
+        avatar_url,
+        name
+    ),
 
     reply:reply_to (
       id,
       content,
       sender_id,
-      metadata
+      metadata,
+      is_deleted
     )
   `,
       )
@@ -33,6 +38,9 @@ export async function GET(
     const decryptedMessages = data.map((msg) => ({
       ...msg,
       content: decryptMessage(msg.content),
+      reply: msg.reply
+        ? { ...msg.reply, content: decryptMessage(msg.reply.content) }
+        : null,
     }));
 
     return NextResponse.json(decryptedMessages);

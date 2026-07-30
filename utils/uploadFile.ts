@@ -1,22 +1,23 @@
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
+import { getFreshSignedUrl } from "./getFreshSignedUrl";
 
 export const uploadFile = async (
   file: File,
   userId: string,
-  onProgress?: (progress: number) => void
+  onProgress?: (progress: number) => void,
+  bucket: string = "chat-uploads",
+  isPrivate: boolean = false,
 ): Promise<string> => {
   const supabase = getSupabaseBrowserClient();
 
   const fileExt = file.name.split(".").pop();
 
-  // ✅ safe unique filename
   const safeName = `${Date.now()}-${Math.random()
     .toString(36)
     .substring(2)}.${fileExt}`;
 
   const filePath = `${userId}/${safeName}`;
 
-  // 🔵 fake smooth progress (Supabase limitation workaround)
   let progress = 0;
   const interval = setInterval(() => {
     progress += 10;
@@ -24,9 +25,7 @@ export const uploadFile = async (
     onProgress?.(progress);
   }, 80);
 
-  const { error } = await supabase.storage
-    .from("chat-uploads")
-    .upload(filePath, file);
+  const { error } = await supabase.storage.from(bucket).upload(filePath, file);
 
   clearInterval(interval);
 
@@ -34,9 +33,12 @@ export const uploadFile = async (
 
   onProgress?.(100);
 
-  const { data } = supabase.storage
-    .from("chat-uploads")
-    .getPublicUrl(filePath);
+  if (isPrivate) {
+    const url = await getFreshSignedUrl(filePath, bucket);
+    return url
+  }
+
+  const { data } = supabase.storage.from(bucket).getPublicUrl(filePath);
 
   return data.publicUrl;
 };

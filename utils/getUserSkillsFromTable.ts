@@ -1,17 +1,28 @@
 import { createSupabaseServer } from "@/lib/supabaseServer";
 
-export const getUserSkillsFromTable = async (userId: string) => {
+export const getUserSkillsFromTable = async (userId: string, type?: string) => {
   const supabase = await createSupabaseServer();
+
   if (!userId) {
     console.log("Unauthorized");
-    return;
+    return {
+      success: false,
+      skills: [],
+      error: "Unauthorized",
+    };
   }
 
   try {
-    const { error, data: mySkills } = await supabase
+    let query = supabase
       .from("user_skills")
-      .select("skill_id, type")
+      .select("type, verified, skills(id, title)")
       .eq("user_id", userId);
+
+    if (type) {
+      query = query.eq("type", type);
+    }
+
+    const { data, error } = await query;
 
     if (error) {
       console.error("Supabase error fetching user skills:", error.message);
@@ -22,9 +33,16 @@ export const getUserSkillsFromTable = async (userId: string) => {
       };
     }
 
+    const skills = (data || []).map((row: any) => ({
+      skill_id: row.skills?.id,
+      name: row.skills?.title,
+      type: row.type,
+      verified: row.verified ?? false,
+    }));
+
     return {
       success: true,
-      skills: mySkills || [],
+      skills
     };
   } catch (error) {
     console.error("Runtime error fetching user skills:", error);

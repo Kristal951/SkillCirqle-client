@@ -11,6 +11,7 @@ import { getSocket } from "@/lib/socket";
 import { useTokenStore } from "./useTokenStore";
 import { useOnboardingStore } from "./useOnboardingStore";
 import { UAParser } from "ua-parser-js";
+import { v4 as uuidv4 } from "uuid";
 
 interface AuthState {
   user: User | null;
@@ -106,11 +107,29 @@ export const useAuthStore = create<AuthState>()(
         try {
           const parser = new UAParser();
           const result = parser.getResult();
-          let sessionId = sessionStorage.getItem("device_session_id");
-          if (!sessionId) {
-            sessionId = crypto.randomUUID();
-            sessionStorage.setItem("device_session_id", sessionId);
+          const isUsableModel = (model?: string) =>
+            !!model && model.trim().length > 2;
+
+          const deviceName =
+            result.device.vendor && isUsableModel(result.device.model)
+              ? `${result.device.vendor} ${result.device.model}`.trim()
+              : result.os.name === "Android"
+                ? "Android Phone"
+                : result.os.name === "iOS"
+                  ? "iPhone"
+                  : result.os.name === "Windows"
+                    ? "Windows PC"
+                    : result.os.name === "Mac OS"
+                      ? "Mac"
+                      : "Desktop";
+
+          let deviceSessionId = localStorage.getItem("device_session_id");
+
+          if (!deviceSessionId) {
+            deviceSessionId = globalThis.crypto?.randomUUID?.() ?? uuidv4();
+            localStorage.setItem("device_session_id", deviceSessionId);
           }
+
           try {
             await apiFetch("/api/user/session", {
               method: "POST",
@@ -118,8 +137,8 @@ export const useAuthStore = create<AuthState>()(
                 "Content-Type": "application/json",
               },
               body: JSON.stringify({
-                session_id: sessionId,
-                device_name: result.device.model ?? "Desktop",
+                device_session_id: deviceSessionId,
+                device_name: deviceName,
                 browser: result.browser.name,
                 os: result.os.name,
                 user_agent: navigator.userAgent,
@@ -211,12 +230,10 @@ export const useAuthStore = create<AuthState>()(
     }),
     {
       name: "auth-storage",
-      partialize: (state) => ({ user: state.user }),
+      partialize: (state) => ({}),
       onRehydrateStorage: () => (state) => {
         state?.setHydrated(true);
       },
     },
   ),
 );
-
-// https://chatgpt.com/share/6a102f94-a074-83ea-8e47-54179ec18d74 - for legal documents

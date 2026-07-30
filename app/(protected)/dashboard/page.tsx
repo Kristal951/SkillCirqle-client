@@ -51,6 +51,8 @@ export default function Dashboard() {
   const skillData =
     matchesQuery.data?.skillCards ?? trendingQuery.data?.skillCards ?? [];
 
+    console.log(matchesQuery)
+
   useEffect(() => {
     if (!user?.id || !hasSkills) return;
 

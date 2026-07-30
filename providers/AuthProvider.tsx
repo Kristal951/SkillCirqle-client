@@ -6,7 +6,7 @@ import { useTokenStore } from "@/store/useTokenStore";
 import { useOnboardingStore } from "@/store/useOnboardingStore";
 import Spinner from "@/components/ui/Spinner";
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 export default function AuthProvider({
   children,
@@ -15,6 +15,8 @@ export default function AuthProvider({
 }) {
   const supabase = getSupabaseBrowserClient();
   const pathname = usePathname();
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const isRecoveryPage = pathname === "/auth/update-password";
   const isRecoveryPageRef = useRef(isRecoveryPage);
 
@@ -61,8 +63,18 @@ export default function AuthProvider({
         const {
           data: { session },
         } = await supabase.auth.getSession();
+
         if (session?.user) {
-          await loadProfile();
+          const isOAuthLogin = searchParams.get("login") === "oauth";
+
+          if (isOAuthLogin) {
+            await fetchUser();
+            const url = new URL(window.location.href);
+            url.searchParams.delete("login");
+            router.replace(url.pathname + url.search);
+          } else {
+            await loadProfile();
+          }
         } else {
           resetStore();
         }
@@ -112,7 +124,7 @@ export default function AuthProvider({
       mounted = false;
       subscription.unsubscribe();
     };
-  }, [supabase, fetchUser, loadProfile, resetStore]);
+  }, [supabase, fetchUser, loadProfile, resetStore, searchParams, router]);
 
   if (loading && !isRecoveryPageRef.current) {
     return (

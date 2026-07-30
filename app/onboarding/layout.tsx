@@ -14,43 +14,42 @@ export default function OnboardingLayout({
   children: React.ReactNode;
 }) {
   const { user, isHydrated } = useAuthStore();
-  const { setTotalSteps, step, isLoadingStep } =
+  const { setTotalSteps, step, isLoadingStep, getUserCurrentStepFromDB } =
     useOnboardingStore();
-
   const router = useRouter();
   const pathname = usePathname();
 
-  // useEffect(() => {
-  //   // if (!isHydrated) return;
+  useEffect(() => {
+    if (!isHydrated) return;
 
-  //   // if (!user?.id) {
-  //   //   router.replace("/auth/signin");
-  //   //   return;
-  //   // }
+    if (!user?.id) {
+      router.replace("/auth/signin");
+      return;
+    }
 
-  //   setTotalSteps(3);
-  //   // getUserCurrentStepFromDB();
-  // }, [isHydrated, user?.id]);
+    setTotalSteps(2);
+    getUserCurrentStepFromDB();
+  }, [isHydrated, user?.id]);
 
   useEffect(() => {
-    // !isHydrated || isLoadingStep || !user?.id ||
+    if (!isHydrated || isLoadingStep || !user?.id) return;
+
     if (user?.has_onboarded) {
       router.replace("/onboarding/onboardingCompleted");
+      return;
     }
-    // if (typeof step !== "number") return;
 
-    // const target = step === 0 ? "/onboarding" : `/onboarding/step-${step}`;
+    if (typeof step !== "number") return;
 
-    // if (pathname !== target) {
-    //   const t = setTimeout(() => {
-    //     router.replace(target);
-    //   }, 50);
-    //   return () => clearTimeout(t);
-    // }
-  }, [
-    router,
-    user?.has_onboarded,
-  ]);
+    const target = (step === 0 || step === 1) ? "/onboarding" : `/onboarding/step-${step}`;
+
+    if (pathname !== target) {
+      const t = setTimeout(() => {
+        router.replace(target);
+      }, 50);
+      return () => clearTimeout(t);
+    }
+  }, [isHydrated, isLoadingStep, user?.id, user?.has_onboarded, step, pathname, router]);
 
   if (!isHydrated) {
     return (
@@ -65,6 +64,7 @@ export default function OnboardingLayout({
   return (
     <div className="h-screen w-full flex flex-col">
       <Header userOnboarded={user?.has_onboarded} />
+      <MobileStepper/>
 
       <main className="flex-1 py-4 overflow-y-auto">{children}</main>
     </div>

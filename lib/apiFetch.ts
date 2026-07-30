@@ -33,6 +33,7 @@ export const apiFetch = async (url: string, options?: RequestInit) => {
     );
 
     if (res.status === 401) {
+      console.log('401')
       try {
         await useAuthStore.getState().logout();
       } catch (e) {

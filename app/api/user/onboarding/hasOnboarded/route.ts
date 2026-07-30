@@ -19,7 +19,7 @@ export async function GET() {
       .single();
 
     if (error || !data) {
-      return NextResponse.json({ hasOnboarded: false, step: 0 });
+      return NextResponse.json({ hasOnboarded: false, step: 1 });
     }
 
     return NextResponse.json({

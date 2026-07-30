@@ -23,8 +23,8 @@ export async function GET() {
     }
 
     return NextResponse.json({
-      step: data?.onboarding_step ?? 0,
-    });
+  step: data?.onboarding_step ?? 1,
+});
   } catch (error) {
     console.error("GET onboarding error:", error);
     return NextResponse.json({ error: "Server error" }, { status: 500 });
@@ -40,6 +40,7 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
+    console.log(body)
     const step = parseInt(body.step, 10);
 
     if (isNaN(step) || step < 0 || step > 10) {
@@ -48,16 +49,21 @@ export async function POST(req: NextRequest) {
 
     const supabase = await createSupabaseServer();
 
-    const { error } = await supabase.from("profiles").upsert(
+    const { data, error } = await supabase.from("profiles").upsert(
       {
         id: user.id,
         onboarding_step: step,
-        has_onboarded: step >= 3,
+        has_onboarded: step >= 2,
       },
       { onConflict: "id" },
     );
 
-    if (error) throw error;
+    console.log(data)
+
+    if (error){
+      console.log(error)
+      throw error
+    }
 
     return NextResponse.json({ success: true });
   } catch (error) {

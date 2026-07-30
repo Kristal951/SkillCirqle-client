@@ -8,7 +8,7 @@ import Spinner from "@/components/ui/Spinner";
 import { useClearSessionCache } from "@/hooks/useUserAccountSessions";
 import { logoutOneSignal } from "@/lib/oneSignal";
 import { useLogoutModal } from "@/providers/LogoutContext";
-import NotificationProvider from "@/providers/NotificationProvider";
+import UserNotificationProvider from "@/providers/UserNotificationProvider";
 import OneSignalProvider from "@/providers/oneSignal";
 import OneSignalLoginSync from "@/providers/OneSignalLoginSync";
 import SocketProvider from "@/providers/SocketProvider";
@@ -58,7 +58,7 @@ export default function RootLayout({
 
     try {
       clearSessionCache();
-      await logoutOneSignal();
+      // await logoutOneSignal();
       await logout();
     } catch (error) {
       console.error("Logout failed:", error);
@@ -72,7 +72,7 @@ export default function RootLayout({
 
   return (
     <SocketProvider>
-      <NotificationProvider>
+      <UserNotificationProvider>
         <OneSignalProvider />
         <OneSignalLoginSync />
         <div className="flex relative flex-col h-screen">
@@ -141,7 +141,7 @@ export default function RootLayout({
 
           {!isAdmin && <BottomBar />}
         </div>
-      </NotificationProvider>
+      </UserNotificationProvider>
     </SocketProvider>
   );
 }

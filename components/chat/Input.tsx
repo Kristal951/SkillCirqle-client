@@ -459,6 +459,7 @@ const Input = () => {
         socket?.emit("edit_message", {
           messageId: editingMessage.id,
           newText: message,
+          isMediaMessage: editingMessage.isMediaMessage,
           conversationId: editingMessage.conversationId,
         });
 

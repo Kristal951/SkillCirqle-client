@@ -34,6 +34,7 @@ export type UIMessage = {
       sender_name?: string;
       sender_avatar_url?: string;
     };
+    is_deleted?: boolean;
   } | null;
   caption?: string;
   sender: {
@@ -128,14 +129,30 @@ const Chat = () => {
     const socket = getSocket();
     if (!activeChat?.id) return;
 
-    socket?.emit("chat_open", {
-      conversationId: activeChat.id,
-    });
+   const emitOpen = () => {
+  console.log("emitting chat_open", { conversationId: activeChat.id, socketConnected: socket?.connected });
+  socket?.emit("chat_open", { conversationId: activeChat.id });
+};
+    const emitClose = () =>
+      socket?.emit("chat_close", { conversationId: activeChat.id });
+
+    if (document.visibilityState === "visible") {
+      emitOpen();
+    }
+
+    const handleVisibility = () => {
+      if (document.visibilityState === "visible") {
+        emitOpen();
+      } else {
+        emitClose();
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibility);
 
     return () => {
-      socket?.emit("chat_close", {
-        conversationId: activeChat.id,
-      });
+      document.removeEventListener("visibilitychange", handleVisibility);
+      emitClose();
     };
   }, [activeChat?.id]);
 
@@ -210,25 +227,6 @@ const Chat = () => {
   const lastReadRef = useRef<string | null>(null);
 
   useEffect(() => {
-    const socket = getSocket();
-    if (!socket || !activeChat?.id) return;
-
-    const handleVisibility = () => {
-      if (document.visibilityState === "visible") {
-        socket.emit("mark_as_read", {
-          conversationId: activeChat.id,
-        });
-      }
-    };
-
-    document.addEventListener("visibilitychange", handleVisibility);
-
-    return () => {
-      document.removeEventListener("visibilitychange", handleVisibility);
-    };
-  }, [activeChat?.id]);
-
-  useEffect(() => {
     const container = scrollContainerRef.current;
 
     if (!container) return;
@@ -263,20 +261,24 @@ const Chat = () => {
 
     const observer = new IntersectionObserver(
       ([entry]) => {
+        console.log("observer fired:", {
+          isIntersecting: entry.isIntersecting,
+          visibilityState: document.visibilityState,
+          lastReadRef: lastReadRef.current,
+          lastMessageId: lastMessage.id,
+        });
+
         if (!entry.isIntersecting) return;
-
         if (lastReadRef.current === lastMessage.id) return;
-
         if (document.visibilityState !== "visible") return;
 
-        socket.emit("mark_as_read", {
-          conversationId: activeChat.id,
-        });
+        console.log("emitting mark_as_read for", activeChat?.id);
+        socket.emit("mark_as_read", { conversationId: activeChat?.id });
 
         lastReadRef.current = lastMessage.id;
       },
       {
-        threshold: 1.0,
+        threshold: 0,
       },
     );
 
@@ -377,7 +379,7 @@ const Chat = () => {
           </div>
         </div>
 
-        <div ref={bottomRef} />
+        <div ref={bottomRef} className="h-px w-full" />
       </div>
 
       {showScrollButton && (

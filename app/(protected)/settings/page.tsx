@@ -12,6 +12,7 @@ import DeleteAccountPanel from "@/components/settings/DeleteAccountPanel";
 import ProfileDetailsPanel from "@/components/settings/ProfileDetailsPanel";
 import SignOutConfirmation from "@/components/settings/LogoutPanel";
 import AppearancePanel from "@/components/settings/AppearancePanel";
+import MyVerificationsPanel from "@/components/settings/MyVerificationsPanel";
 
 const SettingsPage = () => {
   const [showPasswordModal, setShowPasswordModal] = useState(false);
@@ -30,8 +31,9 @@ const SettingsPage = () => {
 
       <div className="w-full h-max">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8 items-start">
-          <div className="lg:col-span-2">
+          <div className="lg:col-span-2 flex flex-col gap-6 md:gap-8">
             <ProfileDetailsPanel />
+            <MyVerificationsPanel />
           </div>
 
           <div className="flex flex-col gap-6 md:gap-8">

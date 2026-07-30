@@ -201,6 +201,8 @@ export const useChatStore = create<ChatStore>((set, get) => ({
         return m;
       });
 
+      console.log(msg, "msg");
+
       if (!found) {
         updatedMsgs.push({
           ...msg,
@@ -225,19 +227,11 @@ export const useChatStore = create<ChatStore>((set, get) => ({
 
     if (!chat?.id) return;
 
-    const state = get();
-    const messages = state.messages[chat.id];
-    const lastMessage = messages?.[messages.length - 1];
-
-    if (chat?.id) {
-      state.markAsRead(chat.id);
-
-      set((state) => ({
-        conversations: state.conversations.map((c) =>
-          c.id === chat.id ? { ...c, unread_count: 0 } : c,
-        ),
-      }));
-    }
+    set((state) => ({
+      conversations: state.conversations.map((c) =>
+        c.id === chat.id ? { ...c, unread_count: 0 } : c,
+      ),
+    }));
   },
   fetchMessages: async (conversationId, userId) => {
     const supabase = getSupabaseBrowserClient();
@@ -247,6 +241,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
       const res = await fetch(`/api/user/messages/${conversationId}`);
 
       const messages = await res.json();
+      console.log(messages);
 
       const messageIds = (messages || []).map((m: Message) => m.id);
 
@@ -365,23 +360,24 @@ export const useChatStore = create<ChatStore>((set, get) => ({
             }
             return { messages: updated };
           });
+          return;
         }
+
+        emitNotification({
+          userId: receiverId,
+          type: "new_message",
+          title: "New Message",
+          body: `${name || "Someone"} sent you a message.`,
+          data: {
+            conversationId: conversationId,
+            senderImage: senderAvatar,
+            senderName: name,
+            msgPrev: content,
+            link: link,
+          },
+        });
       },
     );
-
-    emitNotification({
-      userId: receiverId,
-      type: "new_message",
-      title: "New Message",
-      body: `${name || "Someone"} sent you a message.`,
-      data: {
-        conversationId: conversationId,
-        senderImage: senderAvatar,
-        senderName: name,
-        msgPrev: content,
-        link: link,
-      },
-    });
   },
 
   listenForMessages: () => {
@@ -394,6 +390,8 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     socket.off("message_error");
     socket.off("messages_seen");
     socket.off("message_edited");
+    socket.off("messages_delivered_bulk");
+    socket.off("conversation:unread_increment");
 
     socket.on("message_ack", ({ tempId, realId }) => {
       set((state) => {
@@ -411,7 +409,51 @@ export const useChatStore = create<ChatStore>((set, get) => ({
       });
     });
 
+    socket.on(
+      "conversation:unread_increment",
+      ({ conversationId, senderId, last_message, last_message_at }) => {
+        const currentUserId = useAuthStore.getState().user?.id;
+        const isActiveChat = get().activeChat?.id === conversationId;
+
+        set((state) => ({
+          conversations: state.conversations.map((conv) => {
+            if (conv.id !== conversationId) return conv;
+
+            return {
+              ...conv,
+              last_message,
+              last_message_at,
+              unread_count:
+                senderId !== currentUserId && !isActiveChat
+                  ? Number(conv.unread_count || 0) + 1
+                  : conv.unread_count,
+            };
+          }),
+        }));
+      },
+    );
+
+    socket.on("messages_delivered_bulk", ({ items }) => {
+      set((state) => {
+        const updatedMessages = { ...state.messages };
+
+        for (const { messageId, conversationId } of items) {
+          const msgs = updatedMessages[conversationId];
+          if (!msgs) continue;
+
+          updatedMessages[conversationId] = msgs.map((m) =>
+            m.id === messageId && m.status === "sent"
+              ? { ...m, status: "delivered" as MessageStatus }
+              : m,
+          );
+        }
+
+        return { messages: updatedMessages };
+      });
+    });
+
     socket.on("conversation:updated", (data) => {
+      console.log(data, "conversation-updated");
       set((state) => ({
         conversations: state.conversations.map((c) =>
           c.id === data.conversationId ? { ...c, ...data } : c,
@@ -478,15 +520,15 @@ export const useChatStore = create<ChatStore>((set, get) => ({
         }),
       }));
 
-      if (msg.senderId === currentUserId) {
+      if (msg.sender_id === currentUserId) {
         socket?.emit("message_delivered", {
           messageId: msg.id,
-          otherUserId,
+          otherUserId: otherUserId,
           conversationId,
         });
       }
 
-      if (isActiveChat) {
+      if (isActiveChat && document.visibilityState === "visible") {
         if (msg.sender_id !== currentUserId) {
           getSocket()?.emit("mark_as_read", { conversationId });
         }
@@ -495,7 +537,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
           const messages = state.messages[conversationId] || [];
           const updated = messages.map((m) => {
             if (m.sender_id !== currentUserId) {
-              return { ...m, status: "read" };
+              return { ...m, status: "read" as MessageStatus };
             }
             return m;
           });
@@ -597,6 +639,8 @@ export const useChatStore = create<ChatStore>((set, get) => ({
   },
 
   markAsRead: (conversationId) => {
+    if (document.visibilityState !== "visible") return;
+
     const socket = getSocket();
     if (!socket) return;
 

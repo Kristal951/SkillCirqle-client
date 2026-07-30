@@ -7,9 +7,11 @@ import {
   ArrowRight,
   AlertCircle,
   CheckCircle2,
+  X,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import Spinner from "@/components/ui/Spinner";
+import Link from "next/link";
 
 const BackupRecoveryPage = () => {
   const router = useRouter();
@@ -76,7 +78,13 @@ const BackupRecoveryPage = () => {
   };
 
   return (
-    <div className="w-full min-h-screen bg-background flex items-center justify-center p-4">
+    <div className="w-full min-h-screen bg-background flex items-center justify-center p-4 relative">
+      <Link
+        href="/auth/signin"
+        className="absolute top-5 right-6 text-text-secondary hover:text-text-primary transition"
+      >
+        <X size={24} />
+      </Link>
       <div className="w-full max-w-md bg-surface border border-border rounded-3xl shadow-2xl p-7 flex flex-col gap-6 animate-in fade-in zoom-in-95 duration-200">
         {!success ? (
           <>
@@ -122,9 +130,8 @@ const BackupRecoveryPage = () => {
               </div>
 
               <div
-                className={`overflow-hidden transition-all duration-200 ${
-                  errorMessage ? "max-h-24 opacity-100" : "max-h-0 opacity-0"
-                }`}
+                className={`overflow-hidden transition-all duration-200 ${errorMessage ? "max-h-24 opacity-100" : "max-h-0 opacity-0"
+                  }`}
               >
                 <div className="bg-red-500/5 border border-red-500/10 rounded-2xl px-4 py-3 flex items-start gap-2 text-sm text-red-400 font-medium">
                   <AlertCircle size={16} className="shrink-0 mt-0.5" />

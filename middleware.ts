@@ -117,9 +117,12 @@ export async function middleware(request: NextRequest) {
       const { data: mfaData, error } =
         await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
 
+      let mfaSatisfied = true;
+
       if (!error && mfaData) {
         const { currentLevel, nextLevel } = mfaData;
         const requiresMfa = nextLevel === "aal2" && currentLevel === "aal1";
+        mfaSatisfied = !requiresMfa || trustedMfa;
 
         if (requiresMfa && !trustedMfa && isProtectedRoute) {
           const url = request.nextUrl.clone();
@@ -127,14 +130,14 @@ export async function middleware(request: NextRequest) {
           return NextResponse.redirect(url);
         }
 
-        if ((!requiresMfa || trustedMfa) && (isAuthPage || isMfaRoute)) {
+        if (mfaSatisfied && (isAuthPage || isMfaRoute)) {
           const url = request.nextUrl.clone();
           url.pathname = "/dashboard";
           return NextResponse.redirect(url);
         }
       }
 
-      if (isAuthPage) {
+      if (isAuthPage && mfaSatisfied) {
         const url = request.nextUrl.clone();
         url.pathname = "/dashboard";
         return NextResponse.redirect(url);
