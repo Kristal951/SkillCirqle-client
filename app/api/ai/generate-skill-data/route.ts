@@ -42,7 +42,15 @@ export async function POST(req: Request) {
 
     if (skill.description && skill.image_url) {
       return NextResponse.json(
-        { message: "Assets already generated, skipping" },
+        {
+          skill: {
+            id: skill.id,
+            title: skill.title,
+            description: skill.description,
+            image: skill.image_url,
+          },
+          message: "Assets already generated, skipping",
+        },
         { status: 200 },
       );
     }

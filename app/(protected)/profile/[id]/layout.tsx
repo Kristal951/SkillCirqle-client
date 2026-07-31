@@ -15,7 +15,6 @@ export default async function UserProfileLayout({
   );
 
   const data = await res.json()
-  console.log(data)
 
   const { user } = data
 

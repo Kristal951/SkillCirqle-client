@@ -25,18 +25,30 @@ export function useSkillVerifications({ status }: { status?: string }) {
     if (!socketReady || !socket) return;
 
     const handleVerificationUpdated = (verification: SkillVerification) => {
-      setSkillVerifications((prev) =>
-        prev.map((v) => (v.id === verification.id ? verification : v)),
-      );
+      setSkillVerifications((prev) => {
+        const exists = prev.some((v) => v.id === verification.id);
+
+        if (exists) {
+          if (status && verification.status !== status) {
+            return prev.filter((v) => v.id !== verification.id);
+          }
+          return prev.map((v) => (v.id === verification.id ? verification : v));
+        }
+
+        if (status && verification.status !== status) {
+          return prev;
+        }
+
+        return [verification, ...prev];
+      });
     };
 
     socket.on("admin:verification-updated", handleVerificationUpdated);
 
     return () => {
-      console.log("Removing verification listener");
       socket.off("admin:verification-updated", handleVerificationUpdated);
     };
-  }, [socketReady]);
+  }, [socketReady, status]);
 
   const fetchSkillVerifications = useCallback(async () => {
     setLoading(true);
@@ -74,23 +86,18 @@ export function useSkillVerifications({ status }: { status?: string }) {
     }: UpdateVerificationStatusParams) => {
       setError(null);
 
-      console.log(verificationId, status, rejectionReason);
-
       try {
         if (!socketReady) {
-          console.log(`not socket ready`);
           throw new Error("Socket is not connected.");
         }
 
         const socket = getSocket();
 
         if (!socket) {
-          console.log(`no socket`);
           throw new Error("Unable to connect to the server.");
         }
 
         if (!user) {
-          console.log(`no user`);
           throw new Error("You must be logged in.");
         }
 
@@ -100,14 +107,11 @@ export function useSkillVerifications({ status }: { status?: string }) {
           rejection_reason: status === "REJECTED" ? rejectionReason : null,
         };
 
-        console.log(updates, "updates");
-
         await new Promise<void>((resolve, reject) => {
           socket.emit(
             "admin:review-skill-verification",
             updates,
             (response: { success: boolean; message?: string }) => {
-              console.log(response);
               if (!response.success) {
                 reject(
                   new Error(
@@ -130,7 +134,7 @@ export function useSkillVerifications({ status }: { status?: string }) {
         throw err;
       }
     },
-    [socketReady],
+    [socketReady, user],
   );
 
   useEffect(() => {

@@ -8,7 +8,6 @@ import DataThresholding from "@material-symbols/svg-400/outlined/data_thresholdi
 import {
   Search,
   FilterX,
-  NonBinaryIcon,
 } from "lucide-react";
 
 import { useSkillVerifications } from "@/hooks/admin/useSkillVerifications";
@@ -19,7 +18,6 @@ import SkillVerificationCard, {
 } from "@/components/admin/skillVerification/SkillVerificationCard";
 import { ConfirmationModal } from "@/components/admin/skillVerification/ConfirmationModal";
 import { toast } from "@/lib/toast";
-import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
 import { SocketContext } from "@/providers/SocketContext";
 import { getSocket } from "@/lib/socket";
 import { useAdminSidebarStore } from "@/store/useAdminStore";
@@ -77,8 +75,6 @@ const SkillVerificationsPage = () => {
           setProofUrlsLoading(false);
           return;
         }
-
-        console.log(response, 'resp')
 
         const map: Record<string, string> = {};
         nonLinkVerifications.forEach((sv, i) => {

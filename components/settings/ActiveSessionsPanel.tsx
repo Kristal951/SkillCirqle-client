@@ -26,7 +26,6 @@ const SESSIONS_PER_PAGE = 5;
 
 const ActiveSessionsPanel = () => {
   const { data: sessions = [], isLoading } = useSessions();
-  console.log(sessions, 'sessi')
   const { mutate: revokeSession, isPending: isRevoking } = useRevokeSession();
   const { mutate: revokeAll, isPending: isRevokingAll } = useRevokeAllSessions();
   const [expandedDevice, setExpandedDevice] = useState<string | null>(null);
@@ -73,7 +72,7 @@ const ActiveSessionsPanel = () => {
   };
 
   return (
-    <div className="col-span-2 bg-surface/40 p-6 rounded-2xl flex flex-col md:p-8 md:border md:border-border/10">
+    <div className="col-span-2 bg-surface/40 px-3 py-6 rounded-2xl flex flex-col md:p-8 md:border md:border-border/10">
       <div className="w-full pb-6 px-1 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-border/10">
         <div className="flex items-center gap-4">
           <div className="w-12 h-12 bg-linear-to-br from-primary/15 to-primary/5 border border-primary/10 text-primary rounded-2xl md:flex items-center justify-center shrink-0 shadow-sm hidden sm:flex">

@@ -1,11 +1,13 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useContext } from "react";
 import { X, Link2, FileUp, BadgeCheck, Loader2, FileText, Trash2 } from "lucide-react";
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
 import { useAuthStore } from "@/store/useAuthStore";
 import { uploadFile } from "@/utils/uploadFile";
 import { toast } from "@/lib/toast";
+import { SocketContext } from "@/providers/SocketContext";
+import { getSocket } from "@/lib/socket";
 
 type ProofType = "link" | "file";
 
@@ -27,8 +29,8 @@ export const VerifySkillModal: React.FC<VerifySkillModalProps> = ({
 }) => {
   const { user } = useAuthStore();
   const supabase = getSupabaseBrowserClient();
-
-  console.log(skill, 'skill')
+  const { socketReady } = useContext(SocketContext)
+  const socket = getSocket()
 
   const [proofType, setProofType] = useState<ProofType>("link");
   const [proofUrl, setProofUrl] = useState("");
@@ -88,6 +90,7 @@ export const VerifySkillModal: React.FC<VerifySkillModalProps> = ({
         "application/pdf",
         "application/msword",
         "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        "image/svg+xml"
       ];
       if (allowedTypes.includes(droppedFile.type) || droppedFile.name.endsWith(".doc") || droppedFile.name.endsWith(".docx")) {
         setFile(droppedFile);
@@ -130,13 +133,13 @@ export const VerifySkillModal: React.FC<VerifySkillModalProps> = ({
         );
       }
 
-      const { error } = await supabase.from("skill_verifications").insert({
+      const { data: inserted, error } = await supabase.from("skill_verifications").insert({
         user_id: user.id,
         skill_id: skill.id,
         proof_type: proofType,
         proof_url: finalUrl,
         note: note.trim() || null,
-      });
+      }).select("id");
 
       if (error) {
         if (error.code === "23505") {
@@ -146,6 +149,18 @@ export const VerifySkillModal: React.FC<VerifySkillModalProps> = ({
           console.error(error);
         }
         return;
+      }
+
+      if (socket && socketReady) {
+        socket.emit(
+          "skill-verification:submitted",
+          { verificationId: inserted?.[0]?.id },
+          (response: { success: boolean }) => {
+            if (!response?.success) {
+              console.warn("Failed to notify admins of new verification submission");
+            }
+          },
+        );
       }
 
       toast.info("Submitted for review.");
@@ -202,11 +217,10 @@ export const VerifySkillModal: React.FC<VerifySkillModalProps> = ({
                 type="button"
                 disabled={submitting}
                 onClick={() => handleProofTypeChange("link")}
-                className={`flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 ${
-                  proofType === "link"
+                className={`flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 ${proofType === "link"
                     ? "bg-surface text-text-primary shadow-sm border border-border/40"
                     : "text-text-secondary hover:text-text-primary border border-transparent"
-                } disabled:opacity-50`}
+                  } disabled:opacity-50`}
               >
                 <Link2 size={16} />
                 Link / URL
@@ -215,11 +229,10 @@ export const VerifySkillModal: React.FC<VerifySkillModalProps> = ({
                 type="button"
                 disabled={submitting}
                 onClick={() => handleProofTypeChange("file")}
-                className={`flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 ${
-                  proofType === "file"
+                className={`flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 ${proofType === "file"
                     ? "bg-surface text-text-primary shadow-sm border border-border/40"
                     : "text-text-secondary hover:text-text-primary border border-transparent"
-                } disabled:opacity-50`}
+                  } disabled:opacity-50`}
               >
                 <FileUp size={16} />
                 Upload File
@@ -227,7 +240,7 @@ export const VerifySkillModal: React.FC<VerifySkillModalProps> = ({
             </div>
           </div>
 
-          <div className="min-h-[110px] flex flex-col justify-end">
+          <div className="min-h-27.5 flex flex-col justify-end">
             {proofType === "link" ? (
               <div className="space-y-2 w-full">
                 <label className="text-[11px] font-bold uppercase tracking-wider text-text-secondary">
@@ -255,11 +268,10 @@ export const VerifySkillModal: React.FC<VerifySkillModalProps> = ({
                     onDragLeave={handleDrag}
                     onDrop={handleDrop}
                     onClick={() => !submitting && fileInputRef.current?.click()}
-                    className={`border-2 border-dashed rounded-2xl p-6 flex flex-col items-center justify-center gap-2.5 cursor-pointer transition-all ${
-                      dragActive
+                    className={`border-2 border-dashed rounded-2xl p-6 flex flex-col items-center justify-center gap-2.5 cursor-pointer transition-all ${dragActive
                         ? "border-primary bg-primary/5 scale-[0.99]"
                         : "border-border/80 bg-background/30 hover:border-primary/50 hover:bg-background/50"
-                    } ${submitting ? "opacity-50 cursor-not-allowed" : ""}`}
+                      } ${submitting ? "opacity-50 cursor-not-allowed" : ""}`}
                   >
                     <input
                       ref={fileInputRef}
@@ -285,7 +297,6 @@ export const VerifySkillModal: React.FC<VerifySkillModalProps> = ({
                     </p>
                   </div>
                 ) : (
-                  /* File Received Preview State */
                   <div className="flex items-center justify-between p-4 bg-background/60 border border-border rounded-2xl">
                     <div className="flex items-center gap-3 overflow-hidden">
                       <div className="p-2.5 bg-primary/10 rounded-xl text-primary shrink-0">
@@ -300,7 +311,7 @@ export const VerifySkillModal: React.FC<VerifySkillModalProps> = ({
                         </p>
                       </div>
                     </div>
-                    
+
                     {!submitting && (
                       <button
                         type="button"
@@ -332,7 +343,6 @@ export const VerifySkillModal: React.FC<VerifySkillModalProps> = ({
             )}
           </div>
 
-          {/* Context Note Input */}
           <div className="flex flex-col gap-2">
             <div className="flex items-center justify-between">
               <label className="text-[11px] font-bold uppercase tracking-wider text-text-secondary">
@@ -352,7 +362,6 @@ export const VerifySkillModal: React.FC<VerifySkillModalProps> = ({
             />
           </div>
 
-          {/* Submit Action */}
           <button
             onClick={handleSubmit}
             disabled={submitting}

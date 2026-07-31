@@ -1,9 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useContext } from "react";
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
 import { useAuthStore } from "@/store/useAuthStore";
 import { toast } from "@/lib/toast";
+import { SocketContext } from "@/providers/SocketContext";
+import { getSocket } from "@/lib/socket";
 import {
   BadgeCheck,
   Clock,
@@ -13,7 +15,6 @@ import {
   ExternalLink,
   Trash2,
   RotateCcw,
-  Sparkles,
   Inbox,
 } from "lucide-react";
 import {
@@ -40,10 +41,7 @@ interface TeachSkill {
   verified: boolean;
 }
 
-const STATUS_MAP: Record<
-  MyVerification["status"],
-  { container: string; badge: string; icon: React.ReactNode; label: string }
-> = {
+const STATUS_MAP: Record<MyVerification["status"], { container: string; badge: string; icon: React.ReactNode; label: string }> = {
   PENDING: {
     container: "border-border bg-background",
     badge:
@@ -79,6 +77,7 @@ const RowSkeleton = () => (
 export const MyVerificationsPanel = () => {
   const { user } = useAuthStore();
   const supabase = getSupabaseBrowserClient();
+  const { socketReady } = useContext(SocketContext);
 
   const [verifications, setVerifications] = useState<MyVerification[]>([]);
   const [teachSkills, setTeachSkills] = useState<TeachSkill[]>([]);
@@ -104,8 +103,6 @@ export const MyVerificationsPanel = () => {
         ),
       ]);
 
-      console.log(skillsRes)
-
       if (verificationsRes.error) {
         console.error(
           "Verification loading error:",
@@ -113,20 +110,29 @@ export const MyVerificationsPanel = () => {
         );
         toast.error("Couldn't load your verifications.");
       } else {
-        setVerifications(
-          (verificationsRes.data || []).map((row: any) => ({
-            id: row.id,
-            status: row.status,
-            proof_type: row.proof_type,
-            proof_url: row.proof_url,
-            note: row.note,
-            rejection_reason: row.rejection_reason,
-            created_at: row.created_at,
-            reviewed_at: row.reviewed_at,
-            skill_id: row.skill_id,
-            skill_name: row.skill_name,
-          })),
-        );
+        const allVerifications: MyVerification[] = (
+          verificationsRes.data || []
+        ).map((row: any) => ({
+          id: row.id,
+          status: row.status,
+          proof_type: row.proof_type,
+          proof_url: row.proof_url,
+          note: row.note,
+          rejection_reason: row.rejection_reason,
+          created_at: row.created_at,
+          reviewed_at: row.reviewed_at,
+          skill_id: row.skill_id,
+          skill_name: row.skill_name,
+        }));
+
+        const latestPerSkill = new Map<string, MyVerification>();
+        for (const v of allVerifications) {
+          if (!latestPerSkill.has(v.skill_id)) {
+            latestPerSkill.set(v.skill_id, v);
+          }
+        }
+
+        setVerifications(Array.from(latestPerSkill.values()));
       }
       setTeachSkills(skillsRes.skills || []);
     } catch (err) {
@@ -139,6 +145,47 @@ export const MyVerificationsPanel = () => {
   useEffect(() => {
     fetchAll();
   }, [user?.id]);
+
+  useEffect(() => {
+    const socket = getSocket();
+    if (!socketReady || !socket || !user?.id) return;
+
+    const handleStatusUpdate = (updated: any) => {
+      const mapped: MyVerification = {
+        id: updated.id,
+        status: updated.status,
+        proof_type: updated.proof_type,
+        proof_url: updated.proof_url,
+        note: updated.note,
+        rejection_reason: updated.rejection_reason,
+        created_at: updated.created_at,
+        reviewed_at: updated.reviewed_at,
+        skill_id: updated.skill?.id,
+        skill_name: updated.skill?.name,
+      };
+
+      if (!mapped.skill_id) {
+        console.warn("verification-status-updated payload missing skill.id", updated);
+        return;
+      }
+
+      setVerifications((prev) => {
+        const exists = prev.some((v) => v.skill_id === mapped.skill_id);
+        if (exists) {
+          return prev.map((v) =>
+            v.skill_id === mapped.skill_id ? mapped : v,
+          );
+        }
+        return [mapped, ...prev];
+      });
+    };
+
+    socket.on("verification-status-updated", handleStatusUpdate);
+
+    return () => {
+      socket.off("verification-status-updated", handleStatusUpdate);
+    };
+  }, [socketReady, user?.id]);
 
   const handleWithdraw = async (id: string) => {
     setWithdrawingId(id);
@@ -164,19 +211,22 @@ export const MyVerificationsPanel = () => {
 
   const submittedSkillIds = new Set(verifications.map((v) => v.skill_id));
   const unsubmittedSkills = teachSkills.filter(
-    (s) => !s.verified && !submittedSkillIds.has(s.skill_id),
+    (s) => !submittedSkillIds.has(s.skill_id),
   );
 
   return (
-    <div className="space-y-10 p-6 md:p-8 bg-surface/40 border border-border/10 rounded-3xl">
-      <div className="space-y-1.5 border-b border-border/60 pb-6">
-        <h2 className="text-xl font-bold tracking-tight text-foreground">
-          Skill Verifications
-        </h2>
-        <p className="text-sm text-text-secondary max-w-2xl">
-          Earn credibility badges on your profile by providing proof of
-          expertise.
-        </p>
+    <div className="space-y-10 px-3 py-6 md:p-8 bg-surface/40 border border-border/10 rounded-3xl">
+      <div className="flex items-start gap-4">
+        <div className="p-3 bg-primary/10 rounded-xl">
+          <BadgeCheck className="text-primary" size={24} />
+        </div>
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">Skill Verifications</h1>
+          <p className="text-sm text-text-secondary">
+            Earn credibility badges on your profile by providing proof of
+            expertise.
+          </p>
+        </div>
       </div>
 
       <div className="space-y-4">
@@ -185,13 +235,13 @@ export const MyVerificationsPanel = () => {
             <RowSkeleton />
             <RowSkeleton />
           </div>
-        ) : verifications.length === 0 ? (
+        ) : verifications.length === 0 && unsubmittedSkills.length === 0 ? (
           <div className="flex flex-col items-center justify-center p-12 border border-dashed border-border rounded-2xl bg-muted/5 text-center space-y-3">
             <div className="p-3 bg-muted rounded-full">
               <Inbox size={20} className="text-muted-foreground/70" />
             </div>
             <p className="text-sm text-muted-foreground">
-              No active or historical verification applications found.
+              You haven't added any skill to teach yet.
             </p>
           </div>
         ) : (
@@ -213,36 +263,36 @@ export const MyVerificationsPanel = () => {
                       <div className="flex w-full items-center h-max gap-4 justify-center">
                         {(v.status === "PENDING" ||
                           v.status === "REJECTED") && (
-                          <div className="flex items-center gap-3 border-t border-border/40">
-                            {v.status === "PENDING" && (
-                              <button
-                                onClick={() => handleWithdraw(v.id)}
-                                disabled={withdrawingId === v.id}
-                                className="flex items-center gap-1.5 text-xs font-medium text-red-500 hover:text-destructive transition-colors disabled:opacity-50"
-                              >
-                                <Trash2 size={13} />
-                                {withdrawingId === v.id
-                                  ? "Withdrawing Request..."
-                                  : "Withdraw Submission"}
-                              </button>
-                            )}
+                            <div className="flex items-center gap-3 border-t border-border/40">
+                              {v.status === "PENDING" && (
+                                <button
+                                  onClick={() => handleWithdraw(v.id)}
+                                  disabled={withdrawingId === v.id}
+                                  className="flex items-center gap-1.5 text-xs font-medium text-red-500 hover:text-destructive transition-colors disabled:opacity-50"
+                                >
+                                  <Trash2 size={13} />
+                                  {withdrawingId === v.id
+                                    ? "Withdrawing Request..."
+                                    : "Withdraw Submission"}
+                                </button>
+                              )}
 
-                            {v.status === "REJECTED" && (
-                              <button
-                                onClick={() =>
-                                  setSelectedSkill({
-                                    id: v.skill_id,
-                                    name: v.skill_name,
-                                  })
-                                }
-                                className="flex items-center gap-1.5 text-xs font-semibold text-accent hover:text-primary/80 transition-colors"
-                              >
-                                <RotateCcw size={13} />
-                                Resubmit Application
-                              </button>
-                            )}
-                          </div>
-                        )}
+                              {v.status === "REJECTED" && (
+                                <button
+                                  onClick={() =>
+                                    setSelectedSkill({
+                                      id: v.skill_id,
+                                      name: v.skill_name,
+                                    })
+                                  }
+                                  className="flex items-center gap-1.5 text-xs font-semibold text-accent hover:text-primary/80 transition-colors"
+                                >
+                                  <RotateCcw size={13} />
+                                  Resubmit Application
+                                </button>
+                              )}
+                            </div>
+                          )}
 
                         <a
                           href={v.proof_url}
@@ -255,7 +305,7 @@ export const MyVerificationsPanel = () => {
                           ) : (
                             <FileText size={13} />
                           )}
-                          <span>View Attachment Proof</span>
+                          <span>View Proof</span>
                           <ExternalLink
                             size={11}
                             className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform"
@@ -271,49 +321,46 @@ export const MyVerificationsPanel = () => {
                       {style.label}
                     </span>
                   </div>
-
-                  {/* {v.status === "REJECTED" && v.rejection_reason && (
-                    <div className="text-xs bg-destructive/[0.03] border border-destructive/10 text-destructive/90 rounded-lg p-3 space-y-0.5">
-                      <span className="font-bold">Rejection Feedback:</span>
-                      <p className="text-muted-foreground">
-                        {v.rejection_reason}
-                      </p>
-                    </div>
-                  )} */}
                 </div>
               );
             })}
-            {unsubmittedSkills &&
-              unsubmittedSkills.map((skill, i) => (
-                <div
-                  key={skill.skill_id}
-                  className="flex items-center justify-between gap-4 p-5 bg-background border border-border rounded-xl shadow-sm transition-all duration-200"
-                >
-                  <h4 className="font-semibold text-foreground tracking-tight truncate">
-                    {skill.name}
-                  </h4>
+            {unsubmittedSkills.map((skill) => (
+              <div
+                key={skill.skill_id}
+                className="flex items-center justify-between gap-4 p-5 bg-background border border-border rounded-xl shadow-sm transition-all duration-200"
+              >
+                <h4 className="font-semibold text-foreground tracking-tight truncate">
+                  {skill.name}
+                </h4>
 
-                  <button onClick={() => setSelectedSkill({ id: skill.skill_id, name: skill.name })} className="flex items-center gap-3 bg-surface/50 px-4 py-1 rounded-md hover:bg-surface">
-                    <BadgeCheck size={14} />
-                    Verify
-                  </button>
-                </div>
-              ))}
+                <button
+                  onClick={() =>
+                    setSelectedSkill({ id: skill.skill_id, name: skill.name })
+                  }
+                  className="flex items-center gap-3 bg-surface/50 px-4 py-1 rounded-md hover:bg-surface"
+                >
+                  <BadgeCheck size={14} />
+                  Verify
+                </button>
+              </div>
+            ))}
           </div>
         )}
       </div>
 
-      {selectedSkill && (
-        <VerifySkillModal
-          skill={selectedSkill}
-          onClose={() => setSelectedSkill(null)}
-          onSubmitted={() => {
-            setSelectedSkill(null);
-            fetchAll();
-          }}
-        />
-      )}
-    </div>
+      {
+        selectedSkill && (
+          <VerifySkillModal
+            skill={selectedSkill}
+            onClose={() => setSelectedSkill(null)}
+            onSubmitted={() => {
+              setSelectedSkill(null);
+              fetchAll();
+            }}
+          />
+        )
+      }
+    </div >
   );
 };
 

@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Psychology from "@material-symbols/svg-400/outlined/psychology.svg";
 import School from "@material-symbols/svg-400/outlined/school.svg";
 import SwapHoriz from "@material-symbols/svg-400/outlined/swap_horiz.svg";
@@ -27,12 +27,22 @@ import { GitCompare, X } from "lucide-react";
 import { useChatStore } from "@/store/useChatStore";
 import { getConversationById } from "@/utils/getConversationDetails";
 
+interface UserSkillRow {
+  skill_id: string;
+  name: string;
+  type: "teach" | "learn";
+  verified: boolean;
+}
+
 export default function UserProfilePage() {
   const { user: profile } = useUserProfile();
   const { user } = useAuthStore();
   const { setActiveChat } = useChatStore();
   const [creatingConv, setCreatingConv] = useState(false);
   const [showCompare, setShowCompare] = useState(false);
+  const [userSkills, setUserSkills] = useState<UserSkillRow[]>([]);
+  const [loadingSkills, setLoadingSkills] = useState(true);
+
   const router = useRouter();
 
   const { theme } = useTheme();
@@ -78,6 +88,29 @@ export default function UserProfilePage() {
   if (isLoggedInUser) {
     return router.push("/profile");
   }
+
+  useEffect(() => {
+    const fetchSkills = async () => {
+      setLoadingSkills(true);
+      try {
+        const res = await fetch(`/api/user/skills/skill-with-id?userId=${profile?.id}`);
+        const data = await res.json();
+
+        if (res.ok) {
+          setUserSkills(data.skills || []);
+        }
+      } catch (err) {
+        console.error("Failed to fetch skills:", err);
+      } finally {
+        setLoadingSkills(false);
+      }
+    };
+
+    fetchSkills();
+  }, []);
+
+  const teachSkills = userSkills.filter((s) => s.type === "teach");
+  const learnSkills = userSkills.filter((s) => s.type === "learn");
 
   return (
     <section className="relative mb-12 w-full md:px-4  h-full flex flex-col py-6">
@@ -225,15 +258,20 @@ export default function UserProfilePage() {
         <div className="col-span-2 grid gap-8">
           <SkillsCard
             title="Skills i can teach"
-            skills={profile?.skills_to_teach || []}
+            skills={teachSkills.map((s) => ({
+              name: s.name,
+              verified: s.verified,
+            }))}
             icon={Psychology}
             color="primary"
+            loading={loadingSkills}
           />
           <SkillsCard
             title="Skills i want to learn"
-            skills={profile?.skills_to_learn || []}
+            skills={learnSkills.map((s) => s.name)}
             icon={School}
             color="accent"
+            loading={loadingSkills}
           />
         </div>
 

@@ -10,8 +10,10 @@ export async function GET(req: NextRequest) {
   }
 
   const type = req.nextUrl.searchParams.get("type") || undefined;
+  const requestedUserId = req.nextUrl.searchParams.get("userId");
+  const targetUserId = requestedUserId || user.id;
 
-  const result = await getUserSkillsFromTable(user.id, type);
+  const result = await getUserSkillsFromTable(targetUserId, type);
 
   if (!result.success) {
     return NextResponse.json({ error: result.error }, { status: 500 });

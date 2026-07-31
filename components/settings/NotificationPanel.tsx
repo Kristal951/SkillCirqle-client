@@ -153,7 +153,7 @@ const NotificationSettings = () => {
   return (
     <div className="flex-1 p-6 md:py-10 md:px-6 bg-surface/50 rounded-2xl border border-border/50">
       <div className="flex flex-col gap-8">
-        <div className="flex items-center gap-4">
+        <div className="flex items-start gap-4">
           <div className="p-3 bg-primary/10 rounded-xl">
             <Bell className="text-primary" size={24} />
           </div>

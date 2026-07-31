@@ -82,7 +82,7 @@ const TwoFactorAuthPanel = ({
       className="bg-surface/50 flex-1 cursor-pointer rounded-2xl p-6 flex flex-col justify-between group hover:bg-surface transition-colors"
     >
       <div>
-        <VerifiedUser className="text-[3rem]"/>
+        <VerifiedUser className="text-[3rem] mb-6"/>
 
         <h4 className="font-headline font-bold text-lg">Two-Factor Auth</h4>
 
