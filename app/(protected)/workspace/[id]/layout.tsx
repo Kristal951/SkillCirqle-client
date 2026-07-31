@@ -11,6 +11,7 @@ import { useContext, useEffect } from "react";
 import FolderOff from "@material-symbols/svg-400/outlined/folder_off.svg";
 import { getSocket } from "@/lib/socket";
 import { SocketContext } from "@/providers/SocketContext";
+import WorkspaceTabStrip from "@/components/workspace/TabStrip";
 
 interface WorkspaceLayoutProps {
   children: React.ReactNode;
@@ -44,7 +45,7 @@ export default function WorkspaceLayout({
 
     socket.emit(
       "workspace:join",
-      {workspaceId },
+      { workspaceId },
       (response: { success: boolean; message?: string }) => {
         if (!response.success) {
           console.error(response.message);
@@ -148,13 +149,19 @@ export default function WorkspaceLayout({
         </div>
       </header> */}
 
-      <div className="flex flex-1">
-        <Sidebar
-          skillTracks={skillTracks}
-          members={members}
-          id={workspaceId}
-          userId={user?.id}
-        />
+      <div className="flex flex-1 flex-col">
+        <div className="md:hidden flex w-full">
+          <WorkspaceTabStrip id={workspaceId} />
+        </div>
+
+        <div className="hidden md:block">
+          <Sidebar
+            skillTracks={skillTracks}
+            members={members}
+            id={workspaceId}
+            userId={user?.id}
+          />
+        </div>
 
         <main className="flex-1 md:p-6 md:ml-72 px-4 py-6 overflow-auto">
           {children}

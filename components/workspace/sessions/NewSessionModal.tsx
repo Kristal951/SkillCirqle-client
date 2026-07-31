@@ -123,7 +123,7 @@ export default function NewSessionModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm">
+    <div className="fixed inset-0 z-50 flex items-start md:items-center justify-center overflow-y-scroll bg-black/40 p-4 backdrop-blur-sm py-8 md:py-4">
       <div className="absolute inset-0" onClick={onClose} />
 
       <div
@@ -155,8 +155,8 @@ export default function NewSessionModal({
           </button>
         </div>
 
-        <div className="flex w-full divide-x divide-text-primary/5">
-          <div className="p-0 w-[45%] bg-background/50">
+        <div className="flex md:flex-row flex-col w-full divide-x divide-text-primary/5">
+          <div className="p-0 md:w-[45%] w-full bg-background/50">
             <DateTimePicker
               selectedDate={selectedDate}
               selectedTime={selectedTime}
@@ -166,7 +166,7 @@ export default function NewSessionModal({
             />
           </div>
 
-          <div className="flex w-[55%] flex-col gap-6 p-6">
+          <div className="flex md:w-[55%] w-full flex-col gap-6 p-6">
             <div>
               <label className="mb-1.5 block text-[11px] font-bold text-text-secondary uppercase tracking-wider">
                 Session title
@@ -180,7 +180,7 @@ export default function NewSessionModal({
                 className="w-full rounded-xl bg-surface/80 px-3.5 py-3 text-sm text-text-primary placeholder:text-text-secondary/50 outline-none focus:ring-1 focus:ring-primary transition-all"
               />
             </div>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid md:grid-cols-2 grid-cols-1 gap-3">
               <div>
                 <label className="mb-1.5 block text-[11px] font-bold text-text-secondary uppercase tracking-wider">
                   Duration (min)
@@ -277,7 +277,7 @@ export default function NewSessionModal({
             </div>
           </div>
         </div>
-        <div className="flex items-center justify-between border-t border-text-primary/5 px-6 py-4 bg-text-primary/2 rounded-b-2xl">
+        <div className="flex md:flex-row flex-col md:items-center justify-between border-t border-text-primary/5 px-6 py-4 mb-8 md:mb-0 bg-text-primary/2 rounded-b-2xl">
           <div className="flex flex-col gap-1">
             <p className="text-xs text-text-secondary uppercase tracking-wider">
               Session scheduled for
@@ -302,11 +302,11 @@ export default function NewSessionModal({
             </div>
           </div>
 
-          <div className="flex gap-2">
+          <div className="flex gap-2 w-full md:w-max mt-6 md:mt-0">
             <button
               type="button"
               onClick={onClose}
-              className="rounded-xl border border-text-primary/10 bg-surface/20 px-4 py-2 text-sm font-medium text-text-secondary hover:bg-text-primary/5 transition-colors"
+              className="rounded-xl flex-1 md:flex-none border border-text-primary/10 bg-surface/20 px-4 py-2 text-sm font-medium text-text-secondary hover:bg-text-primary/5 transition-colors"
             >
               Cancel
             </button>
@@ -314,7 +314,7 @@ export default function NewSessionModal({
               type="button"
               onClick={handleCreateSession}
               disabled={!isValid || saving}
-              className="rounded-lg bg-primary/90 px-4 py-3 text-sm font-medium text-text-primary transition-all hover:bg-primary active:scale-95 disabled:pointer-events-none disabled:opacity-50"
+              className="rounded-lg bg-primary/90 flex-1 md:flex-none px-4 py-3 text-sm font-medium text-text-primary transition-all hover:bg-primary active:scale-95 disabled:pointer-events-none disabled:opacity-50"
             >
               {saving ? (
                 <span className="flex items-center justify-center gap-2">
