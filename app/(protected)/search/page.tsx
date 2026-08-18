@@ -12,7 +12,6 @@ import {
   LayoutGrid,
 } from "lucide-react";
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
-import { User } from "@/types/AuthStore";
 import { useAuthStore } from "@/store/useAuthStore";
 import { useRouter } from "next/navigation";
 import { SearchCardSkeleton } from "@/components/search/SkeletonLoader";
@@ -27,6 +26,15 @@ type CategoryId =
   | "Music"
   | "Business";
 
+interface VerifiedTeacherProfile {
+  id: string;
+  name: string;
+  role?: string;
+  category?: string;
+  avatar_url?: string;
+  skills_to_teach: string[]; // verified teach-skill titles only
+}
+
 const extractSkills = (query: string): string[] => {
   return query
     .toLowerCase()
@@ -38,7 +46,7 @@ const extractSkills = (query: string): string[] => {
 const SearchPage = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<CategoryId>("All");
-  const [profiles, setProfiles] = useState<User[]>([]);
+  const [profiles, setProfiles] = useState<VerifiedTeacherProfile[]>([]);
   const [loading, setLoading] = useState(false);
   const supabase = getSupabaseBrowserClient();
   const { user } = useAuthStore();
@@ -69,16 +77,56 @@ const SearchPage = () => {
     const fetchProfiles = async () => {
       setLoading(true);
 
-      let query = supabase.from("profiles").select("*");
+      // Only surface users with at least one VERIFIED teach-skill.
+      // Query through user_skills (where verification actually lives)
+      // rather than profiles.skills_to_teach directly.
+      let query = supabase
+        .from("user_skills")
+        .select(
+          `
+          user_id,
+          skills ( title ),
+          profiles!inner (
+            id,
+            name,
+            avatar_url
+          )
+        `,
+        )
+        .eq("type", "teach")
+        .eq("verified", true);
 
       if (user) {
-        query = query.neq("id", user.id);
+        query = query.neq("user_id", user.id);
       }
 
       const { data, error } = await query;
 
-      if (!error) {
-        setProfiles(data || []);
+      if (!error && data) {
+        // Group rows by user, since each verified skill is a separate row
+        const byUser = new Map<string, VerifiedTeacherProfile>();
+
+        for (const row of data as any[]) {
+          const profile = row.profiles;
+          const skillTitle = row.skills?.title;
+          if (!profile || !skillTitle) continue;
+
+          const existing = byUser.get(profile.id);
+          if (existing) {
+            existing.skills_to_teach.push(skillTitle);
+          } else {
+            byUser.set(profile.id, {
+              id: profile.id,
+              name: profile.name,
+              role: profile.role,
+              category: profile.category,
+              avatar_url: profile.avatar_url,
+              skills_to_teach: [skillTitle],
+            });
+          }
+        }
+
+        setProfiles(Array.from(byUser.values()));
       }
 
       setLoading(false);
@@ -91,28 +139,22 @@ const SearchPage = () => {
     const searchLower = searchQuery.toLowerCase().trim();
     const searchTerms = extractSkills(searchQuery);
 
-    return profiles
-      .filter(
-        (profile) =>
-          Array.isArray(profile.skills_to_teach) &&
-          profile.skills_to_teach.length > 0,
-      )
-      .filter((profile) => {
-        const matchesCategory =
-          selectedCategory === "All" || profile.category === selectedCategory;
+    return profiles.filter((profile) => {
+      const matchesCategory =
+        selectedCategory === "All" || profile.category === selectedCategory;
 
-        if (!matchesCategory) return false;
+      if (!matchesCategory) return false;
 
-        if (!searchLower) return true;
+      if (!searchLower) return true;
 
-        return (
-          profile.name?.toLowerCase().includes(searchLower) ||
-          profile.role?.toLowerCase().includes(searchLower) ||
-          profile.skills_to_teach.some((skill: string) =>
-            searchTerms.some((term) => skill.toLowerCase().includes(term)),
-          )
-        );
-      });
+      return (
+        profile.name?.toLowerCase().includes(searchLower) ||
+        profile.role?.toLowerCase().includes(searchLower) ||
+        profile.skills_to_teach.some((skill: string) =>
+          searchTerms.some((term) => skill.toLowerCase().includes(term)),
+        )
+      );
+    });
   }, [profiles, searchQuery, selectedCategory]);
 
   const CATEGORY_DATA = [
@@ -167,29 +209,6 @@ const SearchPage = () => {
               />
             </div>
           </div>
-
-          {/* <div className="flex gap-3 overflow-x-auto scrollbar-hide pb-1">
-            {CATEGORY_DATA.map((cat) => {
-              const active = selectedCategory === cat.id;
-              return (
-                <button
-                  key={cat.id}
-                  onClick={() => setSelectedCategory(cat.id as CategoryId)}
-                  className={`flex items-center gap-2.5 px-5 py-2.5 rounded-2xl text-xs font-bold whitespace-nowrap border transition-all duration-300
-                  ${
-                    active
-                      ? "bg-primary text-white border-primary shadow-lg shadow-primary/25"
-                      : "bg-surface border-border text-text-secondary hover:border-primary/30 hover:text-text-primary"
-                  }`}
-                >
-                  <span className={active ? "text-white" : "text-primary"}>
-                    {cat.icon}
-                  </span>
-                  {cat.id}
-                </button>
-              );
-            })}
-          </div> */}
         </div>
       </section>
 
@@ -227,8 +246,9 @@ const SearchPage = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-8">
             {filteredProfiles.map((mentor) => (
               <SearchCard
+                searchQuery={searchQuery}
                 key={mentor?.id}
-                user={mentor}
+                user={mentor as any}
                 onViewProfile={handleViewProfile}
                 onPropose={handlePropose}
               />

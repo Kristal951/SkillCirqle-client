@@ -8,6 +8,16 @@ import Spinner from "@/components/ui/Spinner";
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
+function isInvalidRefreshTokenError(error: unknown): boolean {
+  const err = error as { code?: string; status?: number } | null;
+  if (!err) return false;
+  return (
+    err.code === "refresh_token_not_found" ||
+    err.code === "refresh_token_already_used" ||
+    err.status === 400
+  );
+}
+
 function AuthProviderInner({ children }: { children: React.ReactNode }) {
   const supabase = getSupabaseBrowserClient();
   const pathname = usePathname();
@@ -33,6 +43,18 @@ function AuthProviderInner({ children }: { children: React.ReactNode }) {
     setStep(1);
   }, [setUser, setTokens, setTotal, setStep]);
 
+  const forceReauth = useCallback(
+    async (reason: string) => {
+      resetStore();
+      await supabase.auth.signOut();
+      if (isRecoveryPageRef.current) return;
+      const url = new URL("/auth/signin", window.location.origin);
+      url.searchParams.set("error", reason);
+      router.replace(url.pathname + url.search);
+    },
+    [resetStore, supabase, router],
+  );
+
   const loadProfile = useCallback(async () => {
     try {
       const { profile, error } = await getUserProfile();
@@ -44,7 +66,7 @@ function AuthProviderInner({ children }: { children: React.ReactNode }) {
       setUser(profile);
       setTokens(profile.skill_tokens ?? 0);
       setTotal(profile.total_earned ?? 0);
-      setStep(profile.onboarding_step ?? 1);
+      // setStep(profile.onboarding_step ?? 1);
     } catch (e) {
       console.error("Profile error", e);
       resetStore();
@@ -58,7 +80,13 @@ function AuthProviderInner({ children }: { children: React.ReactNode }) {
       try {
         const {
           data: { session },
+          error,
         } = await supabase.auth.getSession();
+
+        if (isInvalidRefreshTokenError(error)) {
+          await forceReauth("session_expired");
+          return;
+        }
 
         if (session?.user) {
           const isOAuthLogin = searchParams.get("login") === "oauth";
@@ -102,6 +130,9 @@ function AuthProviderInner({ children }: { children: React.ReactNode }) {
             useAuthStore.getState().reset();
             break;
           case "TOKEN_REFRESHED":
+            if (!session) {
+              await forceReauth("session_expired");
+            }
             return;
           default:
             if (session?.user) {
@@ -121,7 +152,15 @@ function AuthProviderInner({ children }: { children: React.ReactNode }) {
       mounted = false;
       subscription.unsubscribe();
     };
-  }, [supabase, fetchUser, loadProfile, resetStore, searchParams, router]);
+  }, [
+    supabase,
+    fetchUser,
+    loadProfile,
+    resetStore,
+    searchParams,
+    router,
+    forceReauth,
+  ]);
 
   if (loading && !isRecoveryPageRef.current) {
     return (

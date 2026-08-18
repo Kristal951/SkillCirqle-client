@@ -47,7 +47,7 @@ export type CreateProposalInput = {
   goal?: string;
   engagementType: "learn" | "swap";
   sessionDurationType: "quick" | "standard";
-  expectedSessions: number;
+  // expectedSessions: number;
   link?: string;
 };
 

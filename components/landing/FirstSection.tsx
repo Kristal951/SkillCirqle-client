@@ -1,4 +1,3 @@
-import { Sparkle, Sparkles, Star } from "lucide-react";
 import Link from "next/link";
 import React from "react";
 
@@ -16,8 +15,7 @@ const FirstSection = () => {
           </h1>
 
           <p className="text-lg md:text-2xl text-text-secondary max-w-2xl mx-auto font-light leading-relaxed">
-            A social platform where people trade skills instead of money. Teach
-            what you know, learn what you don't — no cash required.
+            A collaborative learning platform where people teach, learn and grow together.
           </p>
         </div>
 

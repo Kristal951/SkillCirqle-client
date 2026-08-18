@@ -30,17 +30,20 @@ export default function Dashboard() {
     retry: 1,
   });
 
+  const hasEmptyMatches =
+    matchesQuery.isSuccess && (matchesQuery.data?.skillCards?.length ?? 0) === 0;
+
   const trendingQuery = useQuery({
     queryKey: ["dashboard-trending"],
     queryFn: () => fetcher("/api/user/skills/trending"),
-    enabled: !!user && !hasSkills,
+    enabled: !!user && (!hasSkills || hasEmptyMatches),
     staleTime: 1000 * 60 * 60,
     gcTime: 1000 * 60 * 60 * 6,
     retry: 1,
   });
 
   const isLoading = hasSkills
-    ? matchesQuery.isLoading
+    ? matchesQuery.isLoading || (hasEmptyMatches && trendingQuery.isLoading)
     : trendingQuery.isLoading;
 
   const error = matchesQuery.error || trendingQuery.error;
@@ -48,8 +51,10 @@ export default function Dashboard() {
     console.error(error);
   }
 
-  const skillData =
-    matchesQuery.data?.skillCards ?? trendingQuery.data?.skillCards ?? [];
+  const matchesSkills = matchesQuery.data?.skillCards ?? [];
+  const trendingSkills = trendingQuery.data?.skillCards ?? [];
+
+  const skillData = matchesSkills.length > 0 ? matchesSkills : trendingSkills;
 
   useEffect(() => {
     if (!user?.id || !hasSkills) return;
@@ -284,7 +289,7 @@ export default function Dashboard() {
               Can't find a swap match yet?
             </h2>
             <p className="text-sm md:text-base text-text-secondary">
-             Use your SkillCredits to learn from someone instead.
+              Use your SkillCredits to learn from someone instead.
             </p>
           </div>
         </div>
@@ -314,13 +319,13 @@ export default function Dashboard() {
         </div>
 
         <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
-          {isLoading
-            ? Array.from({ length: 4 }).map((_, i) => (
-                <SkillCardSkeleton key={i} />
-              ))
-            : skillData.map((info: any, index: any) => (
-                <SkillCard key={index} info={info} />
-              ))}
+          {error ? (
+            <p className="text-sm text-text-secondary">Couldn't load recommendations right now.</p>
+          ) : isLoading ? (
+            Array.from({ length: 4 }).map((_, i) => <SkillCardSkeleton key={i} />)
+          ) : (
+            skillData.map((info: any, index: any) => <SkillCard key={index} info={info} />)
+          )}
         </div>
       </section>
 

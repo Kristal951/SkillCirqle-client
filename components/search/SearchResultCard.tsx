@@ -1,14 +1,21 @@
 import React from "react";
 import { ChevronRight, Star, User as UserIcon } from "lucide-react";
 import { User } from "@/types/AuthStore";
+import { HighlightText } from "./HighlightText";
 
 interface MentorCardProps {
   user: User;
+  searchQuery?: string;
   onViewProfile: (id: string | number) => void;
   onPropose: (id: string | number) => void;
 }
 
-export const SearchCard: React.FC<MentorCardProps> = ({ user, onViewProfile, onPropose }) => {
+export const SearchCard: React.FC<MentorCardProps> = ({
+  user,
+  searchQuery,
+  onViewProfile,
+  onPropose,
+}) => {
   if (!user) return null;
 
   return (
@@ -28,9 +35,11 @@ export const SearchCard: React.FC<MentorCardProps> = ({ user, onViewProfile, onP
             )}
           </div>
         </div>
-        
-        <h2 className="mt-4 text-xl font-bold text-text-primary tracking-tight">{user.name}</h2>
-        
+
+        <h2 className="mt-4 text-xl font-bold text-text-primary tracking-tight">
+          <HighlightText text={user.name || ""} query={searchQuery || ""} />
+        </h2>
+
         {user.rating !== undefined && (
           <div className="mt-2 flex items-center gap-1.5 px-3 py-1 bg-background rounded-full">
             <Star size={14} className="text-accent fill-accent" />
@@ -41,8 +50,11 @@ export const SearchCard: React.FC<MentorCardProps> = ({ user, onViewProfile, onP
 
       <div className="flex flex-wrap gap-2 justify-center mb-auto">
         {user.skills_to_teach?.slice(0, 4).map((skill) => (
-          <span key={skill} className="text-[10px] uppercase tracking-wider font-semibold px-3 py-2 bg-background text-text-primary rounded-lg border border-border">
-            {skill}
+          <span
+            key={skill}
+            className="text-[10px] uppercase tracking-wider font-semibold px-3 py-2 bg-background text-text-primary rounded-lg border border-border"
+          >
+            <HighlightText text={skill} query={searchQuery || ""} />
           </span>
         ))}
       </div>

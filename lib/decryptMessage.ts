@@ -14,7 +14,6 @@ export const decryptMessage = (
   encryptedText: string,
   fallback = "[unable to decrypt message]",
 ): string => {
-  console.log(encryptedText)
   try {
     const [ivHex, encrypted] = encryptedText.split(":");
 

@@ -40,9 +40,6 @@ export const useOnboardingStore = create<OnboardingState>((set) => ({
 
   updateUserOnboardingStepInDB: async (step: number, update?: boolean) => {
     try {
-      set({ step });
-
-      if (!update) return;
 
       const res = await apiFetch("/api/user/onboarding", {
         method: "POST",
@@ -60,6 +57,7 @@ export const useOnboardingStore = create<OnboardingState>((set) => ({
         throw new Error(data?.message || "Update failed");
       }
 
+      set({ step: data.step });
       return data;
     } catch (error) {
       console.error("Onboarding update error:", error);

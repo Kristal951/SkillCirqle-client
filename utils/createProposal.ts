@@ -26,6 +26,26 @@ export async function createProposal(data: CreateProposalInput) {
     throw new Error("You cannot send a proposal to yourself.");
   }
 
+  const { data: anyVerifiedSkill, error: verifyError } = await supabase
+    .from("user_skills")
+    .select("id")
+    .eq("user_id", data.senderId)
+    .eq("type", "teach")
+    .eq("verified", true)
+    .limit(1)
+    .maybeSingle();
+
+  if (verifyError) {
+    console.error(verifyError);
+    throw new Error("Failed to verify eligibility.");
+  }
+
+  if (!anyVerifiedSkill) {
+    throw new Error(
+      "You need at least one verified skill before sending proposals.",
+    );
+  }
+
   const { data: proposal, error } = await supabase
     .from("proposals")
     .insert({
@@ -38,7 +58,7 @@ export async function createProposal(data: CreateProposalInput) {
       session_format: "one-on-one",
       status: "pending",
       goal: data.goal,
-      expected_number_of_sessions: data.expectedSessions,
+      // expected_number_of_sessions: data.expectedSessions,
       session_duration_minutes: durationMap[data.sessionDurationType] ?? 60,
     })
     .select("*")
@@ -49,6 +69,11 @@ export async function createProposal(data: CreateProposalInput) {
     if (error.code === "23505") {
       throw new Error("You already have a pending proposal with this user.");
     }
+    if (error.code === "42501" || error.message?.includes("row-level security")) {
+      throw new Error(
+        "You need at least one verified skill before sending proposals.",
+      );
+    }
     throw new Error(error.message);
   }
 
@@ -57,41 +82,12 @@ export async function createProposal(data: CreateProposalInput) {
   }
 
   const socket = getSocket();
-  if(!socket) return
-  if (socket) {
-    socket.emit("proposal:created", {
-      receiverId: data.receiverId,
-      proposal,
-    });
-  }
+  if (!socket) return proposal;
 
-  // void sendProposalNotification(proposal.id, data);
+  socket.emit("proposal:created", {
+    receiverId: data.receiverId,
+    proposal,
+  });
 
   return proposal;
-}
-
-function sendProposalNotification(
-  proposalId: string,
-  data: CreateProposalInput,
-) {
-  const socket = getSocket();
-  if (!socket) return;
-
-  try {
-    emitNotification({
-      userId: data.receiverId,
-      type: "proposal_received",
-      title: "New Skill Proposal",
-      body: `${data.senderName || "Someone"} sent you a proposal.`,
-      data: {
-        proposalId,
-        senderImage: data.senderImage,
-        senderName: data.senderName,
-        proposalMsg: data.message,
-        link: data.link,
-      },
-    });
-  } catch (err) {
-    console.error("Notification emit failed:", err);
-  }
 }

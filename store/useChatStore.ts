@@ -201,8 +201,6 @@ export const useChatStore = create<ChatStore>((set, get) => ({
         return m;
       });
 
-      console.log(msg, "msg");
-
       if (!found) {
         updatedMsgs.push({
           ...msg,
@@ -241,7 +239,6 @@ export const useChatStore = create<ChatStore>((set, get) => ({
       const res = await fetch(`/api/user/messages/${conversationId}`);
 
       const messages = await res.json();
-      console.log(messages);
 
       const messageIds = (messages || []).map((m: Message) => m.id);
 
@@ -453,7 +450,6 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     });
 
     socket.on("conversation:updated", (data) => {
-      console.log(data, "conversation-updated");
       set((state) => ({
         conversations: state.conversations.map((c) =>
           c.id === data.conversationId ? { ...c, ...data } : c,

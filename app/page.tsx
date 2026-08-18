@@ -17,9 +17,9 @@ export default function Home() {
         <SecondSection />
       </section>
 
-      <section className="relative w-full py-20 px-4 sm:px-6 md:px-8">
+      {/* <section className="relative w-full py-20 px-4 sm:px-6 md:px-8">
         <ThirdSection />
-      </section>
+      </section> */}
 
       <Footer />
     </main>

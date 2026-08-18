@@ -130,7 +130,6 @@ const Chat = () => {
     if (!activeChat?.id) return;
 
    const emitOpen = () => {
-  console.log("emitting chat_open", { conversationId: activeChat.id, socketConnected: socket?.connected });
   socket?.emit("chat_open", { conversationId: activeChat.id });
 };
     const emitClose = () =>
@@ -261,18 +260,10 @@ const Chat = () => {
 
     const observer = new IntersectionObserver(
       ([entry]) => {
-        console.log("observer fired:", {
-          isIntersecting: entry.isIntersecting,
-          visibilityState: document.visibilityState,
-          lastReadRef: lastReadRef.current,
-          lastMessageId: lastMessage.id,
-        });
 
         if (!entry.isIntersecting) return;
         if (lastReadRef.current === lastMessage.id) return;
         if (document.visibilityState !== "visible") return;
-
-        console.log("emitting mark_as_read for", activeChat?.id);
         socket.emit("mark_as_read", { conversationId: activeChat?.id });
 
         lastReadRef.current = lastMessage.id;

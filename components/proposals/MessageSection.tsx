@@ -18,7 +18,7 @@ const MessageSection = ({
   return (
     <section className="space-y-4 pt-6 border-t border-border/50">
       <header className="flex items-center justify-between">
-        <NumberRow number={6} title="Add Message" />
+        <NumberRow number={5} title="Add Message" />
         <span
           className={`text-xs tracking-widest font-bold ${
             message.length >= 500

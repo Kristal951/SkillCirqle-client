@@ -10,7 +10,7 @@ type Props = {
 const GoalSection = ({ goal, sendingProposal, setGoal }: Props) => {
   return (
     <section className="space-y-3">
-      <NumberRow number={5} title="Your Goal" />
+      <NumberRow number={4} title="Your Goal" />
       <input
         value={goal}
         disabled={sendingProposal}

@@ -30,7 +30,8 @@ export async function GET(
       .from("user_skills")
       .select("*", { count: "exact", head: true })
       .eq("skill_id", skill.id)
-      .eq("type", "teach");
+      .eq("type", "teach")
+      .eq("verified", true);
 
     if (countError) {
       throw countError;
@@ -41,7 +42,8 @@ export async function GET(
       .select("user_id")
       .eq("skill_id", skill.id)
       .eq("type", "teach")
-      .range(from, to);
+      .range(from, to)
+      .eq("verified", true);
 
     if (userSkillsError) {
       throw userSkillsError;

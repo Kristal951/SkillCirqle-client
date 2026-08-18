@@ -179,7 +179,7 @@ const VerifyMFA = ({ reason: reasonProp, next: nextProp, onSuccess, onClose }: V
   };
 
   const content = (
-    <div className="w-full max-w-md bg-surface border border-border rounded-3xl p-7 shadow-2xl flex flex-col gap-6 animate-in fade-in zoom-in-95 duration-200 relative">
+    <div className="w-full overflow-hidden h-screen items-center justify-center bg-background border-0 border-border rounded-3xl p-7 flex flex-col gap-6 animate-in fade-in zoom-in-95 duration-200 relative">
       {isModal && onClose && (
         <button
           onClick={onClose}
@@ -219,7 +219,7 @@ const VerifyMFA = ({ reason: reasonProp, next: nextProp, onSuccess, onClose }: V
                   key={i}
                   ref={(el) => { inputRefs.current[i] = el; }}
                   autoFocus={i === 0}
-                  className="w-12 h-14 bg-background/40 border border-border/60 rounded-xl text-center text-2xl font-black text-text-primary focus:border-primary focus:ring-4 focus:ring-primary/5 transition-all outline-none"
+                  className="w-12 h-14 bg-background/40 border border-border rounded-xl text-center text-2xl font-black text-text-primary focus:border-primary focus:ring-6 focus:ring-primary/5 transition-all outline-none"
                   maxLength={1}
                   type="text"
                   inputMode="numeric"
@@ -239,13 +239,15 @@ const VerifyMFA = ({ reason: reasonProp, next: nextProp, onSuccess, onClose }: V
               </div>
             </div>
 
-            <button
+              <div className="w-full px-4">
+<button
               type="submit"
               disabled={loading || code.some((digit) => !digit)}
-              className="w-full h-12 rounded-2xl bg-primary text-text-primary font-black text-xs uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-primary/90 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+              className="w-full h-12 rounded-xl bg-primary text-text-primary font-black text-xs uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-primary/90 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
             >
               {loading ? <Spinner size={20} /> : <>Verify Code <ArrowRight size={14} /></>}
             </button>
+              </div>
 
             {!isModal && (
               <div className="w-full flex flex-col md:flex-row items-center justify-center gap-0.5 py-2 text-sm">

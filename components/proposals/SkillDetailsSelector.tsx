@@ -29,7 +29,7 @@ const SkillDetailsSelector = ({
 }: Props) => {
   return (
     <section className="space-y-4 pt-6 border-t border-border/50">
-      <NumberRow number={4} title="Skill Details" />
+      <NumberRow number={3} title="Skill Details" />
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {isSwap && (

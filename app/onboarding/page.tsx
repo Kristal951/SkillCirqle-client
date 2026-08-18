@@ -10,8 +10,6 @@ import { addUserSkillsToRequiredTables } from "@/lib/addUserSkillsToRequiredTabl
 import Psychology from "@material-symbols/svg-400/outlined/psychology.svg";
 import School from "@material-symbols/svg-400/outlined/school.svg";
 import Close from "@material-symbols/svg-400/outlined/close.svg";
-import Verified from "@material-symbols/svg-400/outlined/verified.svg";
-import { VerifySkillModal } from "@/components/VerifySkillModal";
 import { ArrowRight } from "lucide-react";
 
 const Onboarding = () => {
@@ -21,7 +19,6 @@ const Onboarding = () => {
     user?.user_metadata?.full_name ||
     user?.name ||
     "Member";
-  const firstName = displayName.split(" ")[0];
   const { updateUser } = useAuthStore();
   const router = useRouter();
   const { handleMoveToNextOnboardingStep } = useOnboardingNavigation();
@@ -424,7 +421,7 @@ const Onboarding = () => {
           type="button"
           onClick={(e) => handleSubmit(e)}
           disabled={loading}
-          className="bg-primary disabled:opacity-50 text-primary-foreground hover:bg-primary/90 px-6 py-2.5 rounded-xl font-medium text-sm transition-colors shadow-sm"
+          className="bg-primary flex items-center justify-center gap-2 disabled:opacity-50 text-primary-foreground hover:bg-primary/90 px-6 py-2.5 rounded-xl font-medium text-sm transition-colors shadow-sm"
         >
           {loading ? (
             <Spinner size={20} />

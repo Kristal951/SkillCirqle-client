@@ -3,6 +3,27 @@ import { NextRequest, NextResponse } from "next/server";
 import { checkIsAdminWithClient } from "./utils/isAdmin";
 import { getSessionIdFromAccessToken } from "./lib/auth/session-claims";
 
+const INVALID_REFRESH_CODES = new Set([
+  "refresh_token_not_found",
+  "refresh_token_already_used",
+]);
+
+function isInvalidRefreshTokenError(
+  error: { code?: string; status?: number } | null | undefined,
+) {
+  if (!error) return false;
+  return INVALID_REFRESH_CODES.has(error.code ?? "") || error.status === 400;
+}
+
+function clearAuthCookies(response: NextResponse, request: NextRequest) {
+  request.cookies.getAll().forEach((cookie) => {
+    if (cookie.name.startsWith("sb-")) {
+      response.cookies.delete(cookie.name);
+    }
+  });
+  return response;
+}
+
 export async function middleware(request: NextRequest) {
   let response = NextResponse.next();
   const path = request.nextUrl.pathname;
@@ -31,11 +52,11 @@ export async function middleware(request: NextRequest) {
   );
 
   const {
-    data: { user },
+    data: { user }, error: userError
   } = await supabase.auth.getUser();
 
   const {
-    data: { session },
+    data: { session }, error: sessionError
   } = await supabase.auth.getSession();
 
   const isUpdatePasswordPage = path === "/auth/update-password";
@@ -49,6 +70,21 @@ export async function middleware(request: NextRequest) {
   const isProtectedRoute = ["/dashboard", "/onboarding"].some((p) =>
     path.startsWith(p),
   );
+
+    if (
+    (isInvalidRefreshTokenError(userError) ||
+      isInvalidRefreshTokenError(sessionError)) &&
+    !isAuthPage
+  ) {
+    await supabase.auth.signOut();
+    const url = new URL("/auth/signin", request.url);
+    url.searchParams.set("error", "session_expired");
+    if (isProtectedRoute || isAdminPage) {
+      url.searchParams.set("redirect", path);
+    }
+    return clearAuthCookies(NextResponse.redirect(url), request);
+  }
+
 
   if (session) {
     const sessionId = getSessionIdFromAccessToken(session.access_token);

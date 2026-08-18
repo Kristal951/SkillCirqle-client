@@ -9,7 +9,7 @@ import { toast } from "@/lib/toast";
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
 import ProposalTypeSelector from "@/components/proposals/ProposalTypeSelector";
 import SessionDurationSelector from "@/components/proposals/SessionDurationSelector";
-import ExpectedSessionsCounter from "@/components/proposals/ExpectedSessionsCounter";
+// import ExpectedSessionsCounter from "@/components/proposals/ExpectedSessionsCounter";
 import SkillDetailsSelector from "@/components/proposals/SkillDetailsSelector";
 import GoalSection from "@/components/proposals/GoalSection";
 import MessageSection from "@/components/proposals/MessageSection";
@@ -67,7 +67,7 @@ export default function NewProposal() {
   const [goal, setGoal] = useState("");
   const [sendingProposal, setSendingProposal] = useState(false);
   const [userEditedMessage, setUserEditedMessage] = useState(false);
-  const [expectedSessions, setExpectedSessions] = useState(5);
+  // const [expectedSessions, setExpectedSessions] = useState(5);
 
   const { user: profile } = useUserProfile();
   const { user } = useAuthStore();
@@ -122,7 +122,7 @@ export default function NewProposal() {
     setMessage("");
     setUserEditedMessage(false);
     setGoal("");
-    setExpectedSessions(5);
+    // setExpectedSessions(5);
   }, []);
 
   const handleTeachChange = useCallback((id: string, name: string) => {
@@ -180,7 +180,7 @@ export default function NewProposal() {
         learnSkillName,
         message,
         goal,
-        expectedSessions,
+        // expectedSessions,
         session_format: 'one-one-one',
         engagementType: activeTab,
         sessionDurationType,
@@ -194,7 +194,15 @@ export default function NewProposal() {
       cleanUp();
     } catch (error: any) {
       console.error(error);
-      toast.error("Proposal Failed", error?.message || "Something went wrong.");
+
+      const message = error?.message || "Something went wrong. Please try again.";
+
+      const isVerificationError = message.toLowerCase().includes("verified skill");
+
+      toast.error(
+        isVerificationError ? "Verification Required" : "Proposal Failed",
+        message,
+      );
     } finally {
       setSendingProposal(false);
     }
@@ -208,7 +216,7 @@ export default function NewProposal() {
     learnSkillName,
     message,
     goal,
-    expectedSessions,
+    // expectedSessions,
     activeTab,
     sessionDurationType,
     cleanUp,
@@ -247,7 +255,7 @@ export default function NewProposal() {
       <div className="h-screen flex items-center justify-center px-6">
         <div className="flex flex-col items-center text-center space-y-3">
           <div className="bg-surface/50 p-4 rounded-xl">
-            <PersonOff className="text-text-secondary text-[120px]"/>
+            <PersonOff className="text-text-secondary text-[120px]" />
           </div>
 
           <h2 className="text-4xl font-semibold">Profile not found</h2>
@@ -290,11 +298,11 @@ export default function NewProposal() {
             disabled={sendingProposal}
             onChange={setSessionDurationType}
           />
-          <ExpectedSessionsCounter
+          {/* <ExpectedSessionsCounter
             value={expectedSessions}
             disabled={sendingProposal}
             onChange={setExpectedSessions}
-          />
+          /> */}
           <SkillDetailsSelector
             isSwap={isSwap}
             disabled={sendingProposal}
@@ -345,7 +353,7 @@ export default function NewProposal() {
           teachSkillName={teachSkillName}
           goal={goal}
           sessionDurationType={sessionDurationType}
-          expectedSessions={expectedSessions}
+          // expectedSessions={expectedSessions}
           message={message}
           canSend={canSendProposal}
           sending={sendingProposal}

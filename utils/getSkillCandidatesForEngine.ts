@@ -15,7 +15,8 @@ export async function getSkillCandidatesForEngine(
     .from("user_skills")
     .select("user_id, skill_id, type, skills:skill_id (title)")
     .in("skill_id", relevantSkillIds)
-    .neq("user_id", userId);
+    .neq("user_id", userId)
+    .eq("verified", true);
 
   if (error) {
     console.error(error);

@@ -14,7 +14,6 @@ type Props = {
   teachSkillName: string;
   goal: string;
   sessionDurationType: "quick" | "standard";
-  expectedSessions: number;
   message: string;
   canSend: boolean;
   sending: boolean;
@@ -29,7 +28,6 @@ const ProposalSidebar = ({
   teachSkillName,
   goal,
   sessionDurationType,
-  expectedSessions,
   message,
   canSend,
   sending,
@@ -87,10 +85,10 @@ const ProposalSidebar = ({
                 : "Standard (30–60 min)"
             }
           />
-          <SummaryItem
+          {/* <SummaryItem
             label="Expected Sessions"
             value={`${expectedSessions} ${expectedSessions === 1 ? "session" : "sessions"}`}
-          />
+          /> */}
           {message && (
             <div>
               <p className="text-xs uppercase text-text-secondary">Message</p>

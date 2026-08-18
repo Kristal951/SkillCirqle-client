@@ -13,7 +13,7 @@ export const useOnboardingNavigation = () => {
     setError(null);
 
     try {
-      const res = await updateUserOnboardingStepInDB(step);
+      await updateUserOnboardingStepInDB(step);
 
       router.push(`/onboarding/step-${step}`);
     } catch (err: any) {

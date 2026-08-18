@@ -527,7 +527,6 @@ const SkillRowSkeleton = () => (
 );
 
 const OnboardingStep2 = () => {
-  const { user } = useAuthStore();
   const router = useRouter();
   const { updateUser } = useAuthStore();
   const { updateUserOnboardingStepInDB } = useOnboardingStore();
@@ -591,7 +590,7 @@ const OnboardingStep2 = () => {
   };
 
   const handleSkip = () => {
-    router.push("/dashboard");
+    router.replace("/dashboard");
   };
 
   return (

@@ -71,8 +71,6 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const geo = await getGeo(req);
 
-    console.log(body, geo, 'sess')
-
     const supabase = await createSupabaseServer();
     const user = await getUser();
 
@@ -148,8 +146,6 @@ export async function GET(req: NextRequest) {
         { status: 500 },
       );
     }
-
-    console.log(data, 'session')
 
     const sessionsWithCurrent = (data ?? []).map((s) => ({
       ...s,

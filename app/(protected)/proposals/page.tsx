@@ -25,7 +25,7 @@ export type ProposalView = {
   format: string;
   type: EngagementType;
   goal: string;
-  expectedSessions: number;
+  // expectedSessions: number;
   sessionDuration: number;
   skillToTeachIcon: IconType;
   skillToLearnIcon: IconType;
@@ -120,7 +120,7 @@ const ProposalsPage = () => {
       receiverID: p.receiver.id,
       message: p.message,
       goal: p.goal,
-      expectedSessions: p.expected_number_of_sessions,
+      // expectedSessions: p.expected_number_of_sessions,
       sessionDuration: p.session_duration_minutes,
       dateCreated: new Date(p.created_at).getTime(),
       status,

@@ -1,7 +1,7 @@
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 
-export async function getTrendingSkills(page = 1, limit = 10) {
-  const { data, error } = await supabaseAdmin
+export async function getTrendingSkills(page = 1, limit = 10, userId?: string) {
+  let query = supabaseAdmin
     .from("user_skills")
     .select(`
       skill_id,
@@ -9,10 +9,18 @@ export async function getTrendingSkills(page = 1, limit = 10) {
         id,
         title,
         slug,
-        image_url
+        image_url,
+        description
       )
     `)
-    .eq("type", "teach");
+    .eq("type", "teach")
+    .eq("verified", true);
+
+  if (userId) {
+    query = query.neq("user_id", userId);
+  }
+
+  const { data, error } = await query;
 
   if (error) throw error;
 
@@ -30,6 +38,7 @@ export async function getTrendingSkills(page = 1, limit = 10) {
       slug: skill.slug,
       image: skill.image_url,
       count: existing ? existing.count + 1 : 1,
+      desc: skill.description,
     });
   }
 

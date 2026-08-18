@@ -11,21 +11,34 @@ export async function POST(request: Request) {
 
   const { teachSkills, learnSkills } = await request.json();
 
+  if (!Array.isArray(teachSkills) || !Array.isArray(learnSkills)) {
+    return new Response("teachSkills and learnSkills must be arrays", {
+      status: 400,
+    });
+  }
+
   try {
-    const allSkills = [
-      ...teachSkills.map((s: string) => ({ skill: s, type: "teach" })),
-      ...learnSkills.map((s: string) => ({ skill: s, type: "learn" })),
+    type SkillEntry = { skill: string; type: "teach" | "learn" };
+
+    const allSkills: SkillEntry[] = [
+      ...teachSkills.map(
+        (s: string): SkillEntry => ({ skill: s, type: "teach" }),
+      ),
+      ...learnSkills.map(
+        (s: string): SkillEntry => ({ skill: s, type: "learn" }),
+      ),
     ];
 
-    for (const item of allSkills) {
-      const skillId = await resolveSkillId(item.skill);
-
-      await addUserSkill(user.id, skillId, item.type);
-    }
+    await Promise.all(
+      allSkills.map(async (item) => {
+        const skillId = await resolveSkillId(item.skill);
+        return addUserSkill(user.id, skillId, item.type);
+      }),
+    );
 
     return Response.json({ success: true });
   } catch (err) {
-    console.error(err)
+    console.error(err);
     return new Response("Failed onboarding skills", { status: 500 });
   }
 }

@@ -79,8 +79,6 @@ const SignUp = () => {
   const emailInputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
 
-  const { fetchUser } = useAuthStore();
-
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
@@ -93,9 +91,6 @@ const SignUp = () => {
 
     try {
       await signUpWithEmail(name, email, password);
-
-      await fetchUser();
-
       toast.success(`Hi ${name}!`, "Welcome to the Cirqle.");
 
       setIsSubmitted(true);

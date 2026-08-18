@@ -63,7 +63,7 @@ const Sidebar = ({ counts }: SidebarProps) => {
           <Info size={16} /> Pro-Tip
         </h3>
         <p className="text-xs text-text-secondary leading-relaxed">
-          Proposals expire after 7 days. Quick responses increase your matching
+          <span className="text-amber-500 font-semibold">Pending</span> Proposals expire after 7 days. Quick responses increase your matching
           score!
         </p>
       </div>

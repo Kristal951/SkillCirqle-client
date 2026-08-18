@@ -1,12 +1,12 @@
 import { getTrendingSkills } from "@/lib/getTrendSkills";
 import { getUsersBySkill } from "./getSkillUsers";
 
-export async function getTrendingSkillCards(page = 1, limit = 10) {
-  const trending = await getTrendingSkills(page, limit);
+export async function getTrendingSkillCards(page = 1, limit = 10, userId?: string) {
+  const trending = await getTrendingSkills(page, limit, userId);
 
   const skillCards = await Promise.all(
     trending.skills.map(async (skill) => {
-      const users = await getUsersBySkill(skill.id, 1, 5);
+      const users = await getUsersBySkill(skill.id, 1, 5, true);
 
       const avatars =
         users.users
@@ -18,7 +18,7 @@ export async function getTrendingSkillCards(page = 1, limit = 10) {
         id: skill.id,
         title: skill.title,
         slug: skill.slug,
-        desc: `People who can teach ${skill.title}`,
+        desc: skill.desc || `People who can teach ${skill.title}`,
         usersAmount: skill.count,
         image: skill.image,
         avatars,
@@ -34,15 +34,3 @@ export async function getTrendingSkillCards(page = 1, limit = 10) {
     hasMore: trending.hasMore,
   };
 }
-
-// object { skillCards: (2) […], total: 2, page: 1, hasMore: false }
-// ​
-// hasMore: false
-// ​
-// page: 1
-// ​
-// skillCards: Array [ {…}, {…} ]
-// ​
-// total: 2
-// ​
-// <prototype>: Object { … }

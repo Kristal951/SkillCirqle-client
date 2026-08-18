@@ -101,14 +101,12 @@ export const useProposalStore = create<ProposalStore>((set, get) => ({
     let socket;
     try {
       socket = await waitForSocket();
-      console.log(socket, "socket");
     } catch (err) {
       console.error("listenForProposalUpdates: socket not available", err);
       return () => {};
     }
 
     const handleCreated = ({ proposal }: { proposal: any }) => {
-      console.log("[client] received proposal_created", proposal);
       set((state) => {
         if (state.proposals.some((p) => p.id === proposal.id)) return state;
         return { proposals: [formatProposal(proposal), ...state.proposals] };
@@ -116,7 +114,6 @@ export const useProposalStore = create<ProposalStore>((set, get) => ({
     };
 
     const handleUpdated = ({ proposal }: { proposal: any }) => {
-      console.log("[client] received proposal_updated", proposal);
       set((state) => ({
         proposals: state.proposals.map((p) =>
           p.id === proposal.id ? formatProposal(proposal) : p,
