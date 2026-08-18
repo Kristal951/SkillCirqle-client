@@ -60,35 +60,42 @@ export const useAuthStore = create<AuthState>()(
         set({ isUploadingProfilePic }),
 
       logout: async () => {
+        const supabase = getSupabaseBrowserClient();
+        const socket = getSocket();
+        const currentUserId = get().user?.id;
+
         try {
-          const supabase = getSupabaseBrowserClient();
-          const socket = getSocket();
           await supabase.auth.signOut();
+        } catch (error) {
+          console.error("Supabase signOut failed:", error);
+        }
 
-          socket?.disconnect();
-
+        try {
           await fetch("/api/user/logout", {
             method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ userId: currentUserId }),
           });
-
-          set({
-            user: null,
-            uploadProgress: 0,
-            authReady: false,
-          });
-
-          useTokenStore.getState().setTokens(0);
-          useTokenStore.getState().setTotal(0);
-
-          useOnboardingStore.getState().setTotalSteps(0);
-
-          localStorage.removeItem("auth-storage");
-          sessionStorage.removeItem("device_session_id");
-
-          window.location.replace("/auth/signin");
         } catch (error) {
-          console.error("Logout failed:", error);
+          console.error("Server logout call failed:", error);
         }
+
+        socket?.disconnect();
+
+        set({
+          user: null,
+          uploadProgress: 0,
+          authReady: false,
+        });
+
+        useTokenStore.getState().setTokens(0);
+        useTokenStore.getState().setTotal(0);
+        useOnboardingStore.getState().setTotalSteps(0);
+
+        localStorage.removeItem("auth-storage");
+        sessionStorage.removeItem("device_session_id");
+
+        window.location.replace("/auth/signin");
       },
 
       reset: () =>

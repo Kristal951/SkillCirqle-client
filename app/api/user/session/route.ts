@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
 import { getUser } from "@/lib/getUser";
 import { createSupabaseServer } from "@/lib/supabaseServer";
 import { getSessionIdFromAccessToken } from "@/lib/auth/session-claims";
+import { clearStaleAuthCookies } from "@/lib/clearStaleAuthCookies";
 
 type Geo = {
   country: string | null;
@@ -72,9 +72,10 @@ export async function POST(req: NextRequest) {
     const geo = await getGeo(req);
 
     const supabase = await createSupabaseServer();
-    const user = await getUser();
+    const user = await getUser(supabase);
 
     if (!user) {
+      await clearStaleAuthCookies();
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -119,9 +120,10 @@ export async function POST(req: NextRequest) {
 export async function GET(req: NextRequest) {
   try {
     const supabase = await createSupabaseServer();
-    const user = await getUser();
+    const user = await getUser(supabase);
 
     if (!user) {
+      await clearStaleAuthCookies();
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 

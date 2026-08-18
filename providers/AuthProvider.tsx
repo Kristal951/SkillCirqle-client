@@ -25,10 +25,13 @@ function AuthProviderInner({ children }: { children: React.ReactNode }) {
   const searchParams = useSearchParams();
   const isRecoveryPage = pathname === "/auth/update-password";
   const isRecoveryPageRef = useRef(isRecoveryPage);
+  const isPublicAuthPage = pathname?.startsWith("/auth") ?? false;
+  const isPublicAuthPageRef = useRef(isPublicAuthPage);
 
   useEffect(() => {
     isRecoveryPageRef.current = isRecoveryPage;
-  }, [isRecoveryPage]);
+    isPublicAuthPageRef.current = isPublicAuthPage;
+  }, [isRecoveryPage, isPublicAuthPage]);
 
   const [loading, setLoading] = useState(true);
   const setUser = useAuthStore((s) => s.setUser);
@@ -78,6 +81,11 @@ function AuthProviderInner({ children }: { children: React.ReactNode }) {
 
     const init = async () => {
       try {
+        if (isPublicAuthPageRef.current) {
+          resetStore();
+          return;
+        }
+
         const {
           data: { session },
           error,

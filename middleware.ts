@@ -52,12 +52,9 @@ export async function middleware(request: NextRequest) {
   );
 
   const {
-    data: { user }, error: userError
+    data: { user },
+    error: userError,
   } = await supabase.auth.getUser();
-
-  const {
-    data: { session }, error: sessionError
-  } = await supabase.auth.getSession();
 
   const isUpdatePasswordPage = path === "/auth/update-password";
   const isAuthPage =
@@ -71,12 +68,28 @@ export async function middleware(request: NextRequest) {
     path.startsWith(p),
   );
 
-    if (
-    (isInvalidRefreshTokenError(userError) ||
-      isInvalidRefreshTokenError(sessionError)) &&
-    !isAuthPage
-  ) {
-    await supabase.auth.signOut();
+  if (isInvalidRefreshTokenError(userError)) {
+    await supabase.auth.signOut({ scope: "local" });
+
+    if (!isAuthPage) {
+      const url = new URL("/auth/signin", request.url);
+      url.searchParams.set("error", "session_expired");
+      if (isProtectedRoute || isAdminPage) {
+        url.searchParams.set("redirect", path);
+      }
+      return clearAuthCookies(NextResponse.redirect(url), request);
+    }
+
+    return clearAuthCookies(response, request);
+  }
+
+  const {
+    data: { session },
+    error: sessionError,
+  } = await supabase.auth.getSession();
+
+  if (isInvalidRefreshTokenError(sessionError) && !isAuthPage) {
+    await supabase.auth.signOut({ scope: "local" });
     const url = new URL("/auth/signin", request.url);
     url.searchParams.set("error", "session_expired");
     if (isProtectedRoute || isAdminPage) {
@@ -84,7 +97,6 @@ export async function middleware(request: NextRequest) {
     }
     return clearAuthCookies(NextResponse.redirect(url), request);
   }
-
 
   if (session) {
     const sessionId = getSessionIdFromAccessToken(session.access_token);
@@ -100,7 +112,7 @@ export async function middleware(request: NextRequest) {
         await supabase.auth.signOut();
         const url = new URL("/auth/signin", request.url);
         url.searchParams.set("error", "session_revoked");
-        return NextResponse.redirect(url);
+        return clearAuthCookies(NextResponse.redirect(url), request);
       }
     }
   }
@@ -187,6 +199,6 @@ export async function middleware(request: NextRequest) {
 export const config = {
   matcher: [
     "/admin/:path*",
-    "/((?!_next/static|_next/image|favicon.ico|api/auth|$).*)",
+    "/((?!_next/static|_next/image|favicon.ico|api/auth|api/user/logout|$).*)",
   ],
 };

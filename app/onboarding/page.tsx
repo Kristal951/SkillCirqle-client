@@ -14,11 +14,6 @@ import { ArrowRight } from "lucide-react";
 
 const Onboarding = () => {
   const { user } = useAuthStore();
-  const displayName =
-    user?.user_metadata?.username ||
-    user?.user_metadata?.full_name ||
-    user?.name ||
-    "Member";
   const { updateUser } = useAuthStore();
   const router = useRouter();
   const { handleMoveToNextOnboardingStep } = useOnboardingNavigation();
@@ -90,6 +85,12 @@ const Onboarding = () => {
   const handleSubmit = async (e: MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     setLoading(true);
+
+    if(!teachSkills.length && !learnSkills.length) {
+      toast.error("Please add at least one skill to teach or learn.");
+      setLoading(false);
+      return;
+    }
 
     try {
       const res = await addUserSkillsToRequiredTables(teachSkills, learnSkills);
@@ -216,7 +217,7 @@ const Onboarding = () => {
     //     </button>
     //   </div>
     // </div>
-    <div className="w-full h-full p-6 flex flex-col gap-10">
+    <div className="w-full h-full md:p-6 px-3 flex flex-col gap-10">
       <div className="flex flex-col gap-1 mb-4 items-center justify-center">
         <h1 className="text-3xl text-center font-bold text-text-primary">
           What do you bring to the Cirqle?
@@ -232,7 +233,7 @@ const Onboarding = () => {
           <div className="w-full">
             <div className="w-full flex items-end justify-between">
               <div className="flex w-full flex-col gap-1">
-                <h2 className="text-xl font-bold text-text-primary">
+                <h2 className="md:text-xl text-base font-bold text-text-primary">
                   What skills can you teach?
                 </h2>
                 <p className="text-text-secondary text-sm">
@@ -322,7 +323,7 @@ const Onboarding = () => {
           <div className="w-full">
             <div className="w-full flex items-end justify-between">
               <div className="flex flex-col gap-1">
-                <h2 className="text-xl font-bold text-text-primary">
+                <h2 className="md:text-xl text-base font-bold text-text-primary">
                   What skills do you want to learn?
                 </h2>
                 <p className="text-text-secondary text-sm">
@@ -407,12 +408,12 @@ const Onboarding = () => {
         </div>
       </div>
 
-      <div className="w-full flex items-center justify-between mt-auto pt-4 border-t border-border/30">
+      <div className="w-full flex items-center justify-between mt-auto pb-4 md:pb-0 border-t border-border/30">
         <button
           type="button"
           onClick={handleSkip}
           disabled={loading}
-          className="text-sm font-medium text-text-secondary hover:text-text-primary transition-colors disabled:opacity-50"
+          className="text-sm font-medium text-text-secondary mt-3 md:mt-0 hover:text-text-primary transition-colors disabled:opacity-50"
         >
           Skip for now
         </button>
@@ -420,8 +421,8 @@ const Onboarding = () => {
         <button
           type="button"
           onClick={(e) => handleSubmit(e)}
-          disabled={loading}
-          className="bg-primary flex items-center justify-center gap-2 disabled:opacity-50 text-primary-foreground hover:bg-primary/90 px-6 py-2.5 rounded-xl font-medium text-sm transition-colors shadow-sm"
+          disabled={loading || !teachSkills.length && !learnSkills.length}
+          className="bg-primary flex items-center justify-center gap-2 mt-3 md:mt-0 disabled:opacity-50 text-primary-foreground hover:bg-primary/90 px-6 py-2.5 rounded-xl font-medium text-sm transition-colors shadow-sm"
         >
           {loading ? (
             <Spinner size={20} />

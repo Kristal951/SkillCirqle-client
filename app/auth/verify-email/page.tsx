@@ -163,7 +163,7 @@ const CheckMail = ({
         </div>
 
         <form onSubmit={handleVerify} className="w-full flex flex-col gap-5 mt-5">
-          <div className="flex gap-2 justify-center">
+          <div className="flex gap-2 justify-center px-4">
             {code.map((digit, i) => (
               <input
                 key={i}

@@ -54,14 +54,13 @@ export default function RootLayout({
   };
 
   const handleLogout = async () => {
+    console.log('logout clicked')
     setLoggingOut(true);
-
     try {
       clearSessionCache();
-      // await logoutOneSignal();
       await logout();
     } catch (error) {
-      console.error("Logout failed:", error);
+      console.error("Client logout failed:", error);
     } finally {
       setLoggingOut(false);
       closeLogoutModal();
@@ -89,11 +88,10 @@ export default function RootLayout({
             )}
 
             <main
-              className={`flex-1 overflow-y-auto ${isInSessionPage || isAdmin ? "mt-0" : "mt-17.5"} ${
-                (isInChatPage && activeChat) || isInSessionPage
+              className={`flex-1 overflow-y-auto ${isInSessionPage || isAdmin ? "mt-0" : "mt-17.5"} ${(isInChatPage && activeChat) || isInSessionPage
                   ? "mb-0"
                   : "mb-13 md:mb-0"
-              }`}
+                }`}
             >
               {children}
             </main>

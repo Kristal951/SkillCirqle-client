@@ -1,3 +1,4 @@
+import { clearStaleAuthCookies } from "@/lib/clearStaleAuthCookies";
 import { getUser } from "@/lib/getUser";
 import { createSupabaseServer } from "@/lib/supabaseServer";
 import { getOrSetCache } from "@/utils/cacheHelper";
@@ -5,10 +6,12 @@ import { NextResponse } from "next/server";
 
 export async function GET() {
   const supabase = await createSupabaseServer();
-  const user = await getUser();
+  const user = await getUser(supabase);
 
-  if (!user)
+  if (!user) {
+    await clearStaleAuthCookies();
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
 
   let profile = null;
 

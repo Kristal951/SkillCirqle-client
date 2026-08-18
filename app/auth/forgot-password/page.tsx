@@ -23,9 +23,11 @@ export default function ResetPasswordPage() {
       setIsLoading(true);
       setErrorMessage("");
 
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      const { error, data } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: `${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/confirm-code?next=/auth/update-password`,
       });
+
+      console.log(`${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/confirm-code?next=/auth/update-password`)
 
       if (error) {
         throw error;
@@ -44,8 +46,8 @@ export default function ResetPasswordPage() {
   };
 
   return (
-    <div className="w-full min-h-screen bg-background flex items-center justify-center p-4 sm:p-6 select-none">
-      <div className="w-full max-w-xl relative bg-surface border border-border rounded-2xl p-8 shadow-2xl overflow-hidden flex flex-col gap-6">
+    <div className="w-full min-h-screen bg-background flex relative items-center justify-center p-4 sm:p-6 select-none">
+      <div className="w-full max-w-md bg-surface border border-border rounded-2xl p-8 shadow-2xl overflow-hidden flex flex-col gap-6">
         <button
           onClick={() => router.push("/auth/signin")}
           className="flex items-center absolute right-6 top-6 gap-2 text-xs font-bold uppercase tracking-wider text-text-secondary/70 hover:text-text-primary transition-all w-max group"
@@ -56,8 +58,8 @@ export default function ResetPasswordPage() {
         {!isSubmitted ? (
           <>
             <div className="flex flex-col gap-2 mt-6">
-              <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-text-primary">
-                Reset Your Password
+              <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-center text-text-primary">
+                Reset Password
               </h1>
 
               <p className="text-xs sm:text-sm text-text-secondary/80 leading-relaxed font-medium">

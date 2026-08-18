@@ -22,3 +22,26 @@ export async function getOrSetCache<T>(
 
   return fresh;
 }
+
+export async function invalidateCache(key: string): Promise<void> {
+  console.log(`invalidating cache with key: ${key}`)
+  await redis.del(key);
+}
+
+export async function invalidateCachePattern(pattern: string): Promise<void> {
+  let cursor = 0;
+  const keysToDelete: string[] = [];
+
+  do {
+    const [nextCursor, keys] = await redis.scan(cursor, {
+      match: pattern,
+      count: 100,
+    });
+    keysToDelete.push(...keys);
+    cursor = Number(nextCursor);
+  } while (cursor !== 0);
+
+  if (keysToDelete.length > 0) {
+    await redis.del(...keysToDelete);
+  }
+}
