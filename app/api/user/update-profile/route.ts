@@ -1,6 +1,7 @@
 import { getServerUser } from "@/lib/server-auth";
 import { createSupabaseServer } from "@/lib/supabaseServer";
 import { NextRequest, NextResponse } from "next/server";
+import { invalidateCache } from "@/utils/cacheHelper";
 
 export async function PATCH(req: NextRequest) {
   try {
@@ -64,6 +65,12 @@ export async function PATCH(req: NextRequest) {
     if (error) {
       console.error("Supabase update error:", error);
       throw error;
+    }
+
+    try {
+      await invalidateCache(`profile:${user?.id}`);
+    } catch (cacheErr) {
+      console.error("Redis invalidation failed:", cacheErr);
     }
 
     return NextResponse.json({ success: true, user: data });

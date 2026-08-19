@@ -75,7 +75,7 @@ const RowSkeleton = () => (
 );
 
 export const MyVerificationsPanel = () => {
-  const { user } = useAuthStore();
+  const { user, skillsVersion } = useAuthStore();
   const supabase = getSupabaseBrowserClient();
   const { socketReady } = useContext(SocketContext);
 
@@ -144,7 +144,7 @@ export const MyVerificationsPanel = () => {
 
   useEffect(() => {
     fetchAll();
-  }, [user?.id]);
+  }, [user?.id, skillsVersion ]);
 
   useEffect(() => {
     const socket = getSocket();

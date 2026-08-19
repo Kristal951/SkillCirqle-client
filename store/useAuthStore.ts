@@ -21,8 +21,10 @@ interface AuthState {
   isUploadingProfilePic: boolean;
   isHydrated: boolean;
   authReady: boolean;
+  skillsVersion: number;
 
   setHydrated: (isHydrated: boolean) => void;
+  bumpSkillsVersion: () => void;
   setUser: (user: User | null) => void;
   setLoading: (loading: boolean) => void;
   setIsUpdatingUser: (isUpdatingUser: boolean) => void;
@@ -37,7 +39,7 @@ interface AuthState {
   uploadUserProfilePic: (file: File) => Promise<string | null>;
   updateUser: (
     updates: Partial<User>,
-  ) => Promise<{ success: boolean; message?: string }>;
+  ) => Promise<{ success: boolean; message?: string, user?: User }>;
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -50,8 +52,10 @@ export const useAuthStore = create<AuthState>()(
       isUploadingProfilePic: false,
       isHydrated: false,
       authReady: false,
+      skillsVersion: 0,
 
       setHydrated: (isHydrated) => set({ isHydrated }),
+      bumpSkillsVersion: () => set((state) => ({ skillsVersion: state.skillsVersion + 1 })),
       setUser: (user) => set({ user }),
       setLoading: (loading) => set({ loading }),
       setUploadProgress: (progress) => set({ uploadProgress: progress }),
@@ -199,7 +203,7 @@ export const useAuthStore = create<AuthState>()(
         set({ isUpdatingUser: true });
 
         try {
-          const res = await apiFetch("/api/user/update-profile", {
+          const res = await fetch("/api/user/update-profile", {
             method: "PATCH",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ updates }),
@@ -222,6 +226,7 @@ export const useAuthStore = create<AuthState>()(
           return {
             success: true,
             message: "Profile updated successfully",
+            user
           };
         } catch (error: any) {
           console.error("❌ Update user failed:", error);

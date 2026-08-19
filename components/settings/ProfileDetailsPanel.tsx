@@ -1,7 +1,7 @@
 "use client";
 import { useAuthStore } from "@/store/useAuthStore";
-import { Brain, Camera, GraduationCap, Trash2, X } from "lucide-react";
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import { Camera, Trash2, X } from "lucide-react";
+import React, { useEffect, useMemo, useState } from "react";
 import Spinner from "../ui/Spinner";
 import {
   optimizeCloudinaryUrl,
@@ -13,7 +13,7 @@ import Psychology from "@material-symbols/svg-400/outlined/psychology.svg";
 import School from "@material-symbols/svg-400/outlined/school.svg";
 
 const ProfileDetailsPanel = () => {
-  const { user, updateUser, isUpdatingUser } = useAuthStore();
+  const { user, updateUser, isUpdatingUser, bumpSkillsVersion } = useAuthStore();
 
   const [teachSkills, setTeachSkills] = useState<string[]>([]);
   const [learnSkills, setLearnSkills] = useState<string[]>([]);
@@ -46,6 +46,15 @@ const ProfileDetailsPanel = () => {
     setAvatarRemoved(true);
   };
 
+  const isFallbackAvatarUrl = (url: string | null) => {
+    if (!url) return true;
+    try {
+      return new URL(url).hostname === "ui-avatars.com";
+    } catch {
+      return false;
+    }
+  };
+
   useEffect(() => {
     if (!user) return;
 
@@ -64,7 +73,7 @@ const ProfileDetailsPanel = () => {
     setTeachSkills(init.teachSkills);
     setLearnSkills(init.learnSkills);
     setAvatarPreview(init.avatar);
-  }, [user]);
+  }, [user?.id]);
 
   useEffect(() => {
     if (!avatarPreview?.startsWith("blob:")) return;
@@ -110,6 +119,7 @@ const ProfileDetailsPanel = () => {
     }
     if (!file.type.startsWith("image/")) {
       toast.error("Invalid Image File", "Please upload image files only.");
+      return;
     }
 
     setAvatarRemoved(false);
@@ -174,7 +184,7 @@ const ProfileDetailsPanel = () => {
     return initialState.avatar || fallbackAvatar;
   }, [avatarRemoved, avatarPreview, fallbackAvatar, initialState.avatar]);
 
-  const hasRealAvatar = !!initialState.avatar;
+  const hasRealAvatar = !isFallbackAvatarUrl(initialState.avatar);
   const canSave = isDirty && isValid && !isUpdatingUser && !loading;
 
   const canRemoveAvatar = useMemo(() => {
@@ -194,23 +204,12 @@ const ProfileDetailsPanel = () => {
     setAvatarPreview(initialState.avatar);
   };
 
-  const reset = () => {
-    setName(initialState.name);
-    setBio(initialState.bio);
-    setTeachSkills(initialState.teachSkills);
-    setLearnSkills(initialState.learnSkills);
-    setAvatarFile(null);
-    setAvatarRemoved(false);
-    setAvatarPreview(initialState.avatar);
-  };
-
   const handleSave = async () => {
+    setLoading(true);
     try {
       const prevUser = useAuthStore.getState().user;
 
       if (!prevUser) return;
-
-      setLoading(true);
 
       let avatarUrl = prevUser.avatar_url || fallbackAvatar;
 
@@ -263,16 +262,30 @@ const ProfileDetailsPanel = () => {
         return;
       }
 
+      bumpSkillsVersion();
+
+      const finalName = userRes?.user?.name ?? name;
+      const finalBio = userRes?.user?.bio ?? bio;
+      const finalTeachSkills = userRes?.user?.skills_to_teach ?? teachSkills;
+      const finalLearnSkills = userRes?.user?.skills_to_learn ?? learnSkills;
+      const finalAvatar = userRes?.user?.avatar_url ?? avatarUrl;
+
       setInitialState({
-        name,
-        bio,
-        teachSkills,
-        learnSkills,
-        avatar: avatarUrl,
+        name: finalName,
+        bio: finalBio,
+        teachSkills: finalTeachSkills,
+        learnSkills: finalLearnSkills,
+        avatar: finalAvatar,
       });
 
+      if (avatarPreview?.startsWith("blob:")) {
+        URL.revokeObjectURL(avatarPreview);
+      }
+      setAvatarFile(null);
+      setAvatarRemoved(false);
+      setAvatarPreview(finalAvatar);
+
       toast.success("Profile updated successfully");
-      reset();
     } catch (err) {
       console.error(err);
     } finally {
@@ -367,10 +380,9 @@ const ProfileDetailsPanel = () => {
               onClick={handleRemoveAvatar}
               disabled={!canRemoveAvatar}
               className={`flex items-center gap-1.5 px-4 py-2 rounded-xl font-bold text-xs transition-all active:scale-[0.97]
-                ${
-                  canRemoveAvatar
-                    ? "text-red-500 bg-red-500/5 hover:bg-red-500/10 border border-red-500/10"
-                    : "text-gray-500/40 bg-gray-500/5 cursor-not-allowed"
+                ${canRemoveAvatar
+                  ? "text-red-500 bg-red-500/5 hover:bg-red-500/10 border border-red-500/10"
+                  : "text-gray-500/40 bg-gray-500/5 cursor-not-allowed"
                 }`}
             >
               <Trash2 size={14} />
@@ -450,7 +462,7 @@ const ProfileDetailsPanel = () => {
       <div className="space-y-6">
         <div className="flex flex-col gap-3">
           <div className="flex gap-2 items-center text-text-secondary/80 px-1">
-            <Psychology className="text-primary text-xl"/>
+            <Psychology className="text-primary text-xl" />
             <h2 className="text-xs font-bold uppercase tracking-wider">
               Skills I can teach
             </h2>
@@ -539,7 +551,7 @@ const ProfileDetailsPanel = () => {
 
         <div className="flex flex-col gap-3">
           <div className="flex gap-2 items-center text-text-secondary/80 px-1">
-            <School className="text-accent text-xl"/>
+            <School className="text-accent text-xl" />
             <h2 className="text-xs font-bold uppercase tracking-wider">
               Skills I want to learn
             </h2>
@@ -643,10 +655,9 @@ const ProfileDetailsPanel = () => {
           onClick={handleSave}
           disabled={!canSave}
           className={`px-5 py-3 flex items-center gap-2 rounded-xl text-xs font-bold transition-all active:scale-[0.98] shadow-md
-            ${
-              canSave
-                ? "bg-primary text-white hover:brightness-110 shadow-primary/10"
-                : "bg-gray-500/10 text-gray-400/50 cursor-not-allowed shadow-none"
+            ${canSave
+              ? "bg-primary text-white hover:brightness-110 shadow-primary/10"
+              : "bg-gray-500/10 text-gray-400/50 cursor-not-allowed shadow-none"
             }`}
         >
           {isUpdatingUser && <Spinner size={14} />}

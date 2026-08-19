@@ -32,7 +32,7 @@ const InputField = ({
         placeholder={placeholder}
         value={value}
         onChange={onChange}
-        className="w-full bg-surface md:bg-background focus:border-primary focus:ring-2 focus:ring-primary/80 outline-none py-3 pl-10 pr-10 rounded-md transition text-sm sm:text-base"
+        className="w-full bg-surface/50 focus:border-primary focus:ring-2 focus:ring-primary/80 outline-none py-3 pl-10 pr-10 rounded-md transition text-sm sm:text-base"
       />
 
       {isPassword && (
@@ -131,19 +131,19 @@ const SignIn = () => {
         <X size={18}/>
       </Link>
 
-      <div className="w-full max-w-6xl grid md:bg-surface rounded-xl md:shadow-lg grid-cols-1 md:grid-cols-2 overflow-hidden">
-        <div className="hidden md:block relative">
+      <div className="w-full max-w-xl overflow-hidden">
+        {/* <div className="hidden md:block relative">
           <img
             src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f"
             alt="signin visual"
             className="w-full h-full object-cover"
           />
           <div className="absolute inset-0 bg-black/30" />
-        </div>
+        </div> */}
 
         <div className="flex items-center justify-center px-4 sm:px-8 py-10">
           <div className="w-full max-w-md space-y-6 sm:space-y-8">
-            <div className="space-y-2 text-center md:text-left">
+            <div className="space-y-2 text-center flex flex-col items-center justify-center md:text-left">
               <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight">
                 Welcome Back 👋
               </h1>

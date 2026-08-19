@@ -1,4 +1,8 @@
-import { addUserSkill } from "@/lib/addUserSkillsToTable";
+import {
+  addUserSkill,
+  removeUserSkill,
+  getUserSkillIds,
+} from "@/lib/addUserSkillsToTable";
 import { resolveSkillId } from "@/lib/resolveSkillId";
 import { getServerUser } from "@/lib/server-auth";
 
@@ -18,27 +22,32 @@ export async function POST(request: Request) {
   }
 
   try {
-    type SkillEntry = { skill: string; type: "teach" | "learn" };
+    const newTeachIds = await Promise.all(teachSkills.map(resolveSkillId));
+    const newLearnIds = await Promise.all(learnSkills.map(resolveSkillId));
 
-    const allSkills: SkillEntry[] = [
-      ...teachSkills.map(
-        (s: string): SkillEntry => ({ skill: s, type: "teach" }),
-      ),
-      ...learnSkills.map(
-        (s: string): SkillEntry => ({ skill: s, type: "learn" }),
-      ),
-    ];
+    const [currentTeachIds, currentLearnIds] = await Promise.all([
+      getUserSkillIds(user.id, "teach"),
+      getUserSkillIds(user.id, "learn"),
+    ]);
 
-    await Promise.all(
-      allSkills.map(async (item) => {
-        const skillId = await resolveSkillId(item.skill);
-        return addUserSkill(user.id, skillId, item.type);
-      }),
-    );
+    const diff = (currentIds: string[], newIds: string[]) => ({
+      toAdd: newIds.filter((id) => !currentIds.includes(id)),
+      toRemove: currentIds.filter((id) => !newIds.includes(id)),
+    });
+
+    const teachDiff = diff(currentTeachIds, newTeachIds);
+    const learnDiff = diff(currentLearnIds, newLearnIds);
+
+    await Promise.all([
+      ...teachDiff.toAdd.map((id) => addUserSkill(user.id, id, "teach")),
+      ...teachDiff.toRemove.map((id) => removeUserSkill(user.id, id, "teach")),
+      ...learnDiff.toAdd.map((id) => addUserSkill(user.id, id, "learn")),
+      ...learnDiff.toRemove.map((id) => removeUserSkill(user.id, id, "learn")),
+    ]);
 
     return Response.json({ success: true });
   } catch (err) {
     console.error(err);
-    return new Response("Failed onboarding skills", { status: 500 });
+    return new Response("Failed to sync skills", { status: 500 });
   }
 }

@@ -53,7 +53,7 @@ const InputField = ({
         value={value}
         onChange={onChange}
         required
-        className="w-full bg-surface md:bg-background focus:border-primary focus:ring-2 focus:ring-primary/80 outline-none py-3 pl-10 pr-10 rounded-md transition text-sm sm:text-base"
+        className="w-full bg-surface/50 focus:border-primary focus:ring-2 focus:ring-primary/80 outline-none py-3 pl-10 pr-10 rounded-md transition text-sm sm:text-base"
       />
 
       {isPassword && (
@@ -139,23 +139,23 @@ const SignUp = () => {
       >
         <X size={18} />
       </Link>
-      <div className="w-full max-w-6xl grid md:bg-surface rounded-xl md:shadow-lg grid-cols-1 md:grid-cols-2 overflow-hidden">
-        <div className="hidden md:block relative">
+      <div className="w-full max-w-xl overflow-hidden">
+        {/* <div className="hidden md:block relative">
           <img
             src="https://lh3.googleusercontent.com/aida-public/AB6AXuBkfTLY2_FjNY9BbFBnjpF0yjMomBA3ldQ3rkP_KXVYCag1uuo0Sbb_74WyznSefv3iq_7nzM0WjkDX6NPdm4KLosF7xUSh2ovFDiU9evUs5lYr8xz5u6frKc5GaeTumpWlG9oAlZR9PhST-90SAWxTCc1rkrZVufZQS9L_1pCn_YHEQez183RweFVgdf0U-YTERCnRfMYOgQFh_miEqENcRZd-g8d8wEEEorHX8CofiiuWPJ4GTSgkz8fICJrL58hfqaAYDA-95V60"
             alt="Join SkillCirqle"
             className="w-full h-full object-cover"
           />
           <div className="absolute inset-0 bg-black/20" />
-        </div>
+        </div> */}
 
         <div className="flex items-center justify-center px-4 sm:px-8 py-10">
           <div className="w-full max-w-md space-y-6 sm:space-y-8">
-            <div className="space-y-2 text-center md:text-left">
+            <div className="space-y-2 text-center md:text-left flex items-center justify-center flex-col">
               <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight">
                 Join the Cirqle
               </h1>
-              <p className="text-sm sm:text-base text-text-surface">
+              <p className="text-sm sm:text-base text-text-secondary">
                 Start your journey to the SkillCirqle universe.
               </p>
             </div>

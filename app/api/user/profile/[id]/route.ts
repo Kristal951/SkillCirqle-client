@@ -37,6 +37,8 @@ export async function GET(
     );
   }
 
+  console.log(user)
+
   if (!user) {
     return Response.json({ error: "User not found" }, { status: 404 });
   }

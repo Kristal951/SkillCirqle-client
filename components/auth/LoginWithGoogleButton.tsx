@@ -40,7 +40,7 @@ const LoginWithGoogleButton = ({
       type="button"
       onClick={handleGoogleLogin}
       disabled={loading}
-      className={`w-full flex items-center justify-center gap-3 p-3 rounded-md bg-surface border border-white/5 transition text-sm sm:text-base ${
+      className={`w-full flex items-center justify-center gap-3 p-3 rounded-md bg-surface/50 border border-white/5 transition text-sm sm:text-base ${
         loading ? "opacity-60 cursor-not-allowed" : "hover:bg-white/5"
       }`}
     >

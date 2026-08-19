@@ -66,6 +66,8 @@ export default function Dashboard() {
     });
   }, [user?.id, hasSkills, queryClient]);
 
+  console.log(skillData, 'skillData')
+
   // const dummySkillData = [
   //   {
   //     title: "AI Foundations",
@@ -313,9 +315,14 @@ export default function Dashboard() {
               </h2>
             </div>
           </div>
-          <button className="text-accent flex gap-1 items-center text-sm underline">
-            See all
-          </button>
+
+          {
+            skillData.length > 10 && (
+              <button className="text-accent flex gap-1 items-center text-sm underline">
+                See all
+              </button>
+            )
+          }
         </div>
 
         <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">

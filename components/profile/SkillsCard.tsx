@@ -76,7 +76,7 @@ const SkillsCard = ({
             <div className="w-10 h-10 flex items-center bg-background rounded-xl justify-center">
               <Icon className="text-text-primary text-xl" />
             </div>
-            <h1 className="text-2xl font-bold">{title}</h1>
+            <h1 className="text-xl font-bold">{title}</h1>
           </div>
 
           <p className="text-text-secondary">{normalizedSkills.length}/5</p>

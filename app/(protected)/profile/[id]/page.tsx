@@ -113,7 +113,7 @@ export default function UserProfilePage() {
   const learnSkills = userSkills.filter((s) => s.type === "learn");
 
   return (
-    <section className="relative mb-12 w-full md:px-4  h-full flex flex-col py-6">
+    <section className="relative mb-12 w-full md:px-4  h-full flex flex-col py-6 px-3">
       <div className="flex flex-col md:flex-row items-center md:items-end gap-8">
         <div className="w-full flex flex-col">
           <div className="lg:flex flex flex-col lg:flex-row h-max md:items-end md:justify-between">
@@ -135,11 +135,11 @@ export default function UserProfilePage() {
               </div>
               <div className="h-full flex flex-col items-center md:items-center lg:items-start md:w-max justify-between gap-2">
                 <h2
-                  className={`text-4xl font-bold  lg:text-left  ${theme === "light" ? "text-primary" : "text-white"}`}
+                  className={`text-4xl font-bold  lg:text-left  ${theme === "light" ? "text-primary" : "text-text-primary"}`}
                 >
                   {profile?.name}
                 </h2>
-                <p className="max-w-lg text-lg text-center md:text-center lg:text-left leading-relaxed text-text-secondary line-clamp-3">
+                <p className="max-w-lg text-base text-center md:text-center lg:text-left leading-relaxed text-text-secondary line-clamp-3">
                   {profile?.bio || "No Bio yet."}
                 </p>
               </div>
@@ -148,9 +148,9 @@ export default function UserProfilePage() {
             <div className="flex gap-8 w-full pt-10 justify-center lg:justify-end">
               <button
                 onClick={handleStartProposal}
-                className="px-4 flex items-center justify-center gap-2 py-3 bg-primary text-text-primary rounded-md border-border border font-bold shadow-lg hover:scale-105 transition-transform"
+                className="px-4 text-base flex items-center justify-center gap-2 py-3 bg-primary text-text-primary rounded-md border-border border font-bold shadow-lg hover:scale-105 transition-transform"
               >
-                Send Proposal
+                Propose
                 <ChevronRight size={20} />
               </button>
 
@@ -175,7 +175,7 @@ export default function UserProfilePage() {
                   className="px-4 py-3 rounded-md border gap-2 border-border flex items-center justify-center text-text-primary font-bold hover:bg-primary/10 transition-colors"
                 >
                   <GitCompare size={20} />
-                  <p>Compare Skills</p>
+                  <p>Compare</p>
                 </button>
               )}
             </div>
@@ -275,7 +275,7 @@ export default function UserProfilePage() {
           />
         </div>
 
-        <div className="col-span-1 bg-surface/50 hover:bg-surface p-4 h-90 rounded-md">
+        <div className="col-span-2 md:col-span-1 bg-surface/50 hover:bg-surface p-4 h-90 rounded-md">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 flex items-center bg-background rounded-xl justify-center border border-border shadow-inner">
               <Reviews className="text-text-primary" />
