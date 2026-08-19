@@ -199,6 +199,6 @@ export async function middleware(request: NextRequest) {
 export const config = {
   matcher: [
     "/admin/:path*",
-    "/((?!_next/static|_next/image|favicon.ico|api/auth|api/user/logout|$).*)",
+    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|avif|ico|css|js|map|txt|xml|woff|woff2|ttf|eot)$|api/auth|api/user/logout|$).*)",
   ],
 };
