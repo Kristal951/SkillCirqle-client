@@ -1,6 +1,6 @@
 "use client";
 import { useWorkspace } from "@/hooks/useWorkspace";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
 import { useAuthStore } from "@/store/useAuthStore";
 import { useParams, useRouter } from "next/navigation";
@@ -16,6 +16,7 @@ import MilitaryTech from "@material-symbols/svg-400/outlined/military_tech.svg";
 import CalendarAddOn from "@material-symbols/svg-400/outlined/calendar_add_on.svg";
 import Resources from "@/components/workspace/overview/Resources";
 import { getSocket } from "@/lib/socket";
+import { SocketContext } from "@/providers/SocketContext";
 
 interface Session {
   id: string;
@@ -50,6 +51,7 @@ export default function WorkspaceOverview() {
   const params = useParams();
   const id = params.id as string;
   const { workspace, skillTracks, loading } = useWorkspace(id);
+  const { socketReady } = useContext(SocketContext);
 
   const { activity, loading: activityLoading } = useWorkspaceActivity(id, 5);
   const [sessions, setSessions] = useState<Session[]>([]);
@@ -66,6 +68,41 @@ export default function WorkspaceOverview() {
     if (!id) return;
     fetchOverviewData();
   }, [id]);
+
+  useEffect(() => {
+    if (!socketReady || !id) return;
+    const socket = getSocket();
+
+    function handleMilestoneAdded(milestone: RecentMilestone) {
+      setMilestones((prev) => {
+        if (prev.some((m) => m.id === milestone.id)) return prev;
+        return [...prev, milestone];
+      });
+    }
+
+    function handleMilestoneUpdated(milestone: RecentMilestone) {
+      setMilestones((prev) =>
+        prev.map((m) => (m.id === milestone.id ? { ...m, ...milestone } : m)),
+      );
+    }
+
+    function handleMilestoneDeleted({
+      milestoneId,
+    }: {
+      milestoneId: string;
+    }) {
+      setMilestones((prev) => prev.filter((m) => m.id !== milestoneId));
+    }
+
+    socket?.on("workspace:milestone-added", handleMilestoneAdded);
+    socket?.on("workspace:milestone-updated", handleMilestoneUpdated);
+    socket?.on("workspace:milestone-deleted", handleMilestoneDeleted);
+    return () => {
+      socket?.off("workspace:milestone-added", handleMilestoneAdded);
+      socket?.off("workspace:milestone-updated", handleMilestoneUpdated);
+      socket?.off("workspace:milestone-deleted", handleMilestoneDeleted);
+    };
+  }, [socketReady, id]);
 
   async function fetchOverviewData() {
     setOverviewLoading(true);
@@ -92,14 +129,14 @@ export default function WorkspaceOverview() {
   const completedSessions = sessions.filter((s) => s.status === "COMPLETED");
   const upcomingSessions = sessions.filter((s) => s.status === "SCHEDULED");
 
-  const expectedNumberOfSessions =
-    workspace?.proposal?.expected_number_of_sessions;
+  // const expectedNumberOfSessions =
+  //   workspace?.proposal?.expected_number_of_sessions;
 
   const cardData = [
     {
       label: "Sessions done",
       value: completedSessions.length,
-      subValue: expectedNumberOfSessions,
+      // subValue: expectedNumberOfSessions,
       icon: Timer,
     },
     {

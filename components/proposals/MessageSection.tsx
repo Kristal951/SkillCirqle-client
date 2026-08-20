@@ -39,7 +39,7 @@ const MessageSection = ({
           setMessage(e.target.value);
           setUserEditedMessage(true);
         }}
-        className="w-full min-h-30 rounded-2xl bg-surface/10 focus:bg-background border border-border p-5 text-sm resize-none focus:ring-4 focus:ring-primary/10 outline-none transition-all"
+        className="w-full min-h-30 rounded-2xl bg-surface/50 focus:bg-background border border-border p-5 text-sm resize-none focus:ring-4 focus:ring-primary/10 outline-none transition-all"
         placeholder="Type your message..."
       />
     </section>

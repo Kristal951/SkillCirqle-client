@@ -34,7 +34,7 @@ const ProposalSidebar = ({
   onSend,
 }: Props) => {
   return (
-    <aside className="lg:block hidden md:block py-10">
+    <aside className="lg:block hidden w-full md:block py-10">
       <div className="sticky top-6 rounded-3xl border border-border bg-surface/50 p-6">
         <h3 className="font-bold text-xl">Proposal Summary</h3>
         <div className="space-y-5 mt-6">

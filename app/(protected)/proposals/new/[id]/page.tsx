@@ -20,6 +20,7 @@ import PersonOff from "@material-symbols/svg-400/outlined/person_off.svg"
 import Swap_Horiz from "@material-symbols/svg-400/outlined/swap_horiz.svg"
 import School from "@material-symbols/svg-400/outlined/school.svg"
 import Bolt from "@material-symbols/svg-400/outlined/bolt.svg"
+import { Info } from "lucide-react";
 
 type EngagementType = "learn" | "swap";
 type SessionType = "quick" | "standard";
@@ -270,7 +271,7 @@ export default function NewProposal() {
   }
 
   return (
-    <div className="w-full h-full px-4 md:px-10 py-6">
+    <div className="w-full h-full px-4 md:px-10 pt-6">
       <div className="space-y-2">
         <h1 className="text-3xl sm:text-4xl font-bold tracking-tight">
           Send a Proposal
@@ -285,7 +286,7 @@ export default function NewProposal() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-[1fr_360px] gap-10 w-full">
-        <div className=" py-10 space-y-10">
+        <div className=" pt-10 space-y-10">
           <ProposalTypeSelector
             activeTab={activeTab}
             options={engagementOptions}
@@ -327,6 +328,15 @@ export default function NewProposal() {
             setUserEditedMessage={setUserEditedMessage}
           />
 
+          <div className="md:hidden bg-primary/5 rounded-3xl p-6 border border-primary/10">
+            <h3 className="font-bold text-primary mb-2 flex items-center gap-2">
+              <Info size={16} /> Pro-Tip
+            </h3>
+            <p className="text-sm text-text-secondary leading-relaxed">
+              Please note that <span className="text-accent font-semibold">5 SkillCredits</span> will be deducted when you send a learn proposal.
+            </p>
+          </div>
+
           <div className="w-full pb-4">
             <button
               onClick={handleSendProposal}
@@ -345,20 +355,31 @@ export default function NewProposal() {
           </div>
         </div>
 
-        <ProposalSidebar
-          profile={profile}
-          activeTab={activeTab}
-          isSwap={isSwap}
-          learnSkillName={learnSkillName}
-          teachSkillName={teachSkillName}
-          goal={goal}
-          sessionDurationType={sessionDurationType}
-          // expectedSessions={expectedSessions}
-          message={message}
-          canSend={canSendProposal}
-          sending={sendingProposal}
-          onSend={handleSendProposal}
-        />
+        <div className="w-full flex flex-col">
+          <ProposalSidebar
+            profile={profile}
+            activeTab={activeTab}
+            isSwap={isSwap}
+            learnSkillName={learnSkillName}
+            teachSkillName={teachSkillName}
+            goal={goal}
+            sessionDurationType={sessionDurationType}
+            // expectedSessions={expectedSessions}
+            message={message}
+            canSend={canSendProposal}
+            sending={sendingProposal}
+            onSend={handleSendProposal}
+          />
+
+          <div className="hidden sm:block bg-primary/5 rounded-3xl p-6 border border-primary/10">
+            <h3 className="font-bold text-primary mb-2 flex items-center gap-2">
+              <Info size={16} /> Pro-Tip
+            </h3>
+            <p className="text-sm text-text-secondary leading-relaxed">
+              Please note that <span className="text-accent font-semibold">5 SkillCredits</span> will be deducted when you send a learn proposal.
+            </p>
+          </div>
+        </div>
       </div>
     </div>
   );

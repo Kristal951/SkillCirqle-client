@@ -10,6 +10,7 @@ import Flag from "@material-symbols/svg-400/outlined/flag.svg"
 import MilitaryTech from "@material-symbols/svg-400/outlined/military_tech.svg"
 import FolderOpen from "@material-symbols/svg-400/outlined/folder_open.svg"
 import Delete from "@material-symbols/svg-400/outlined/delete.svg"
+import Undo from "@material-symbols/svg-400/outlined/undo.svg"
 import { IconType } from "@/utils/SvgType";
 
 export type ActivityType =
@@ -19,6 +20,8 @@ export type ActivityType =
   | "session_cancelled"
   | "milestone_added"
   | "milestone_completed"
+  | "milestone_uncompleted"
+  | "milestone_deleted"
   | "resource_added"
   | "resource_removed";
 
@@ -45,6 +48,8 @@ const ICONS: Record<ActivityType, IconType> = {
   session_cancelled: EventBusy,
   milestone_added: Flag,
   milestone_completed: MilitaryTech,
+  milestone_uncompleted: Undo,
+  milestone_deleted: Delete,
   resource_added: FolderOpen,
   resource_removed: Delete,
 };
@@ -57,6 +62,8 @@ const COLORS: Record<ActivityType, string> = {
   milestone_added: "bg-violet-500/10 text-violet-400 border-violet-500/20",
   milestone_completed:
     "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
+  milestone_uncompleted: "bg-amber-500/10 text-amber-400 border-amber-500/20",
+  milestone_deleted: "bg-red-500/10 text-red-400 border-red-500/20",
   resource_added: "bg-primary/10 text-primary border-primary/20",
   resource_removed: "bg-red-500/10 text-red-400 border-red-500/20",
 };
@@ -120,6 +127,27 @@ function activityLabel(item: Activity): React.ReactNode {
         <>
           <span className="font-medium text-text-primary">{name}</span>{" "}
           completed{" "}
+          <span className="font-medium text-text-primary">
+            "{m.milestone_title}"
+          </span>
+        </>
+      );
+    case "milestone_uncompleted":
+      return (
+        <>
+          <span className="font-medium text-text-primary">{name}</span>{" "}
+          marked{" "}
+          <span className="font-medium text-text-primary">
+            "{m.milestone_title}"
+          </span>{" "}
+          incomplete
+        </>
+      );
+    case "milestone_deleted":
+      return (
+        <>
+          <span className="font-medium text-text-primary">{name}</span>{" "}
+          removed milestone{" "}
           <span className="font-medium text-text-primary">
             "{m.milestone_title}"
           </span>

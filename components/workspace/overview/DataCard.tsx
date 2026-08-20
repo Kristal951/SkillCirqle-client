@@ -39,9 +39,9 @@ const DataCard = ({
         )}
       </h2>
 
-      {compact && subValue != null && (
+      {/* {compact && subValue != null && (
         <p className="mt-1 text-sm text-text-secondary">{subValue}</p>
-      )}
+      )} */}
 
       {!compact && <div className="mt-4 h-1 w-12 bg-primary rounded-full" />}
     </div>

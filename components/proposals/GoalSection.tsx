@@ -16,7 +16,7 @@ const GoalSection = ({ goal, sendingProposal, setGoal }: Props) => {
         disabled={sendingProposal}
         onChange={(e) => setGoal(e.target.value)}
         placeholder="Build a SaaS app, improve skills..."
-        className="w-full p-4 rounded-2xl border border-border bg-surface/10 focus:bg-background focus:ring-4 focus:ring-primary/10 outline-none transition-all text-sm"
+        className="w-full p-4 rounded-2xl border border-border bg-surface/50 focus:bg-background focus:ring-4 focus:ring-primary/10 outline-none transition-all text-sm"
       />
     </section>
   );
