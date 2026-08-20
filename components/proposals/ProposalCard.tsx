@@ -24,6 +24,8 @@ type Props = {
   statusStyles: Record<ProposalStatus, string>;
 };
 
+const INSUFFICIENT_SKILL_CREDITS_CODE = "SC001";
+
 const ProposalCard = ({ p, statusStyles, now }: Props) => {
   const { updateProposalStatus, updatingStatus } = useProposalStore();
   const { user } = useAuthStore();
@@ -69,8 +71,15 @@ const ProposalCard = ({ p, statusStyles, now }: Props) => {
         senderImage,
         link,
       );
-    } catch (err) {
-      toast.error("Failed to accept proposal.", "please try again later.");
+    } catch (err: any) {
+      if (err?.code === INSUFFICIENT_SKILL_CREDITS_CODE) {
+        toast.error(
+          "Not enough SkillCredits",
+          `${firstName} doesn't have enough SkillCredits to accept this yet.`,
+        );
+      } else {
+        toast.error("Failed to accept proposal.", "please try again later.");
+      }
       console.error(err);
     }
   };

@@ -15,7 +15,7 @@ const Footer = () => {
     },
     {
       label: "Help Center",
-      link: "/legal/help_center",
+      link: "/help_center",
     },
     {
       label: "Community Guidelines",

@@ -46,7 +46,7 @@ const ICONS: Record<ActivityType, IconType> = {
   session_rescheduled: EventRepeat,
   session_completed: TaskAlt,
   session_cancelled: EventBusy,
-  milestone_added: Flag,
+  milestone_added: MilitaryTech,
   milestone_completed: MilitaryTech,
   milestone_uncompleted: Undo,
   milestone_deleted: Delete,

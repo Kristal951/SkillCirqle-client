@@ -8,6 +8,8 @@ const INVALID_REFRESH_CODES = new Set([
   "refresh_token_already_used",
 ]);
 
+const PUBLIC_ROUTES = ["/", "/legal", "/help_center"];
+
 function isInvalidRefreshTokenError(
   error: { code?: string; status?: number } | null | undefined,
 ) {
@@ -28,7 +30,11 @@ export async function middleware(request: NextRequest) {
   let response = NextResponse.next();
   const path = request.nextUrl.pathname;
 
-  if (path === "/") {
+  const isPublicRoute = PUBLIC_ROUTES.some((route) => {
+    return path === route || path.startsWith(`${route}/`);
+  });
+
+  if (isPublicRoute) {
     return NextResponse.next();
   }
 

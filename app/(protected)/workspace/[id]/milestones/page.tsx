@@ -426,7 +426,7 @@ export default function MilestonesPage() {
                               {!isTeacher && (
                                 <div
                                   role="tooltip"
-                                  className={`pointer-events-none absolute left-0 top-6 z-10 w-max max-w-[180px] rounded-lg border border-text-primary/10 bg-surface px-2 py-1 text-[11px] text-text-secondary shadow-lg transition-opacity
+                                  className={`pointer-events-none absolute left-0 top-6 z-10 w-max max-w-45 rounded-lg border border-text-primary/10 bg-surface px-2 py-1 text-[11px] text-text-secondary shadow-lg transition-opacity
                                     ${tooltipMilestoneId === m.id ? "opacity-100" : "opacity-0"}
                                     md:group-hover:opacity-100`}
                                 >

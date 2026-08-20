@@ -19,7 +19,7 @@ const Navbar = () => {
             height={27}
             priority
           />
-          <h1 className="text-xl text-transparent font-bold tracking-tight bg-linear-to-r from-primary to-accent bg-clip-text truncate">
+          <h1 className="text-xl text-transparent font-bold tracking-tight bg-linear-to-r from-primary to-accent bg-clip-text">
             SkillCirqle
           </h1>
         </div>
