@@ -1,3 +1,5 @@
+import { RealtimeChannel } from "@supabase/supabase-js";
+
 export type OnboardingRewardResponse = {
   success?: boolean;
   tokens?: number;
@@ -11,7 +13,11 @@ export interface TokenState {
   loading: boolean;
   totalTokensEarned: number;
   error: string | null;
+  channel: RealtimeChannel | null;
+  channelUserId: string | null;
 
+  subscribeToTokenUpdates: (userId: string) => void;
+  unsubscribeFromTokenUpdates: () => void;
   setTokens: (tokens: number) => void;
   setTotal: (totalTokensEarned: number) => void;
 

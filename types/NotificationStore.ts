@@ -1,3 +1,5 @@
+import { RealtimeChannel } from "@supabase/supabase-js";
+
 export type NotificationType =
   | "proposal_received"
   | "proposal_updated"
@@ -25,9 +27,12 @@ export type NotificationsState = {
   unreadCount: number;
   loading: boolean;
   deletingIds: string[];
-
+  realtimeChannel: RealtimeChannel | null;
+  realtimeChannelUserId: string | null;
+  addNotification: (notification: Notification) => boolean;
+  listenToNotificationsRealtime: (userId: string) => void;
+  cleanupRealtime: () => void;
   fetchNotifications: (userId: string) => Promise<void>;
-  addNotification: (notification: Notification) => void;
 
   markAsRead: (notificationId: string) => Promise<void>;
   markAllAsRead: (userId: string) => Promise<void>;

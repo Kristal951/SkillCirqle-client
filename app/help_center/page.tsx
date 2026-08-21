@@ -13,7 +13,9 @@ import {
   ShieldCheck,
   Sparkles,
   Users,
+  X,
 } from "lucide-react";
+import Link from "next/link";
 
 const categories = [
   {
@@ -87,16 +89,11 @@ const allTopics = [
 
 const HelpCenter = () => {
   return (
-    <main className="min-h-screen overflow-hidden bg-background text-text-primary">
-      <div className="pointer-events-none fixed inset-0 overflow-hidden">
-        <div className="absolute -left-40 top-0 h-125 w-125 rounded-full bg-surface/30 blur-[120px]" />
-
-        <div className="absolute -right-50 top-20 h-125 w-125 rounded-full bg-accent/10 blur-[120px]" />
-
-        <div className="absolute left-1/2 top-125 h-100 w-100 -translate-x-1/2 rounded-full bg-pink-100/30 blur-[120px]" />
-      </div>
-
-      <div className="relative">
+    <main className="min-h-screen overflow-hidden bg-background text-text-primary relative">
+      <Link href="/" className="p-2 rounded-full hover:bg-surface/50 absolute top-4 right-4 sm:top-6 sm:right-6 z-50"> 
+        <X className="w-5 h-5 text-text-secondary"/>
+      </Link>
+      <div className="">
         <section className="px-6 pb-20 pt-24">
           <div className="mx-auto max-w-5xl text-center">
             <h1 className="mt-7 text-5xl font-bold tracking-tight text-text-primary sm:text-6xl lg:text-7xl">

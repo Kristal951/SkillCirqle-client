@@ -39,7 +39,7 @@ interface AuthState {
   uploadUserProfilePic: (file: File) => Promise<string | null>;
   updateUser: (
     updates: Partial<User>,
-  ) => Promise<{ success: boolean; message?: string, user?: User }>;
+  ) => Promise<{ success: boolean; message?: string; user?: User }>;
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -55,7 +55,8 @@ export const useAuthStore = create<AuthState>()(
       skillsVersion: 0,
 
       setHydrated: (isHydrated) => set({ isHydrated }),
-      bumpSkillsVersion: () => set((state) => ({ skillsVersion: state.skillsVersion + 1 })),
+      bumpSkillsVersion: () =>
+        set((state) => ({ skillsVersion: state.skillsVersion + 1 })),
       setUser: (user) => set({ user }),
       setLoading: (loading) => set({ loading }),
       setUploadProgress: (progress) => set({ uploadProgress: progress }),
@@ -92,6 +93,7 @@ export const useAuthStore = create<AuthState>()(
           authReady: false,
         });
 
+        useTokenStore.getState().unsubscribeFromTokenUpdates();
         useTokenStore.getState().setTokens(0);
         useTokenStore.getState().setTotal(0);
         useOnboardingStore.getState().setTotalSteps(0);
@@ -167,6 +169,10 @@ export const useAuthStore = create<AuthState>()(
             user: profile,
             authReady: true,
           });
+
+          if (profile?.id) {
+            useTokenStore.getState().subscribeToTokenUpdates(profile.id);
+          }
         } catch (err) {
           console.error("fetchUser", err);
           set({ authReady: true, user: null });
@@ -226,7 +232,7 @@ export const useAuthStore = create<AuthState>()(
           return {
             success: true,
             message: "Profile updated successfully",
-            user
+            user,
           };
         } catch (error: any) {
           console.error("❌ Update user failed:", error);

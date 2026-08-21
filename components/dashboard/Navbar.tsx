@@ -17,10 +17,8 @@ interface NavbarProps {
 
 const Navbar = ({ setIsSideBarOpen }: NavbarProps) => {
   const { tokens } = useTokenStore();
-  const { user } = useAuthStore();
   const router = useRouter();
   const unreadCount = useNotificationsStore((s) => s.unreadCount);
-  const menuRef = useRef<HTMLDivElement>(null!);
   const [openMenu, setOpenMenu] = useState(false);
   const { openLogoutModal } = useLogoutModal();
   const [openNotificationDrawer, setOpenNotificationDrawer] = useState(false)

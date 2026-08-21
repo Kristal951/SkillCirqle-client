@@ -45,6 +45,7 @@ export default async function NewProposalLayout({
           )
           .eq("id", id)
           .eq("user_skills.type", "teach")
+          .eq("user_skills.verified", true)
           .maybeSingle();
 
         if (error) {

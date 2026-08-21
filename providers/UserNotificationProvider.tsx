@@ -14,8 +14,13 @@ export default function UserNotificationProvider({
   children: React.ReactNode;
 }) {
   const { user } = useAuthStore();
-  const { listenToNotifications, cleanup, fetchNotifications } =
-    useNotificationsStore();
+  const {
+    listenToNotifications,
+    listenToNotificationsRealtime,
+    cleanup,
+    cleanupRealtime,
+    fetchNotifications,
+  } = useNotificationsStore();
   const pathname = usePathname();
 
   const { socketReady } = useSocketContext();
@@ -53,6 +58,16 @@ export default function UserNotificationProvider({
       socket.off("connect", setupListeners);
     };
   }, [user?.id, socketReady]);
+
+  useEffect(() => {
+    if (!user?.id || isAdminRoute) return;
+
+    listenToNotificationsRealtime(user.id);
+
+    return () => {
+      cleanupRealtime();
+    };
+  }, [user?.id, isAdminRoute]);
 
   return <>{children}</>;
 }

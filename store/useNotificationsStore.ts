@@ -3,12 +3,15 @@ import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
 import { getSocket } from "@/lib/socket";
 import { Notification, NotificationsState } from "@/types/NotificationStore";
 import { toast } from "@/lib/toast";
+import type { RealtimeChannel } from "@supabase/supabase-js";
 
 export const useNotificationsStore = create<NotificationsState>((set, get) => ({
   notifications: [],
   unreadCount: 0,
   loading: false,
   deletingIds: [],
+  realtimeChannel: null as RealtimeChannel | null,
+  realtimeChannelUserId: null as string | null,
 
   fetchNotifications: async (userId: string) => {
     if (!userId) {
@@ -51,10 +54,13 @@ export const useNotificationsStore = create<NotificationsState>((set, get) => ({
       is_read: notification.is_read ?? false,
     };
 
+    let added = false;
+
     set((state) => {
       const exists = state.notifications.some((n) => n.id === normalized.id);
       if (exists) return state;
 
+      added = true;
       return {
         notifications: [normalized, ...state.notifications],
         unreadCount: normalized.is_read
@@ -62,6 +68,8 @@ export const useNotificationsStore = create<NotificationsState>((set, get) => ({
           : state.unreadCount + 1,
       };
     });
+
+    return added;
   },
 
   markAsRead: async (notificationId: string) => {
@@ -167,8 +175,10 @@ export const useNotificationsStore = create<NotificationsState>((set, get) => ({
     socket.off("notification:all_read");
 
     socket.on("notification:new", (notification: Notification) => {
-      get().addNotification(notification);
-      toast.info(notification.title || "Notification", notification.message);
+      const added = get().addNotification(notification);
+      if (added) {
+        toast.info(notification.title || "Notification", notification.message);
+      }
     });
 
     socket.on("notification:updated", (updated: Notification) => {
@@ -188,6 +198,55 @@ export const useNotificationsStore = create<NotificationsState>((set, get) => ({
         unreadCount: 0,
       }));
     });
+  },
+
+  listenToNotificationsRealtime: (userId: string) => {
+    const { realtimeChannel, realtimeChannelUserId } = get();
+
+    if (realtimeChannelUserId === userId) return; 
+    if (realtimeChannel) {
+      const supabase = getSupabaseBrowserClient();
+      supabase.removeChannel(realtimeChannel);
+      set({ realtimeChannel: null, realtimeChannelUserId: null });
+    }
+    
+    set({ realtimeChannelUserId: userId });
+
+    const supabase = getSupabaseBrowserClient();
+
+    const channel = supabase
+      .channel(`notifications-${userId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "notifications",
+          filter: `user_id=eq.${userId}`,
+        },
+        (payload) => {
+          const notification = payload.new as Notification;
+          const added = get().addNotification(notification);
+          if (added) {
+            toast.info(
+              notification.title || "Notification",
+              notification.message,
+            );
+          }
+        },
+      )
+      .subscribe();
+
+    set({ realtimeChannel: channel });
+  },
+
+  cleanupRealtime: () => {
+    const { realtimeChannel } = get();
+    if (!realtimeChannel) return;
+
+    const supabase = getSupabaseBrowserClient();
+    supabase.removeChannel(realtimeChannel);
+    set({ realtimeChannel: null, realtimeChannelUserId: null });
   },
 
   cleanup: () => {

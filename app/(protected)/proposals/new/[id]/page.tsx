@@ -46,7 +46,8 @@ const fetchUserTeachSkills = async (userId: string) => {
     .from("user_skills")
     .select("skill_id, skills(id, title)")
     .eq("user_id", userId)
-    .eq("type", "teach");
+    .eq("type", "teach")
+    .eq('verified', true)
 
   if (error) throw new Error(error.message);
 
@@ -371,7 +372,7 @@ export default function NewProposal() {
             onSend={handleSendProposal}
           />
 
-          <div className="hidden sm:block bg-primary/5 rounded-3xl p-6 border border-primary/10">
+          <div className="hidden md:block bg-primary/5 rounded-3xl p-6 border border-primary/10">
             <h3 className="font-bold text-primary mb-2 flex items-center gap-2">
               <Info size={16} /> Pro-Tip
             </h3>

@@ -40,8 +40,6 @@ export async function awardTokens({
     throw error;
   }
 
-  // Trigger has already updated the profile.
-  // Fetch latest balances.
   const { data: profile, error: profileError } = await supabaseAdmin
     .from("profiles")
     .select("skill_tokens, total_earned")

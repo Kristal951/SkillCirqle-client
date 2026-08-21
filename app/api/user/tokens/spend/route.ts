@@ -28,7 +28,6 @@ export async function POST(req: NextRequest) {
   } catch (err: any) {
     console.error("🔴 Spend Tokens Error:", err.message);
 
-    // Handle specific error messages
     const status = err.message === "INSUFFICIENT_TOKENS" ? 400 : 500;
     return NextResponse.json({ error: err.message }, { status });
   }

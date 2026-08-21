@@ -26,6 +26,66 @@ export async function createProposal(data: CreateProposalInput) {
     throw new Error("You cannot send a proposal to yourself.");
   }
 
+  let query = supabase
+    .from("proposals")
+    .select("id, status, engagement_type")
+    .or(
+      `and(sender_id.eq.${data.senderId},receiver_id.eq.${data.receiverId}),` +
+        `and(sender_id.eq.${data.receiverId},receiver_id.eq.${data.senderId})`,
+    )
+    .eq("engagement_type", data.engagementType)
+    .in("status", ["pending", "accepted"]);
+
+  if (data.teachSkillId) {
+    query = query.eq("teach_skill_id", data.teachSkillId);
+  } else {
+    query = query.is("teach_skill_id", null);
+  }
+
+  if (data.learnSkillId) {
+    query = query.eq("learn_skill_id", data.learnSkillId);
+  } else {
+    query = query.is("learn_skill_id", null);
+  }
+
+  const { data: existingProposals, error: existingError } =
+    await query.limit(1);
+
+  if (existingError) {
+    console.error(existingError);
+    throw new Error("Failed to check existing proposals.");
+  }
+
+  const existingProposal = existingProposals?.[0];
+
+  if (existingProposal) {
+    if (existingProposal.status === "pending") {
+      if (existingProposal.engagement_type === "learn") {
+        throw new Error("You both already have a pending proposal for this skill.");
+      }
+
+      if (existingProposal.engagement_type === "swap") {
+        throw new Error(
+          "You both already have a pending proposal for these skills.",
+        );
+      }
+    }
+
+    if (existingProposal.status === "accepted") {
+      if (existingProposal.engagement_type === "learn") {
+        throw new Error(
+          "You both already have an accepted proposal for this skill.",
+        );
+      }
+
+      if (existingProposal.engagement_type === "swap") {
+        throw new Error(
+          "You both already have an accepted proposal for these skills.",
+        );
+      }
+    }
+  }
+
   const { data: anyVerifiedSkill, error: verifyError } = await supabase
     .from("user_skills")
     .select("id")
@@ -69,7 +129,10 @@ export async function createProposal(data: CreateProposalInput) {
     if (error.code === "23505") {
       throw new Error("You already have a pending proposal with this user.");
     }
-    if (error.code === "42501" || error.message?.includes("row-level security")) {
+    if (
+      error.code === "42501" ||
+      error.message?.includes("row-level security")
+    ) {
       throw new Error(
         "You need at least one verified skill before sending proposals.",
       );

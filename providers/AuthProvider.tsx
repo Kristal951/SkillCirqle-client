@@ -26,25 +26,31 @@ function AuthProviderInner({ children }: { children: React.ReactNode }) {
   const isRecoveryPage = pathname === "/auth/update-password";
   const isRecoveryPageRef = useRef(isRecoveryPage);
   const isPublicAuthPage = pathname?.startsWith("/auth") ?? false;
+  const isPublicLegalPage = pathname?.startsWith("/legal") ?? false;
+  const isPublicHelpPage = pathname?.startsWith("/help_center") ?? false;
   const isPublicAuthPageRef = useRef(isPublicAuthPage);
+  const isPublicHelpPageRef = useRef(isPublicHelpPage);
+  const isPublicLegalPageRef = useRef(isPublicLegalPage);
 
   useEffect(() => {
     isRecoveryPageRef.current = isRecoveryPage;
     isPublicAuthPageRef.current = isPublicAuthPage;
+    isPublicHelpPageRef.current = isPublicHelpPage;
+    isPublicLegalPageRef.current = isPublicLegalPage;
   }, [isRecoveryPage, isPublicAuthPage]);
 
   const [loading, setLoading] = useState(true);
   const setUser = useAuthStore((s) => s.setUser);
   const fetchUser = useAuthStore((s) => s.fetchUser);
-  const { setTokens, setTotal } = useTokenStore();
   const { setStep } = useOnboardingStore();
 
   const resetStore = useCallback(() => {
     setUser(null);
-    setTokens(0);
-    setTotal(0);
+    useTokenStore.getState().unsubscribeFromTokenUpdates();
+    useTokenStore.getState().setTokens(0);
+    useTokenStore.getState().setTotal(0);
     setStep(1);
-  }, [setUser, setTokens, setTotal, setStep]);
+  }, [setUser, setStep]);
 
   const forceReauth = useCallback(
     async (reason: string) => {
@@ -67,21 +73,19 @@ function AuthProviderInner({ children }: { children: React.ReactNode }) {
         return;
       }
       setUser(profile);
-      setTokens(profile.skill_tokens ?? 0);
-      setTotal(profile.total_earned ?? 0);
-      // setStep(profile.onboarding_step ?? 1);
+      useTokenStore.getState().subscribeToTokenUpdates(profile.id);
     } catch (e) {
       console.error("Profile error", e);
       resetStore();
     }
-  }, [resetStore, setUser, setTokens, setTotal, setStep]);
+  }, [resetStore, setUser]);
 
   useEffect(() => {
     let mounted = true;
 
     const init = async () => {
       try {
-        if (isPublicAuthPageRef.current) {
+        if (isPublicAuthPageRef.current || isPublicHelpPageRef.current || isPublicLegalPageRef.current) {
           resetStore();
           return;
         }
@@ -136,6 +140,9 @@ function AuthProviderInner({ children }: { children: React.ReactNode }) {
           }
           case "SIGNED_OUT":
             useAuthStore.getState().reset();
+            useTokenStore.getState().unsubscribeFromTokenUpdates();
+            useTokenStore.getState().setTokens(0);
+            useTokenStore.getState().setTotal(0);
             break;
           case "TOKEN_REFRESHED":
             if (!session) {
