@@ -8,6 +8,7 @@ import {
   FileText,
   CalendarDays,
   Star,
+  Coins
 } from "lucide-react";
 import { useAuthStore } from "@/store/useAuthStore";
 import { useChatStore } from "@/store/useChatStore";
@@ -35,6 +36,8 @@ const NotificationCard = ({ notif, index }: { notif: any; index: number }) => {
       return { Icon: CalendarDays, color: "text-emerald-500" };
     if (notif.type.includes("review"))
       return { Icon: Star, color: "text-purple-500" };
+    if (notif.type.includes("skill_credits"))
+      return { Icon: Coins, color: "text-accent" };
     return { Icon: Bell, color: "text-text-secondary" };
   };
 

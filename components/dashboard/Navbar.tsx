@@ -4,7 +4,6 @@ import React, { Dispatch, SetStateAction, useRef, useState } from "react";
 import { useTokenStore } from "@/store/useTokenStore";
 import { useNotificationsStore } from "@/store/useNotificationsStore";
 import Link from "next/link";
-import { useAuthStore } from "@/store/useAuthStore";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { createPortal } from "react-dom";
@@ -43,10 +42,10 @@ const Navbar = ({ setIsSideBarOpen }: NavbarProps) => {
           <Flame className="text-accent w-4 h-4" />
           <p className="text-sm font-medium text-accent">0</p>
         </div> */}
-        <div className="px-3 py-2 flex gap-2 items-center bg-accent/20 rounded-2xl">
+        <Link href="/sc_transactions" className="px-3 py-2 flex gap-2 items-center bg-accent/20 rounded-2xl">
           <Coins className="text-accent w-4 h-4" />
           <p className="text-sm font-medium text-accent">{tokens ?? 0}</p>
-        </div>
+        </Link>
 
         <button
           // href="/notifications"
