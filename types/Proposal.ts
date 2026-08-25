@@ -1,11 +1,11 @@
 import { User } from "@supabase/supabase-js";
 
-export type ProposalStatus = 
-  | "pending" 
-  | "accepted" 
-  | "declined" 
-  | "withdrawn" 
-  | "expired" 
+export type ProposalStatus =
+  | "pending"
+  | "accepted"
+  | "declined"
+  | "withdrawn"
+  | "expired"
   | "negotiating"
   | "completed";
 
@@ -56,6 +56,14 @@ export type ProposalStore = {
   loading: boolean;
   error: string | null;
   updatingStatus: boolean;
+  loadingMore: boolean;
+  page: number;
+  pageSize: number;
+  hasMore: boolean;
+  counts: Record<ProposalStatus, number>;
+  countsLoading: boolean;
+  fetchMoreProposals: (userId: string) => Promise<void>;
+  fetchProposalCounts: (userId: string) => Promise<void>;
 
   fetchProposals: (userId: string) => Promise<void>;
 

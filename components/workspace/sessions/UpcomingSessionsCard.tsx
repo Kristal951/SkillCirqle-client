@@ -115,14 +115,13 @@ const UpcomingSessionsCard = ({
       return;
     }
 
-    router.push(`/workspace/${workspaceId}/resources?highlight=${r.id}`);
+    router.push(`/workspaces/${workspaceId}/resources?highlight=${r.id}`);
   };
 
   const TypeIcon = s.type === "VIDEO" ? Videocam : Mic;
 
   return (
     <div className="group relative flex flex-col sm:flex-row sm:items-stretch gap-4 p-4 sm:p-5 bg-surface/50 hover:bg-surface/80 rounded-xl transition-all duration-300 border border-text-primary/5 hover:border-text-primary/10 hover:shadow-xl hover:shadow-primary/5">
-      {/* Date badge */}
       <div className="flex sm:flex-col items-center justify-start sm:justify-center gap-2 sm:gap-1 px-4 py-2.5 sm:py-3 sm:w-20 bg-background rounded-xl border border-text-primary/5 shadow-inner shrink-0">
         <span className="text-[10px] uppercase tracking-[0.15em] text-text-secondary font-bold">
           {date.toLocaleDateString("en-GB", { month: "short" })}
@@ -132,7 +131,6 @@ const UpcomingSessionsCard = ({
         </span>
       </div>
 
-      {/* Main content */}
       <div className="flex-1 min-w-0 flex flex-col justify-center gap-2.5">
         <div className="flex items-start gap-2">
           <h3 className="text-base font-semibold text-text-primary wrap-break-word line-clamp-2 sm:truncate flex-1">

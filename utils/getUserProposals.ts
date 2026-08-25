@@ -1,9 +1,16 @@
 import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
 
-export async function getUserProposals(userId: string) {
+export async function getUserProposals(
+  userId: string,
+  page: number = 0,
+  pageSize: number = 10,
+) {
   const supabase = getSupabaseBrowserClient();
 
   if (!userId) throw new Error("User ID is required");
+
+  const from = page * pageSize;
+  const to = from + pageSize - 1;
 
   const { data, error } = await supabase
     .from("proposals")
@@ -42,11 +49,29 @@ export async function getUserProposals(userId: string) {
   `,
     )
     .or(`sender_id.eq.${userId},receiver_id.eq.${userId}`)
-    .order("created_at", { ascending: false });
+    .order("created_at", { ascending: false })
+    .range(from, to);
 
   if (error) {
     throw new Error(error.message);
   }
 
   return data;
+}
+
+export async function getUserProposalStatusCounts(userId: string) {
+  const supabase = getSupabaseBrowserClient();
+
+  if (!userId) throw new Error("User ID is required");
+
+  const { data, error } = await supabase
+    .from("proposals")
+    .select("status")
+    .or(`sender_id.eq.${userId},receiver_id.eq.${userId}`);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data as { status: string }[];
 }

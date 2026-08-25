@@ -99,7 +99,7 @@ export default function ResourcesPage() {
 
     const timeout = setTimeout(() => {
       setHighlightedId(null);
-      router.replace(`/workspace/${workspaceId}/resources`, { scroll: false });
+      router.replace(`/workspaces/${workspaceId}/resources`, { scroll: false });
     }, 2500);
 
     return () => clearTimeout(timeout);

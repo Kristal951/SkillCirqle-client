@@ -25,7 +25,7 @@ interface WorkspaceTabStripProps {
 
 export const WorkspaceTabStrip = ({ id }: { id: string }) => {
     const pathname = usePathname();
-    const basePath = `/workspace/${id}`;
+    const basePath = `/workspaces/${id}`;
     const currentPath = pathname.replace(basePath, "") || "";
 
     return (

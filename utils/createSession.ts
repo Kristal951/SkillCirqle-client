@@ -138,7 +138,7 @@ export async function createSession({
         senderName: user?.name ?? "Someone",
         trackName: trackName,
         senderImage: user?.avatar_url || undefined,
-        link: `/workspace/${workspaceId}/sessions`,
+        link: `/workspaces/${workspaceId}/sessions`,
         rescheduled: true,
       });
 
@@ -187,7 +187,7 @@ export async function createSession({
 
         senderImage: user?.avatar_url || undefined,
 
-        link: `/workspace/${workspaceId}/sessions`,
+        link: `/workspaces/${workspaceId}/sessions`,
       });
 
       toast.success("Session Scheduled", "We'll let your partner know.");

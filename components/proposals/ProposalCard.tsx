@@ -1,9 +1,9 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { EngagementType, Proposal, ProposalStatus } from "@/types/Proposal";
-import { Check, X } from "lucide-react";
+import { Check, MessageCircle, X } from "lucide-react";
 import { ProposalView } from "@/app/(protected)/proposals/page";
 import { useProposalStore } from "@/store/useProposalStore";
 import Spinner from "../ui/Spinner";
@@ -11,12 +11,14 @@ import { toast } from "@/lib/toast";
 import { useAuthStore } from "@/store/useAuthStore";
 import { formatDistanceToNow } from "date-fns";
 import { useRouter } from "next/navigation";
+import { getOrCreateConversation } from "@/utils/getOrCreateConversation";
 import SwapHoriz from "@material-symbols/svg-400/outlined/swap_horiz.svg";
 import Psychology from "@material-symbols/svg-400/outlined/psychology.svg";
 import HourGlassEmpty from "@material-symbols/svg-400/outlined/hourglass_empty.svg";
 import Calendar_today from "@material-symbols/svg-400/outlined/calendar_today.svg";
-import Workspaces from "@material-symbols/svg-400/outlined/workspaces.svg";
 import { IconType } from "@/utils/SvgType";
+import { getConversationById } from "@/utils/getConversationDetails";
+import { useChatStore } from "@/store/useChatStore";
 
 type Props = {
   p: ProposalView;
@@ -30,6 +32,8 @@ const ProposalCard = ({ p, statusStyles, now }: Props) => {
   const { updateProposalStatus, updatingStatus } = useProposalStore();
   const { user } = useAuthStore();
   const router = useRouter();
+  const { setActiveChat } = useChatStore();
+  const [startingConversation, setStartingConversation] = useState(false);
 
   const typeConfig: Record<EngagementType, { icon: IconType; label: string }> =
     {
@@ -104,12 +108,35 @@ const ProposalCard = ({ p, statusStyles, now }: Props) => {
     }
   };
 
-  const handleGotoWorkspace = () => {
-    if (!p.workspaceId) {
-      toast.error("Workspace not found", "please try again in a moment.");
+  // const handleGotoWorkspace = () => {
+  //   if (!p.workspaceId) {
+  //     toast.error("Workspace not found", "please try again in a moment.");
+  //     return;
+  //   }
+  //   router.push(`/workspaces/${p.workspaceId}`);
+  // };
+
+  const handleMessage = async () => {
+    if (!user?.id) return;
+
+    const partnerId = p.isSender ? p.receiverID : p.senderID;
+    if (!partnerId) {
+      toast.error("Couldn't start conversation", "please try again later.");
       return;
     }
-    router.push(`/workspace/${p.workspaceId}`);
+
+    setStartingConversation(true);
+    try {
+      const conversationId = await getOrCreateConversation(user?.id, partnerId);
+      const chatData = await getConversationById(conversationId, user?.id);
+      router.push("/chat");
+      setActiveChat(chatData)
+    } catch (err) {
+      toast.error("Couldn't start conversation", "please try again later.");
+      console.error(err);
+    } finally {
+      setStartingConversation(false);
+    }
   };
 
   const Icon = type.icon;
@@ -262,14 +289,29 @@ const ProposalCard = ({ p, statusStyles, now }: Props) => {
         )}
 
         {p.status === "accepted" && (
-          <div className="flex">
+          <div className="flex gap-3">
             <button
-              onClick={handleGotoWorkspace}
-              className="w-max bg-primary text-text-primary font-headline font-bold text-xs py-3 px-4 rounded-lg flex items-center justify-center gap-2 cursor-pointer"
+              onClick={handleMessage}
+              disabled={startingConversation}
+              className="w-max bg-primary text-text-primary font-headline font-bold text-xs py-3 px-4 rounded-lg flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
             >
-              <Workspaces className="text-base" />
-              <p>Go to Workspace</p>
+              {startingConversation ? (
+                <Spinner size={14} />
+              ) : (
+                <MessageCircle className="w-4 h-4" />
+              )}
+              <p>Message</p>
             </button>
+
+            {/* {p.workspaceId && (
+              <button
+                onClick={handleGotoWorkspace}
+                className="w-max border border-border text-text-secondary hover:text-text-primary hover:bg-surface/50 font-headline font-bold text-xs py-3 px-4 rounded-lg flex items-center justify-center gap-2 cursor-pointer transition-colors"
+              >
+                <Workspaces className="w-4 h-4" />
+                <p>Workspace</p>
+              </button>
+            )} */}
           </div>
         )}
       </div>

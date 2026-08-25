@@ -165,7 +165,7 @@ export default function AudioSessionEndedPage() {
         {canNavigateAway && (
           <div className="mt-8 flex flex-col gap-3">
             <Link
-              href={`/workspace/${sessionData?.workspaceId}`}
+              href={`/workspaces/${sessionData?.workspaceId}`}
               className="w-full rounded-lg bg-primary text-text-primary py-3 text-center font-medium hover:opacity-90 transition"
             >
               Back to Workspace

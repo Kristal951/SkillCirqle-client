@@ -383,7 +383,7 @@ const AudioCallPage = ({ params }: { params: Promise<{ id: string }> }) => {
           apiRef.current?.dispose();
           apiRef.current = null;
 
-          router.push(`/workspace/${sessionId}/`);
+          router.push(`/workspaces/${sessionId}/`);
         }
       },
       variant: "hangup",

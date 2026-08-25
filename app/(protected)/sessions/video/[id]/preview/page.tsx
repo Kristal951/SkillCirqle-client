@@ -431,7 +431,7 @@ const VideoPreview = () => {
             }
 
             showSocketError(response.message);
-            router.replace(`/workspace/${response.workspaceId}`);
+            router.replace(`/workspaces/${response.workspaceId}`);
             return;
           }
 

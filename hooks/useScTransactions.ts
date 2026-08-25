@@ -21,8 +21,6 @@ const SORT_CONFIG: Record<
   amount_asc: { column: "amount", ascending: true },
 };
 
-// Reduced from 30 — smaller first payload means faster first paint;
-// costs an extra "Load more" click sooner for deep history.
 const PAGE_SIZE = 15;
 
 export function useScTransactions(userId: string, sortBy: SortOption) {

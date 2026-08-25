@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useProposalStore } from "@/store/useProposalStore";
 import { useAuthStore } from "@/store/useAuthStore";
@@ -50,34 +50,67 @@ const statusStyles: Record<ProposalStatus, string> = {
 const ProposalsPage = () => {
   const [activeTab, setActiveTab] = useState<ProposalTab>("received");
   const { user } = useAuthStore();
-  const { proposals, fetchProposals, loading, listenForProposalUpdates } = useProposalStore();
-
+  const {
+    proposals,
+    fetchProposals,
+    fetchMoreProposals,
+    loading,
+    loadingMore,
+    hasMore,
+    listenForProposalUpdates,
+    counts,
+    fetchProposalCounts
+  } = useProposalStore();
+  
   const userId = user?.id || "";
 
   const [now, setNow] = useState(Date.now());
+  const sentinelRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     const interval = setInterval(() => setNow(Date.now()), 60000);
     return () => clearInterval(interval);
   }, []);
 
- useEffect(() => {
-  if (!userId) return;
-  fetchProposals(userId);
+  useEffect(() => {
+    if (!userId) return;
+    fetchProposals(userId);
+    fetchProposalCounts(userId)
 
-  let cleanup: (() => void) | undefined;
-  let cancelled = false;
+    let cleanup: (() => void) | undefined;
+    let cancelled = false;
 
-  listenForProposalUpdates().then((fn) => {
-    if (!cancelled) cleanup = fn;
-    else fn(); 
-  });
+    listenForProposalUpdates().then((fn) => {
+      if (!cancelled) cleanup = fn;
+      else fn();
+    });
 
-  return () => {
-    cancelled = true;
-    cleanup?.();
-  };
-}, [userId]);
+    return () => {
+      cancelled = true;
+      cleanup?.();
+    };
+  }, [userId]);
+
+  useEffect(() => {
+    const node = sentinelRef.current;
+    if (!node || !userId) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMore && !loading && !loadingMore) {
+          fetchMoreProposals(userId);
+        }
+      },
+      { rootMargin: "200px" },
+    );
+
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [userId, hasMore, loading, loadingMore, fetchMoreProposals]);
+
+  const handleLoadMore = useCallback(() => {
+    if (userId) fetchMoreProposals(userId);
+  }, [userId, fetchMoreProposals]);
 
   const tabs: { id: ProposalTab; label: string }[] = [
     { id: "received", label: "Received" },
@@ -102,7 +135,7 @@ const ProposalsPage = () => {
     );
   };
 
-  const counts = getProposalCounts(proposals);
+  // const counts = getProposalCounts(proposals);
 
   const mapProposal = (p: any): ProposalView => {
     const isSender = p.sender.id === userId;
@@ -158,11 +191,10 @@ const ProposalsPage = () => {
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`relative flex-1 sm:flex-none px-4 sm:px-8 py-2.5 text-sm font-medium transition-all whitespace-nowrap ${
-                    isActive
+                  className={`relative flex-1 sm:flex-none px-4 sm:px-8 py-2.5 text-sm font-medium transition-all whitespace-nowrap ${isActive
                       ? "text-text-primary"
                       : "text-text-secondary hover:text-text-primary"
-                  }`}
+                    }`}
                 >
                   {isActive && (
                     <motion.div
@@ -200,14 +232,33 @@ const ProposalsPage = () => {
                 </p>
               </motion.div>
             ) : (
-              filtered.map((p) => (
-                <ProposalCard
-                  key={p.id}
-                  p={p}
-                  now={now}
-                  statusStyles={statusStyles}
-                />
-              ))
+              <>
+                {filtered.map((p) => (
+                  <ProposalCard
+                    key={p.id}
+                    p={p}
+                    now={now}
+                    statusStyles={statusStyles}
+                  />
+                ))}
+
+                <div ref={sentinelRef} className="h-1" />
+
+                {loadingMore && (
+                  <ProposalCardSkeleton />
+                )}
+
+                {!loadingMore && hasMore && (
+                  <div className="flex justify-center pt-2">
+                    <button
+                      onClick={handleLoadMore}
+                      className="px-5 py-2 rounded-lg border border-border text-sm font-medium text-text-secondary hover:text-text-primary hover:bg-surface/50 transition-colors"
+                    >
+                      Load more
+                    </button>
+                  </div>
+                )}
+              </>
             )}
           </AnimatePresence>
         </div>

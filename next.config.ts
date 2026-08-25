@@ -18,13 +18,14 @@ const svgrOptions: Record<string, unknown> = {
 const nextConfig: NextConfig = {
   reactCompiler: true,
   images: {
+    unoptimized: process.env.NODE_ENV !== "production",
     remotePatterns: [
       { protocol: "https", hostname: "lh3.googleusercontent.com" },
       { protocol: "https", hostname: "ui-avatars.com" },
       { protocol: "https", hostname: "images.unsplash.com" },
       { protocol: "https", hostname: "api.dicebear.com" },
       { protocol: "https", hostname: "res.cloudinary.com" },
-      { protocol: "https", hostname: "jzukocvsoupnmwfiradk.supabase.co" },
+      { protocol: "https", hostname: "jzukocvsoupnmwfiradk.supabase.co" , pathname: "/storage/v1/object/public/**"},
     ],
   },
   turbopack: {

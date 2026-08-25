@@ -1,4 +1,3 @@
-// components/workspace/MarkdownToolbar.tsx
 "use client";
 
 interface MarkdownToolbarProps {

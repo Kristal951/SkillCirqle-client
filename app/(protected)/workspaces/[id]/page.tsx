@@ -235,7 +235,7 @@ export default function WorkspaceOverview() {
             </p>
 
             <Link
-              href={`/workspace/${id}/resources`}
+              href={`/workspaces/${id}/resources`}
               className="text-sm text-accent underline"
             >
               View all
@@ -263,7 +263,7 @@ export default function WorkspaceOverview() {
 
           {upcomingSessions.length > 1 && (
             <button
-              onClick={() => router.push(`/workspace/${id}/sessions`)}
+              onClick={() => router.push(`/workspaces/${id}/sessions`)}
               className="text-xs text-accent hover:underline"
             >
               View all
@@ -284,7 +284,7 @@ export default function WorkspaceOverview() {
             </p>
 
             <Link
-              href={`/workspace/${workspace?.id}/sessions`}
+              href={`/workspaces/${workspace?.id}/sessions`}
               className="underline text-accent hover:opacity-80 transition-opacity"
             >
               Go to sessions page

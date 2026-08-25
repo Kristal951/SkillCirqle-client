@@ -261,7 +261,7 @@ const AudioPreview = () => {
         }) => {
           if (!response.success) {
             toast.error(response.message ?? "Unable to join preview");
-            router.replace(`/workspace/${response.workspaceId}`);
+            router.replace(`/workspaces/${response.workspaceId}`);
           }
         },
       );

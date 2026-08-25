@@ -46,7 +46,7 @@ const Sidebar = ({
     { label: "Milestones", href: "/milestones", icon: MilitaryTech },
   ];
 
-  const basePath = `/workspace/${id}`;
+  const basePath = `/workspaces/${id}`;
   const currentPath = pathname.replace(basePath, "") || "";
   const otherMember = members.find((m) => m.user_id !== userId);
 

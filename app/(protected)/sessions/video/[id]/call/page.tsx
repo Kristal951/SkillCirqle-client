@@ -427,7 +427,7 @@ const CallPage = ({ params }: { params: Promise<{ id: string }> }) => {
         } else {
           endingRef.current = true;
           apiRef.current?.executeCommand("hangup");
-          router.push(`/workspace/${sessionId}/`);
+          router.push(`/workspaces/${sessionId}/`);
         }
       },
       variant: "hangup",
