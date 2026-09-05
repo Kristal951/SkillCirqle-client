@@ -22,13 +22,13 @@ const SkillCard = ({ info }: SkillCardProps) => {
   const router = useRouter();
 
   return (
-    <div className="bg-surface/50 hover:bg-surface border border-border/50 min-w-75 max-w-85 lg:w-100 shrink-0 group rounded-2xl overflow-hidden flex flex-col justify-between hover:border-border hover:shadow-[0_12px_30px_rgba(0,0,0,0.03)] dark:hover:shadow-[0_12px_30px_rgba(var(--primary-rgb),0.04)] transition-all duration-300">
+    <div className="bg-surface/50 hover:bg-surface border border-border/50 w-64 sm:min-w-75 sm:max-w-85 lg:w-100 shrink-0 group rounded-2xl overflow-hidden flex flex-col justify-between hover:border-border hover:shadow-[0_12px_30px_rgba(0,0,0,0.03)] dark:hover:shadow-[0_12px_30px_rgba(var(--primary-rgb),0.04)] transition-all duration-300">
       <div className="h-52 relative overflow-hidden bg-muted">
         <Image
           src={info.image}
           alt={info.title}
           fill
-          sizes="(max-w-768px) 100vw, 400px"
+          sizes="(max-w-768px) 100vw, 200px"
           priority
           className="object-cover group-hover:scale-[1.03] transition-transform duration-700 ease-out"
         />

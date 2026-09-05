@@ -329,14 +329,18 @@ export default function NewProposal() {
             setUserEditedMessage={setUserEditedMessage}
           />
 
-          <div className="md:hidden bg-primary/5 rounded-3xl p-6 border border-primary/10">
-            <h3 className="font-bold text-primary mb-2 flex items-center gap-2">
-              <Info size={16} /> Pro-Tip
-            </h3>
-            <p className="text-sm text-text-secondary leading-relaxed">
-              Please note that <span className="text-accent font-semibold">5 SkillCredits</span> will be deducted when you send a learn proposal.
-            </p>
-          </div>
+          {
+            activeTab === "learn" && (
+              <div className="md:hidden bg-primary/5 rounded-3xl p-6 border border-primary/10">
+                <h3 className="font-bold text-primary mb-2 flex items-center gap-2">
+                  <Info size={16} /> Pro-Tip
+                </h3>
+                <p className="text-sm text-text-secondary leading-relaxed">
+                  Please note that <span className="text-accent font-semibold">5 SkillCredits</span> will be deducted when you send a learn proposal.
+                </p>
+              </div>
+            )
+          }
 
           <div className="w-full pb-4">
             <button
@@ -372,14 +376,18 @@ export default function NewProposal() {
             onSend={handleSendProposal}
           />
 
-          <div className="hidden md:block bg-primary/5 rounded-3xl p-6 border border-primary/10">
-            <h3 className="font-bold text-primary mb-2 flex items-center gap-2">
-              <Info size={16} /> Pro-Tip
-            </h3>
-            <p className="text-sm text-text-secondary leading-relaxed">
-              Please note that <span className="text-accent font-semibold">5 SkillCredits</span> will be deducted when you send a learn proposal.
-            </p>
-          </div>
+          {
+            activeTab === "learn" && (
+              <div className="hidden md:block bg-primary/5 rounded-3xl p-6 border border-primary/10">
+                <h3 className="font-bold text-primary mb-2 flex items-center gap-2">
+                  <Info size={16} /> Pro-Tip
+                </h3>
+                <p className="text-sm text-text-secondary leading-relaxed">
+                  Please note that <span className="text-accent font-semibold">5 SkillCredits</span> will be deducted when you send a learn proposal.
+                </p>
+              </div>
+            )
+          }
         </div>
       </div>
     </div>

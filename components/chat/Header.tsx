@@ -43,13 +43,6 @@ const Header = () => {
   const { openViewer } = useMediaViewer();
   const HEADER_WORKSPACE_LIMIT = 3;
 
-  const {
-    workspaces,
-    totalCount: workspacesTotalCount,
-    loading: workspacesLoading,
-    fetchMembersData,
-  } = useUserWorkspaces(authUser?.id || null, { pageSize: HEADER_WORKSPACE_LIMIT });
-
   useEffect(() => {
     const interval = setInterval(() => setTick((t) => t + 1), 15000);
     return () => clearInterval(interval);
@@ -61,6 +54,7 @@ const Header = () => {
     setConfirmingClear(false);
     setConfirmingBlock(false);
     setMuted(false);
+    setWorkspacesLoaded(false);
   }, [activeChat?.id]);
 
   useEffect(() => {
@@ -97,6 +91,18 @@ const Header = () => {
   const otherUserId = activeChat.other_user_id;
   const isOnline = onlineUsers.has(otherUserId);
   const typingList = typingUsers?.[activeChat.id] || [];
+
+  const {
+    workspaces,
+    totalCount: workspacesTotalCount,
+    loading: workspacesLoading,
+    fetchMembersData,
+  } = useUserWorkspaces(authUser?.id || null, {
+    pageSize: HEADER_WORKSPACE_LIMIT,
+    counterpartUserId: otherUserId,
+  });
+
+  console.log(workspaces)
 
   const isTyping = otherUserId
     ? typingList.some((u) => u.id === otherUserId)
@@ -287,7 +293,7 @@ const Header = () => {
                   </h3>
 
                   <p className="text-xs text-text-secondary mt-0.5">
-                    Your active skill exchanges
+                    Shared with <span className="text-text-primary font-semibold">{activeChat.name}</span>
                   </p>
                 </div>
 
@@ -365,7 +371,7 @@ const Header = () => {
                             className="absolute left-0 top-0 w-8 h-8 rounded-lg object-cover border-2 border-surface"
                           />
                         )
-                      }
+                        }
 
                         {learnSkill?.image_url && (
                           <Image
@@ -387,7 +393,7 @@ const Header = () => {
 
                           {
                             proposal?.engagement_type === "swap" && (
-                              <SwapHoriz className="text-text-secondary text-xs shrink-0"/>
+                              <SwapHoriz className="text-text-secondary text-xs shrink-0" />
                             )
                           }
                           <p className="text-sm font-semibold truncate">

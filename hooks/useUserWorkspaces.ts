@@ -2,10 +2,10 @@ import { getSupabaseBrowserClient } from "@/lib/supabaseClient";
 import { useCallback, useState } from "react";
 
 const WORKSPACE_SELECT = `
-  workspace:proposal_workspaces (
+  workspace:proposal_workspaces!inner (
     id,
     created_at,
-    proposal:proposals(
+    proposal:proposals!inner(
         id,
         engagement_type,
         sender_id,

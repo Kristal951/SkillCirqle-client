@@ -13,7 +13,7 @@ export async function enqueueAssetGeneration(skillId: string, skillTitle: string
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${process.env.INTERNAL_API_SECRET}`,
+          Authorization: `Bearer ${process.env.INTERNAL_API_KEY}`,
         },
         body: JSON.stringify({ skillId, skillTitle }),
       },
