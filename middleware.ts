@@ -13,6 +13,11 @@ const PUBLIC_API_ROUTES = ["/api/waitlist"];
 const WAITLIST_MODE = process.env.WAITLIST_MODE === "true";
 const WAITLIST_PATH = "/waitlist";
 
+const WAITLIST_ALLOWED_PATHS = ["/", "/waitlist"];
+const ADMIN_ACCESS_KEY = process.env.ADMIN_ACCESS_KEY;
+const ADMIN_GATE_COOKIE = "admin_gate_token";
+const ADMIN_GATE_MAX_AGE = 60 * 15;
+
 function isInvalidRefreshTokenError(
   error: { code?: string; status?: number } | null | undefined,
 ) {
@@ -33,15 +38,10 @@ export async function middleware(request: NextRequest) {
   let response = NextResponse.next();
   const path = request.nextUrl.pathname;
 
-  const isWaitlistPage = path === WAITLIST_PATH;
   const isApiRoute = path.startsWith("/api/");
   const isAuthRoute = path.startsWith("/auth");
 
-  if (
-    PUBLIC_API_ROUTES.some(
-      (route) => path === route || path.startsWith(`${route}/`),
-    )
-  ) {
+  if (PUBLIC_API_ROUTES.some((route) => path === route || path.startsWith(`${route}/`))) {
     return NextResponse.next();
   }
 
@@ -69,26 +69,52 @@ export async function middleware(request: NextRequest) {
     error: userError,
   } = await supabase.auth.getUser();
 
-  if (WAITLIST_MODE && !isWaitlistPage && !isApiRoute && !isAuthRoute) {
-    if (!user) {
-      if (path.startsWith("/admin")) {
-        const url = new URL("/auth/signin", request.url);
-        url.searchParams.set("redirect", path);
-        return NextResponse.redirect(url);
-      }
-      return NextResponse.redirect(new URL(WAITLIST_PATH, request.url));
+  if (WAITLIST_MODE) {
+    const isAllowedPublicPath = WAITLIST_ALLOWED_PATHS.includes(path);
+
+    if (isAllowedPublicPath) {
+      return NextResponse.next();
     }
 
-    const { isAdmin } = await checkIsAdminWithClient(supabase, user.id);
+    if (!isApiRoute) {
+      if (isAuthRoute) {
+        const hasGateCookie =
+          request.cookies.get(ADMIN_GATE_COOKIE)?.value === ADMIN_ACCESS_KEY;
+        const keyParam = request.nextUrl.searchParams.get("key");
+        const keyMatches = !!ADMIN_ACCESS_KEY && keyParam === ADMIN_ACCESS_KEY;
 
-    if (!isAdmin) {
-      return NextResponse.redirect(new URL(WAITLIST_PATH, request.url));
+        if (!hasGateCookie && !keyMatches) {
+          if (!user) {
+            return NextResponse.redirect(new URL(WAITLIST_PATH, request.url));
+          }
+          const { isAdmin } = await checkIsAdminWithClient(supabase, user.id);
+          if (!isAdmin) {
+            return NextResponse.redirect(new URL(WAITLIST_PATH, request.url));
+          }
+        } else if (keyMatches && !hasGateCookie) {
+          response.cookies.set(ADMIN_GATE_COOKIE, ADMIN_ACCESS_KEY!, {
+            httpOnly: true,
+            secure: true,
+            sameSite: "lax",
+            maxAge: ADMIN_GATE_MAX_AGE,
+            path: "/",
+          });
+        }
+      } else {
+        if (!user) {
+          return NextResponse.redirect(new URL(WAITLIST_PATH, request.url));
+        }
+        const { isAdmin } = await checkIsAdminWithClient(supabase, user.id);
+        if (!isAdmin) {
+          return NextResponse.redirect(new URL(WAITLIST_PATH, request.url));
+        }
+      }
     }
   }
 
-  const isPublicRoute = PUBLIC_ROUTES.some(
-    (route) => path === route || path.startsWith(`${route}/`),
-  );
+  const isPublicRoute = PUBLIC_ROUTES.some((route) => {
+    return path === route || path.startsWith(`${route}/`);
+  });
 
   if (isPublicRoute) {
     return NextResponse.next();
