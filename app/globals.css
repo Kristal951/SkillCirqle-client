@@ -38,7 +38,7 @@
 ========================= */
 .dark {
   --color-background-base: #0d0b1a;
-  --color-border: rgba(108, 63, 197, 0.25);
+  --color-border: #6c3fc540;
 
   --color-text-primary: #ffffff;
   --color-text-secondary: #8b95a1;

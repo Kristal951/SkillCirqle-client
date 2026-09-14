@@ -8,7 +8,10 @@ const INVALID_REFRESH_CODES = new Set([
   "refresh_token_already_used",
 ]);
 
-const PUBLIC_ROUTES = ["/", "/legal", "/help_center"];
+const PUBLIC_ROUTES = ["/", "/legal", "/help_center", "/waitlist"];
+const PUBLIC_API_ROUTES = ["/api/waitlist"];
+const WAITLIST_MODE = process.env.WAITLIST_MODE === "true";
+const WAITLIST_PATH = "/waitlist";
 
 function isInvalidRefreshTokenError(
   error: { code?: string; status?: number } | null | undefined,
@@ -30,11 +33,16 @@ export async function middleware(request: NextRequest) {
   let response = NextResponse.next();
   const path = request.nextUrl.pathname;
 
-  const isPublicRoute = PUBLIC_ROUTES.some((route) => {
-    return path === route || path.startsWith(`${route}/`);
-  });
+  const isWaitlistPage = path === WAITLIST_PATH;
+  const isApiRoute = path.startsWith("/api/");
+  const isAuthRoute = path.startsWith("/auth");
 
-  if (isPublicRoute) {
+  // Public API routes skip everything, including waitlist gating
+  if (
+    PUBLIC_API_ROUTES.some(
+      (route) => path === route || path.startsWith(`${route}/`),
+    )
+  ) {
     return NextResponse.next();
   }
 
@@ -61,6 +69,23 @@ export async function middleware(request: NextRequest) {
     data: { user },
     error: userError,
   } = await supabase.auth.getUser();
+
+  if (WAITLIST_MODE && !isWaitlistPage && !isApiRoute && !isAuthRoute) {
+    if (!user) {
+      if (path.startsWith("/admin")) {
+        const url = new URL("/auth/signin", request.url);
+        url.searchParams.set("redirect", path);
+        return NextResponse.redirect(url);
+      }
+      return NextResponse.redirect(new URL(WAITLIST_PATH, request.url));
+    }
+
+    const { isAdmin } = await checkIsAdminWithClient(supabase, user.id);
+
+    if (!isAdmin) {
+      return NextResponse.redirect(new URL(WAITLIST_PATH, request.url));
+    }
+  }
 
   const isUpdatePasswordPage = path === "/auth/update-password";
   const isAuthPage =
