@@ -37,7 +37,6 @@ export async function middleware(request: NextRequest) {
   const isApiRoute = path.startsWith("/api/");
   const isAuthRoute = path.startsWith("/auth");
 
-  // Public API routes skip everything, including waitlist gating
   if (
     PUBLIC_API_ROUTES.some(
       (route) => path === route || path.startsWith(`${route}/`),
@@ -85,6 +84,14 @@ export async function middleware(request: NextRequest) {
     if (!isAdmin) {
       return NextResponse.redirect(new URL(WAITLIST_PATH, request.url));
     }
+  }
+
+  const isPublicRoute = PUBLIC_ROUTES.some(
+    (route) => path === route || path.startsWith(`${route}/`),
+  );
+
+  if (isPublicRoute) {
+    return NextResponse.next();
   }
 
   const isUpdatePasswordPage = path === "/auth/update-password";
