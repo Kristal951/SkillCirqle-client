@@ -20,6 +20,7 @@ import {
   ArrowRightLeft,
   ArrowRightLeftIcon,
   BadgeCheck,
+  Hourglass
 } from "lucide-react";
 import { useAdminSidebarStore } from "@/store/useAdminStore";
 import Image from "next/image";
@@ -56,6 +57,11 @@ const NAV_SECTIONS: NavSection[] = [
         label: "Skill Verifications",
         href: "/admin/skill-verifications",
         icon: BadgeCheck,
+      },
+      {
+        label: "Waitlist",
+        href: "/admin/waitlist",
+        icon: Hourglass,
       },
     ],
   },
