@@ -13,6 +13,7 @@ import {
     Trash2,
 } from 'lucide-react';
 import ConfirmModal from './confirmModal';
+import { getSupabaseBrowserClient } from '@/lib/supabaseClient';
 
 interface Signup {
     id: string;
@@ -45,10 +46,10 @@ function formatCsvDate(dateStr: string) {
 
 function toCsv(rows: { email: string; created_at: string }[]) {
     return [
-        'email - signed_up_at',
+        'email,signed_up_at',
         ...rows.map(
             s =>
-                `${csvEscape(s.email)} - ${formatCsvDate(s.created_at)}`
+                `${csvEscape(s.email)},${formatCsvDate(s.created_at)}`
         ),
     ].join('\n');
 }
@@ -68,9 +69,13 @@ function downloadCsv(csv: string, filename: string) {
 export default function WaitlistTable({
     initialRows,
     initialHasMore,
+    onSignupAdded,
+    onSignupsRemoved,
 }: {
     initialRows: Signup[];
     initialHasMore: boolean;
+    onSignupAdded?: (signup: Signup) => void;
+    onSignupsRemoved?: (removed: Signup[]) => void;
 }) {
     const [rows, setRows] = useState<Signup[]>(initialRows);
     const [hasMore, setHasMore] = useState(initialHasMore);
@@ -90,6 +95,11 @@ export default function WaitlistTable({
     } | null>(null);
 
     const [pendingBulkDelete, setPendingBulkDelete] = useState(false);
+    const [newSignupsCount, setNewSignupsCount] = useState(0);
+
+    const cursorStackRef = useRef(cursorStack);
+    const searchRef = useRef(search);
+    const sortOrderRef = useRef(sortOrder);
 
     const fetchPage = useCallback(
         async (
@@ -127,6 +137,7 @@ export default function WaitlistTable({
                 setRows(data.rows);
                 setHasMore(data.hasMore);
                 setSelected(new Set());
+                setNewSignupsCount(0);
             } finally {
                 setLoading(false);
             }
@@ -141,7 +152,6 @@ export default function WaitlistTable({
         const diffMs = now.getTime() - date.getTime();
         const diffMins = Math.floor(diffMs / 60000);
 
-        // Future dates
         if (diffMins < 0) {
             const absMins = Math.abs(diffMins);
 
@@ -162,7 +172,6 @@ export default function WaitlistTable({
             });
         }
 
-        // Recent activity
         if (diffMins < 1) {
             return 'Just now';
         }
@@ -177,7 +186,6 @@ export default function WaitlistTable({
             return `${diffHours}hr ago`;
         }
 
-        // Compare calendar dates
         const today = new Date(
             now.getFullYear(),
             now.getMonth(),
@@ -232,6 +240,44 @@ export default function WaitlistTable({
             }
         };
     }, [search, sortOrder, fetchPage]);
+
+    useEffect(() => { cursorStackRef.current = cursorStack; }, [cursorStack]);
+    useEffect(() => { searchRef.current = search; }, [search]);
+    useEffect(() => { sortOrderRef.current = sortOrder; }, [sortOrder]);
+
+    useEffect(() => {
+        const supabase = getSupabaseBrowserClient();
+
+        const channel = supabase
+            .channel('waitlist-admin')
+            .on(
+                'postgres_changes',
+                { event: 'INSERT', schema: 'public', table: 'waitlist_signups' },
+                payload => {
+                    const newSignup = payload.new as Signup;
+                    const isFirstPage = cursorStackRef.current.length === 0;
+                    const currentSearch = searchRef.current;
+                    const matchesSearch =
+                        !currentSearch ||
+                        newSignup.email.toLowerCase().includes(currentSearch.toLowerCase());
+
+                    onSignupAdded?.(newSignup);
+
+                    if (isFirstPage && sortOrderRef.current === 'desc' && matchesSearch) {
+                        setRows(prev =>
+                            prev.some(s => s.id === newSignup.id) ? prev : [newSignup, ...prev]
+                        );
+                    } else {
+                        setNewSignupsCount(prev => prev + 1);
+                    }
+                }
+            )
+            .subscribe();
+
+        return () => {
+            supabase.removeChannel(channel);
+        };
+    }, []);
 
     const handleNext = () => {
         if (!hasMore || rows.length === 0) return;
@@ -326,6 +372,7 @@ export default function WaitlistTable({
         if (!pendingDelete) return;
 
         const { id } = pendingDelete;
+        const removedRow = rows.find(s => s.id === id);
 
         setDeletingIds(prev => {
             const next = new Set(prev);
@@ -349,6 +396,10 @@ export default function WaitlistTable({
             setRows(prev =>
                 prev.filter(signup => signup.id !== id)
             );
+
+            if (removedRow) {
+                onSignupsRemoved?.([removedRow]);
+            }
 
             setSelected(prev => {
                 const next = new Set(prev);
@@ -401,12 +452,17 @@ export default function WaitlistTable({
             const succeededIds = new Set(
                 ids.filter(id => !failedIds.includes(id))
             );
+            const removedRows = rows.filter(s => succeededIds.has(s.id));
 
             setRows(prev =>
                 prev.filter(
                     signup => !succeededIds.has(signup.id)
                 )
             );
+
+            if (removedRows.length > 0) {
+                onSignupsRemoved?.(removedRows);
+            }
 
             setSelected(prev => {
                 const next = new Set(prev);
