@@ -1,5 +1,6 @@
-import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
+import { createSupabaseServer } from "@/lib/supabaseServer";
+import { getOrSetCache } from "@/utils/cacheHelper";
 import { UserProfileProvider } from "@/hooks/UserProfileContext";
 
 export default async function UserProfileLayout({
@@ -10,27 +11,29 @@ export default async function UserProfileLayout({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const cookieStore = await cookies();
+  const supabase = await createSupabaseServer();
 
-  const res = await fetch(
-    `${process.env.NEXT_PUBLIC_BASE_URL}/api/user/profile/${id}`,
-    {
-      cache: "no-store",
-      headers: {
-        cookie: cookieStore.toString(),
+  let user = null;
+
+  try {
+    user = await getOrSetCache(
+      `profile:${id}`,
+      async () => {
+        const { data, error } = await supabase
+          .from("profiles")
+          .select("*")
+          .eq("id", id)
+          .maybeSingle();
+
+        if (error) throw error;
+        return data;
       },
-    },
-  );
-
-  if (!res.ok) {
-    console.error(
-      `Failed to fetch profile ${id}: ${res.status} ${res.statusText}`,
+      600,
     );
+  } catch (err) {
+    console.error(`Profile fetch error for id ${id}:`, err);
     notFound();
   }
-
-  const data = await res.json();
-  const { user } = data;
 
   if (!user) {
     notFound();

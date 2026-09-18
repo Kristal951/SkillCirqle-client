@@ -151,8 +151,6 @@ export async function middleware(request: NextRequest) {
   if (isInvalidRefreshTokenError(userError)) {
     await supabase.auth.signOut({ scope: "local" });
 
-<<<<<<< Updated upstream
-=======
     if (isApiRoute) {
       return clearAuthCookies(
         NextResponse.json({ error: "session_expired" }, { status: 401 }),
@@ -160,7 +158,6 @@ export async function middleware(request: NextRequest) {
       );
     }
 
->>>>>>> Stashed changes
     if (!isAuthPage) {
       const url = new URL("/auth/signin", request.url);
       url.searchParams.set("error", "session_expired");
