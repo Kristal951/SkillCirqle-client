@@ -41,7 +41,11 @@ export async function middleware(request: NextRequest) {
   const isApiRoute = path.startsWith("/api/");
   const isAuthRoute = path.startsWith("/auth");
 
-  if (PUBLIC_API_ROUTES.some((route) => path === route || path.startsWith(`${route}/`))) {
+  if (
+    PUBLIC_API_ROUTES.some(
+      (route) => path === route || path.startsWith(`${route}/`),
+    )
+  ) {
     return NextResponse.next();
   }
 
@@ -101,12 +105,17 @@ export async function middleware(request: NextRequest) {
           });
         }
       } else {
-        if (!user) {
-          return NextResponse.redirect(new URL(WAITLIST_PATH, request.url));
-        }
-        const { isAdmin } = await checkIsAdminWithClient(supabase, user.id);
-        if (!isAdmin) {
-          return NextResponse.redirect(new URL(WAITLIST_PATH, request.url));
+        const hasGateCookie =
+          request.cookies.get(ADMIN_GATE_COOKIE)?.value === ADMIN_ACCESS_KEY;
+
+        if (!hasGateCookie) {
+          if (!user) {
+            return NextResponse.redirect(new URL(WAITLIST_PATH, request.url));
+          }
+          const { isAdmin } = await checkIsAdminWithClient(supabase, user.id);
+          if (!isAdmin) {
+            return NextResponse.redirect(new URL(WAITLIST_PATH, request.url));
+          }
         }
       }
     }
