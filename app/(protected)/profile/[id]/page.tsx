@@ -85,10 +85,6 @@ export default function UserProfilePage() {
     }
   };
 
-  if (isLoggedInUser) {
-    return router.push("/profile");
-  }
-
   useEffect(() => {
     const fetchSkills = async () => {
       setLoadingSkills(true);
@@ -108,6 +104,10 @@ export default function UserProfilePage() {
 
     fetchSkills();
   }, []);
+
+  if (isLoggedInUser) {
+    return router.push("/profile");
+  }
 
   const teachSkills = userSkills.filter((s) => s.type === "teach");
   const learnSkills = userSkills.filter((s) => s.type === "learn");
