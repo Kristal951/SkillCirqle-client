@@ -68,7 +68,6 @@ const resourceLabel = (r: {
   return r.note_title || "Untitled note";
 };
 
-// Small consistent separator, replacing the scattered manual "|" spans
 const Dot = () => (
   <span className="w-1 h-1 rounded-full bg-text-secondary/25 shrink-0" />
 );
@@ -119,31 +118,46 @@ const UpcomingSessionsCard = ({
   };
 
   const TypeIcon = s.type === "VIDEO" ? Videocam : Mic;
+  const isLive = phase === "joinable";
 
   return (
-    <div className="group relative flex flex-col sm:flex-row sm:items-stretch gap-4 p-4 sm:p-5 bg-surface/50 hover:bg-surface/80 rounded-xl transition-all duration-300 border border-text-primary/5 hover:border-text-primary/10 hover:shadow-xl hover:shadow-primary/5">
-      <div className="flex sm:flex-col items-center justify-start sm:justify-center gap-2 sm:gap-1 px-4 py-2.5 sm:py-3 sm:w-20 bg-background rounded-xl border border-text-primary/5 shadow-inner shrink-0">
-        <span className="text-[10px] uppercase tracking-[0.15em] text-text-secondary font-bold">
+    <div
+      className={`
+        group relative flex flex-col sm:flex-row
+        bg-surface/50 rounded-2xl border transition-all duration-300
+        ${isLive
+          ? "border-primary/30 shadow-lg shadow-primary/10"
+          : "border-border/5 hover:border-border/10 hover:shadow-xl hover:shadow-black/20"
+        }
+      `}
+    >
+
+      <div className="relative flex sm:flex-col items-center justify-start sm:justify-center gap-3 sm:gap-0.5 px-5 py-4 sm:w-24 shrink-0">
+        <span className="text-[10px] tracking-widest text-text-secondary/70 font-semibold">
           {date.toLocaleDateString("en-GB", { month: "short" })}
         </span>
-        <span className="text-xl sm:text-2xl font-black text-text-primary leading-none">
+        <span className="text-2xl sm:text-[28px] font-black text-text-primary leading-none tabular-nums">
           {date.getDate()}
+        </span>
+        <span className="hidden sm:block text-[10px] text-text-secondary/50 mt-0.5">
+          {date.toLocaleDateString("en-GB", { weekday: "short" })}
         </span>
       </div>
 
-      <div className="flex-1 min-w-0 flex flex-col justify-center gap-2.5">
-        <div className="flex items-start gap-2">
+      <div className="relative hidden sm:block w-px shrink-0">
+        <div className="absolute inset-y-3 left-0 border-l border-dashed border-border" />
+        <div className="absolute -left-1.5 -top-1.5 w-3 h-3 rounded-full bg-background" />
+        <div className="absolute -left-1.5 -bottom-1.5 w-3 h-3 rounded-full bg-background" />
+      </div>
+      <div className="sm:hidden border-t border-dashed border-border/10 mx-4" />
+
+      <div className="flex-1 min-w-0 flex flex-col justify-center gap-2.5 px-5 py-4">
+        <div className="flex items-center gap-2">
           <h3 className="text-base font-semibold text-text-primary wrap-break-word line-clamp-2 sm:truncate flex-1">
             {s.title}
           </h3>
-          {trackName && (
-            <span className="shrink-0 font-bold text-[10px] uppercase tracking-wider text-accent bg-accent/10 px-2 py-1 rounded-md">
-              {trackName}
-            </span>
-          )}
         </div>
 
-        {/* Facts row: time, duration, type — always together, no manual dividers */}
         <div className="flex items-center gap-3 text-xs text-text-secondary flex-wrap">
           <div className="flex items-center gap-1">
             <Schedule className="text-sm opacity-60" />
@@ -169,8 +183,7 @@ const UpcomingSessionsCard = ({
           </div>
         </div>
 
-        {/* Secondary row: reschedule note + resources, only when present */}
-        {(totalReschedules > 0 || (!resourcesLoading && resources.length > 0)) && (
+        {(totalReschedules > 0 || resourcesLoading || resources.length > 0) && (
           <div className="flex items-center gap-3 flex-wrap">
             {totalReschedules > 0 && (
               <div className="flex items-center gap-1 text-xs font-medium text-amber-500">
@@ -186,7 +199,11 @@ const UpcomingSessionsCard = ({
               </div>
             )}
 
-            {totalReschedules > 0 && !resourcesLoading && resources.length > 0 && <Dot />}
+            {totalReschedules > 0 && (resourcesLoading || resources.length > 0) && <Dot />}
+
+            {resourcesLoading && (
+              <div className="h-6.5 w-24 rounded-full bg-white/5 animate-pulse" />
+            )}
 
             {!resourcesLoading && resources.length > 0 && (
               <div className="relative" ref={popoverRef}>
@@ -207,7 +224,7 @@ const UpcomingSessionsCard = ({
                 {showResources && (
                   <div className="absolute left-0 top-full mt-2 w-64 rounded-xl border border-border bg-surface shadow-2xl z-50 overflow-hidden">
                     <div className="px-3 py-2 border-b border-border/50">
-                      <p className="text-[10px] font-bold uppercase tracking-wider text-text-secondary">
+                      <p className="text-[11px] font-semibold text-text-secondary">
                         Resources for this session
                       </p>
                     </div>
@@ -236,40 +253,49 @@ const UpcomingSessionsCard = ({
         )}
       </div>
 
-      {/* Action area */}
-      <div className="shrink-0 flex items-center sm:items-stretch mt-2 sm:mt-0 pt-3 sm:pt-0 border-t border-text-primary/5 sm:border-none sm:border-l sm:pl-5">
+      <div className="shrink-0 flex items-center px-5 pb-4 sm:pb-0 sm:pr-5 sm:pl-0">
+        <div className="h-full flex items-center mr-6">
+           {trackName && (
+            <span className="shrink-0 text-[11px] font-medium text-accent bg-accent/10 px-2 py-1 rounded-md">
+              {trackName}
+            </span>
+          )}
+        </div>
         <div className="w-full sm:w-auto flex items-center justify-end">
           {phase === "joinable" ? (
             <button
               type="button"
               onClick={() => onJoin?.(s.id)}
-              className="bg-emerald-500 hover:bg-emerald-600 text-white px-5 py-2.5 gap-2 rounded-lg flex items-center justify-center transition-all duration-200 active:scale-95 text-sm font-semibold w-full sm:w-auto animate-pulse"
+              className="relative bg-primary hover:bg-primary/90 text-white pl-4 pr-5 py-2.5 gap-2 rounded-lg flex items-center justify-center transition-all duration-200 active:scale-95 text-sm font-semibold w-full sm:w-auto"
             >
-              <TypeIcon className="text-lg" />
-              <span>{isHost ? "Start Session" : "Join Session"}</span>
+              <span className="relative flex h-2 w-2">
+                <span className="absolute inline-flex h-full w-full rounded-full bg-white/70 animate-ping" />
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-white" />
+              </span>
+              <span>{isHost ? "Start session" : "Join session"}</span>
             </button>
           ) : phase === "preview" ? (
             <button
               type="button"
               onClick={() => onJoin?.(s.id)}
-              className="bg-primary/10 hover:bg-primary/20 text-primary border border-primary/30 px-5 py-2.5 gap-2 rounded-lg flex items-center justify-center transition-all duration-200 active:scale-95 text-sm font-semibold w-full sm:w-auto"
+              className="bg-primary/10 hover:bg-primary/20 text-primary border border-primary/25 px-4 py-2.5 gap-2 rounded-lg flex items-center justify-center transition-all duration-200 active:scale-95 text-sm font-semibold w-full sm:w-auto"
             >
               <TypeIcon className="text-lg" />
-              <span>{isHost ? "Get Ready" : "Join"}</span>
+              <span>{isHost ? "Get ready" : "Join"}</span>
             </button>
           ) : phase === "missed" ? (
-            <span className="text-xs font-semibold text-rose-500 bg-rose-500/10 px-3 py-1.5 rounded-lg flex items-center justify-center gap-1.5 w-full sm:w-auto">
-              <EventBusy className="text-lg" />
-              Session Missed
+            <span className="text-xs font-semibold text-rose-500 bg-rose-500/10 px-3 py-2 rounded-lg flex items-center justify-center gap-1.5 w-full sm:w-auto">
+              <EventBusy className="text-base" />
+              Missed
             </span>
           ) : (
             showRescheduleBtn && (
               <button
                 type="button"
                 onClick={() => onReschedule?.(s.id)}
-                className="bg-background hover:bg-primary/10 text-text-secondary hover:text-text-primary border border-border hover:border-primary/30 px-4 py-2.5 gap-2 rounded-lg flex items-center justify-center transition-all duration-200 active:scale-95 text-sm font-medium w-full sm:w-auto"
+                className="text-text-secondary hover:text-text-primary hover:bg-white/5 border border-white/10 hover:border-white/15 px-3.5 py-2.5 gap-2 rounded-lg flex items-center justify-center transition-all duration-200 active:scale-95 text-sm font-medium w-full sm:w-auto"
               >
-                <CalendarToday className="text-lg" />
+                <CalendarToday className="text-base" />
                 <span>Reschedule</span>
               </button>
             )
