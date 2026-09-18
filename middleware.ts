@@ -83,6 +83,7 @@ export async function middleware(request: NextRequest) {
     if (!isApiRoute) {
       if (isAuthRoute) {
         const hasGateCookie =
+          !!ADMIN_ACCESS_KEY &&
           request.cookies.get(ADMIN_GATE_COOKIE)?.value === ADMIN_ACCESS_KEY;
         const keyParam = request.nextUrl.searchParams.get("key");
         const keyMatches = !!ADMIN_ACCESS_KEY && keyParam === ADMIN_ACCESS_KEY;
@@ -111,6 +112,7 @@ export async function middleware(request: NextRequest) {
         }
       } else {
         const hasGateCookie =
+          !!ADMIN_ACCESS_KEY &&
           request.cookies.get(ADMIN_GATE_COOKIE)?.value === ADMIN_ACCESS_KEY;
 
         if (!hasGateCookie) {
@@ -149,6 +151,16 @@ export async function middleware(request: NextRequest) {
   if (isInvalidRefreshTokenError(userError)) {
     await supabase.auth.signOut({ scope: "local" });
 
+<<<<<<< Updated upstream
+=======
+    if (isApiRoute) {
+      return clearAuthCookies(
+        NextResponse.json({ error: "session_expired" }, { status: 401 }),
+        request,
+      );
+    }
+
+>>>>>>> Stashed changes
     if (!isAuthPage) {
       const url = new URL("/auth/signin", request.url);
       url.searchParams.set("error", "session_expired");
