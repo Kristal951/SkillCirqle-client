@@ -96,13 +96,18 @@ export async function middleware(request: NextRequest) {
             return NextResponse.redirect(new URL(WAITLIST_PATH, request.url));
           }
         } else if (keyMatches && !hasGateCookie) {
-          response.cookies.set(ADMIN_GATE_COOKIE, ADMIN_ACCESS_KEY!, {
+          const dashboardUrl = new URL("/dashboard", request.url);
+          const redirectResponse = NextResponse.redirect(dashboardUrl);
+
+          redirectResponse.cookies.set(ADMIN_GATE_COOKIE, ADMIN_ACCESS_KEY!, {
             httpOnly: true,
             secure: true,
             sameSite: "lax",
             maxAge: ADMIN_GATE_MAX_AGE,
             path: "/",
           });
+
+          return redirectResponse;
         }
       } else {
         const hasGateCookie =
