@@ -118,7 +118,7 @@ export default function WaitlistForm() {
 
                             <p className="mx-auto mt-5 max-w-md text-base leading-7 text-text-secondary">
                                 You're officially on the SkillCirqle waitlist.
-                                We'll let you know when it's everything's up and running.
+                                We'll let you know when everything's up and running.
                             </p>
 
                             <a
